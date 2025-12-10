@@ -1,4 +1,3 @@
-import React from 'react'
 import { MoreHorizontal, Edit, Trash2, Copy, Eye } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
@@ -14,22 +13,16 @@ import { toast } from '@/components/ui/use-toast'
 
 interface ProductActionMenuProps {
   product: Product
+  onView: () => void
   onEdit: () => void
   onDelete: () => void
 }
 
-export function ProductActionMenu({ product, onEdit, onDelete }: ProductActionMenuProps) {
+export function ProductActionMenu({ product, onView, onEdit, onDelete }: ProductActionMenuProps) {
   const handleDuplicate = () => {
     toast({
       title: 'Product Duplicated',
       description: `A copy of "${product.name}" has been created.`,
-    })
-  }
-
-  const handleView = () => {
-    toast({
-      title: 'View Product',
-      description: `Viewing ${product.name}`,
     })
   }
 
@@ -43,7 +36,7 @@ export function ProductActionMenu({ product, onEdit, onDelete }: ProductActionMe
       <DropdownMenuContent align="end">
         <DropdownMenuLabel>Actions</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={handleView}>
+        <DropdownMenuItem onClick={onView}>
           <Eye className="h-4 w-4 mr-2" />
           View Details
         </DropdownMenuItem>
@@ -67,4 +60,3 @@ export function ProductActionMenu({ product, onEdit, onDelete }: ProductActionMe
     </DropdownMenu>
   )
 }
-

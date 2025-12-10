@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { Plus } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -12,8 +12,10 @@ import {
 import { ProductActionMenu } from './components/ProductActionMenu'
 import { AddEditProductModal } from './AddEditProductModal'
 import { DeleteProductModal } from './DeleteProductModal'
+import { ProductDetailsModal } from './ProductDetailsModal'
 import { useAppDispatch, useAppSelector } from '@/redux/hooks'
 import { setFilters, setPage, setLimit, setSelectedProduct } from '@/redux/slices/productSlice'
+import { useUrlParams } from '@/hooks/useUrlState'
 import { PRODUCT_STATUSES } from '@/utils/constants'
 import { formatCurrency, formatDate } from '@/utils/formatters'
 import type { Product, TableColumn } from '@/types'
@@ -21,14 +23,37 @@ import { motion } from 'framer-motion'
 
 export default function ProductList() {
   const dispatch = useAppDispatch()
-  const { filteredList, filters, pagination, isLoading, selectedProduct } = useAppSelector(
+  const { filteredList, pagination, isLoading, selectedProduct } = useAppSelector(
     (state) => state.products
   )
   const { list: categories } = useAppSelector((state) => state.categories)
 
+  // URL-based state management
+  const { getParam, getNumberParam, setParam, setParams } = useUrlParams()
+  
+  const search = getParam('search', '')
+  const status = getParam('status', 'all')
+  const categoryId = getParam('category', 'all')
+  const page = getNumberParam('page', 1)
+  const limit = getNumberParam('limit', 10)
+
   const [showAddModal, setShowAddModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [showDetailsModal, setShowDetailsModal] = useState(false)
+
+  // Sync URL params with Redux
+  useEffect(() => {
+    dispatch(setFilters({ search, status: status as Product['status'] | 'all', categoryId }))
+  }, [search, status, categoryId, dispatch])
+
+  useEffect(() => {
+    dispatch(setPage(page))
+  }, [page, dispatch])
+
+  useEffect(() => {
+    dispatch(setLimit(limit))
+  }, [limit, dispatch])
 
   const categoryOptions = useMemo(
     () => [
@@ -135,21 +160,34 @@ export default function ProductList() {
 
   // Calculate paginated data
   const paginatedData = useMemo(() => {
-    const start = (pagination.page - 1) * pagination.limit
-    const end = start + pagination.limit
+    const start = (page - 1) * limit
+    const end = start + limit
     return filteredList.slice(start, end)
-  }, [filteredList, pagination.page, pagination.limit])
+  }, [filteredList, page, limit])
 
-  const handleSearch = (search: string) => {
-    dispatch(setFilters({ search }))
+  const handleSearch = (value: string) => {
+    setParams({ search: value, page: 1 })
   }
 
-  const handleStatusFilter = (status: string) => {
-    dispatch(setFilters({ status: status as Product['status'] | 'all' }))
+  const handleStatusFilter = (value: string) => {
+    setParams({ status: value, page: 1 })
   }
 
-  const handleCategoryFilter = (categoryId: string) => {
-    dispatch(setFilters({ categoryId }))
+  const handleCategoryFilter = (value: string) => {
+    setParams({ category: value, page: 1 })
+  }
+
+  const handlePageChange = (newPage: number) => {
+    setParam('page', newPage)
+  }
+
+  const handleLimitChange = (newLimit: number) => {
+    setParams({ limit: newLimit, page: 1 })
+  }
+
+  const handleView = (product: Product) => {
+    dispatch(setSelectedProduct(product))
+    setShowDetailsModal(true)
   }
 
   const handleEdit = (product: Product) => {
@@ -186,20 +224,20 @@ export default function ProductList() {
           {/* Filters */}
           <div className="flex flex-col sm:flex-row gap-4 mb-6">
             <SearchInput
-              value={filters.search}
+              value={search}
               onChange={handleSearch}
               placeholder="Search by name, SKU..."
               className="sm:w-80"
             />
             <div className="flex gap-3 flex-wrap">
               <FilterDropdown
-                value={filters.status}
+                value={status}
                 options={PRODUCT_STATUSES}
                 onChange={handleStatusFilter}
                 placeholder="All Status"
               />
               <FilterDropdown
-                value={filters.categoryId}
+                value={categoryId}
                 options={categoryOptions}
                 onChange={handleCategoryFilter}
                 placeholder="All Categories"
@@ -213,9 +251,11 @@ export default function ProductList() {
             data={paginatedData}
             isLoading={isLoading}
             rowKeyExtractor={(row) => row.id}
+            onRowClick={handleView}
             actions={(product) => (
               <ProductActionMenu
                 product={product}
+                onView={() => handleView(product)}
                 onEdit={() => handleEdit(product)}
                 onDelete={() => handleDelete(product)}
               />
@@ -225,12 +265,12 @@ export default function ProductList() {
 
           {/* Pagination */}
           <Pagination
-            currentPage={pagination.page}
-            totalPages={pagination.totalPages}
-            totalItems={pagination.total}
-            itemsPerPage={pagination.limit}
-            onPageChange={(page) => dispatch(setPage(page))}
-            onItemsPerPageChange={(limit) => dispatch(setLimit(limit))}
+            currentPage={page}
+            totalPages={Math.ceil(filteredList.length / limit)}
+            totalItems={filteredList.length}
+            itemsPerPage={limit}
+            onPageChange={handlePageChange}
+            onItemsPerPageChange={handleLimitChange}
           />
         </CardContent>
       </Card>
@@ -266,7 +306,18 @@ export default function ProductList() {
           product={selectedProduct}
         />
       )}
+
+      {/* Product Details Modal */}
+      {selectedProduct && (
+        <ProductDetailsModal
+          open={showDetailsModal}
+          onClose={() => {
+            setShowDetailsModal(false)
+            dispatch(setSelectedProduct(null))
+          }}
+          product={selectedProduct}
+        />
+      )}
     </motion.div>
   )
 }
-

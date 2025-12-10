@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { Plus } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -14,6 +14,7 @@ import { AddEditCategoryModal } from './AddEditCategoryModal'
 import { DeleteCategoryModal } from './DeleteCategoryModal'
 import { useAppDispatch, useAppSelector } from '@/redux/hooks'
 import { setFilters, setPage, setLimit, setSelectedCategory } from '@/redux/slices/categorySlice'
+import { useUrlParams } from '@/hooks/useUrlState'
 import { CATEGORY_STATUSES } from '@/utils/constants'
 import { formatDate, formatNumber } from '@/utils/formatters'
 import type { Category, TableColumn } from '@/types'
@@ -21,13 +22,34 @@ import { motion } from 'framer-motion'
 
 export default function CategoryList() {
   const dispatch = useAppDispatch()
-  const { filteredList, filters, pagination, isLoading, selectedCategory } = useAppSelector(
+  const { filteredList, isLoading, selectedCategory } = useAppSelector(
     (state) => state.categories
   )
+
+  // URL-based state management
+  const { getParam, getNumberParam, setParam, setParams } = useUrlParams()
+  
+  const search = getParam('search', '')
+  const status = getParam('status', 'all')
+  const page = getNumberParam('page', 1)
+  const limit = getNumberParam('limit', 10)
 
   const [showAddModal, setShowAddModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
+
+  // Sync URL params with Redux
+  useEffect(() => {
+    dispatch(setFilters({ search, status: status as Category['status'] | 'all' }))
+  }, [search, status, dispatch])
+
+  useEffect(() => {
+    dispatch(setPage(page))
+  }, [page, dispatch])
+
+  useEffect(() => {
+    dispatch(setLimit(limit))
+  }, [limit, dispatch])
 
   const columns: TableColumn<Category>[] = useMemo(
     () => [
@@ -106,17 +128,25 @@ export default function CategoryList() {
 
   // Calculate paginated data
   const paginatedData = useMemo(() => {
-    const start = (pagination.page - 1) * pagination.limit
-    const end = start + pagination.limit
+    const start = (page - 1) * limit
+    const end = start + limit
     return filteredList.slice(start, end)
-  }, [filteredList, pagination.page, pagination.limit])
+  }, [filteredList, page, limit])
 
-  const handleSearch = (search: string) => {
-    dispatch(setFilters({ search }))
+  const handleSearch = (value: string) => {
+    setParams({ search: value, page: 1 })
   }
 
-  const handleStatusFilter = (status: string) => {
-    dispatch(setFilters({ status: status as Category['status'] | 'all' }))
+  const handleStatusFilter = (value: string) => {
+    setParams({ status: value, page: 1 })
+  }
+
+  const handlePageChange = (newPage: number) => {
+    setParam('page', newPage)
+  }
+
+  const handleLimitChange = (newLimit: number) => {
+    setParams({ limit: newLimit, page: 1 })
   }
 
   const handleEdit = (category: Category) => {
@@ -153,13 +183,13 @@ export default function CategoryList() {
           {/* Filters */}
           <div className="flex flex-col sm:flex-row gap-4 mb-6">
             <SearchInput
-              value={filters.search}
+              value={search}
               onChange={handleSearch}
               placeholder="Search categories..."
               className="sm:w-80"
             />
             <FilterDropdown
-              value={filters.status}
+              value={status}
               options={CATEGORY_STATUSES}
               onChange={handleStatusFilter}
               placeholder="All Status"
@@ -184,12 +214,12 @@ export default function CategoryList() {
 
           {/* Pagination */}
           <Pagination
-            currentPage={pagination.page}
-            totalPages={pagination.totalPages}
-            totalItems={pagination.total}
-            itemsPerPage={pagination.limit}
-            onPageChange={(page) => dispatch(setPage(page))}
-            onItemsPerPageChange={(limit) => dispatch(setLimit(limit))}
+            currentPage={page}
+            totalPages={Math.ceil(filteredList.length / limit)}
+            totalItems={filteredList.length}
+            itemsPerPage={limit}
+            onPageChange={handlePageChange}
+            onItemsPerPageChange={handleLimitChange}
           />
         </CardContent>
       </Card>
@@ -228,4 +258,3 @@ export default function CategoryList() {
     </motion.div>
   )
 }
-

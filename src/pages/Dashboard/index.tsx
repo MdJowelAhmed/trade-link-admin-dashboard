@@ -1,9 +1,54 @@
-import React from 'react'
+import { useState, useMemo } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Users, Package, FolderTree, DollarSign, TrendingUp, TrendingDown, ShoppingCart, Clock } from 'lucide-react'
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Legend,
+} from 'recharts'
 import { formatCurrency, formatCompactNumber, formatPercentage } from '@/utils/formatters'
 import { cn } from '@/utils/cn'
 import { motion } from 'framer-motion'
+
+// Generate mock data for different years
+const generateYearData = (year: number) => {
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+  const baseRevenue = 50000 + (year - 2021) * 15000
+  const baseUsers = 500 + (year - 2021) * 200
+  const baseOrders = 300 + (year - 2021) * 100
+
+  return months.map((month, index) => {
+    const seasonMultiplier = index >= 10 || index <= 1 ? 1.3 : index >= 5 && index <= 7 ? 0.85 : 1
+    const randomVariation = () => 0.8 + Math.random() * 0.4
+
+    return {
+      month,
+      revenue: Math.round(baseRevenue * seasonMultiplier * randomVariation() * (1 + index * 0.02)),
+      users: Math.round(baseUsers * randomVariation() * (1 + index * 0.05)),
+      orders: Math.round(baseOrders * seasonMultiplier * randomVariation() * (1 + index * 0.03)),
+    }
+  })
+}
+
+const yearlyData: Record<string, ReturnType<typeof generateYearData>> = {
+  '2024': generateYearData(2024),
+  '2023': generateYearData(2023),
+  '2022': generateYearData(2022),
+  '2021': generateYearData(2021),
+}
 
 interface StatCardProps {
   title: string
@@ -56,7 +101,40 @@ function StatCard({ title, value, change, icon: Icon, description, index }: Stat
   )
 }
 
+// Custom tooltip for the chart
+const CustomTooltip = ({ active, payload, label }: {
+  active?: boolean
+  payload?: Array<{ name: string; value: number; color: string }>
+  label?: string
+}) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-popover border rounded-lg shadow-lg p-3">
+        <p className="font-semibold mb-2">{label}</p>
+        {payload.map((entry, index) => (
+          <div key={index} className="flex items-center gap-2 text-sm">
+            <div 
+              className="w-3 h-3 rounded-full" 
+              style={{ backgroundColor: entry.color }}
+            />
+            <span className="text-muted-foreground">{entry.name}:</span>
+            <span className="font-medium">
+              {entry.name === 'Revenue' ? formatCurrency(entry.value) : formatCompactNumber(entry.value)}
+            </span>
+          </div>
+        ))}
+      </div>
+    )
+  }
+  return null
+}
+
 export default function Dashboard() {
+  const [selectedYear, setSelectedYear] = useState('2024')
+  const [chartMetric, setChartMetric] = useState<'all' | 'revenue' | 'users' | 'orders'>('all')
+
+  const chartData = useMemo(() => yearlyData[selectedYear], [selectedYear])
+
   const stats = [
     {
       title: 'Total Users',
@@ -96,6 +174,8 @@ export default function Dashboard() {
     { id: 5, action: 'User blocked', user: 'Admin', time: '3 hours ago' },
   ]
 
+  const years = ['2024', '2023', '2022', '2021']
+
   return (
     <div className="space-y-6">
       {/* Stats Grid */}
@@ -105,13 +185,155 @@ export default function Dashboard() {
         ))}
       </div>
 
+      {/* Chart Section */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, delay: 0.4 }}
+      >
+        <Card>
+          <CardHeader>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div>
+                <CardTitle>Analytics Overview</CardTitle>
+                <CardDescription>
+                  Track your business performance over time
+                </CardDescription>
+              </div>
+              <div className="flex items-center gap-3">
+                <Select value={chartMetric} onValueChange={(v) => setChartMetric(v as typeof chartMetric)}>
+                  <SelectTrigger className="w-[130px]">
+                    <SelectValue placeholder="Metric" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Metrics</SelectItem>
+                    <SelectItem value="revenue">Revenue</SelectItem>
+                    <SelectItem value="users">Users</SelectItem>
+                    <SelectItem value="orders">Orders</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select value={selectedYear} onValueChange={setSelectedYear}>
+                  <SelectTrigger className="w-[100px]">
+                    <SelectValue placeholder="Year" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {years.map((year) => (
+                      <SelectItem key={year} value={year}>
+                        {year}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="h-[400px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart
+                  data={chartData}
+                  margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                  <XAxis 
+                    dataKey="month" 
+                    className="text-xs"
+                    tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                  />
+                  <YAxis 
+                    yAxisId="left"
+                    className="text-xs"
+                    tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                    tickFormatter={(value) => `$${formatCompactNumber(value)}`}
+                  />
+                  <YAxis 
+                    yAxisId="right" 
+                    orientation="right"
+                    className="text-xs"
+                    tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                    tickFormatter={(value) => formatCompactNumber(value)}
+                  />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Legend 
+                    wrapperStyle={{ paddingTop: '20px' }}
+                    formatter={(value) => <span className="text-sm">{value}</span>}
+                  />
+                  {(chartMetric === 'all' || chartMetric === 'revenue') && (
+                    <Line
+                      yAxisId="left"
+                      type="monotone"
+                      dataKey="revenue"
+                      name="Revenue"
+                      stroke="hsl(var(--primary))"
+                      strokeWidth={2.5}
+                      dot={{ fill: 'hsl(var(--primary))', strokeWidth: 2, r: 4 }}
+                      activeDot={{ r: 6, strokeWidth: 2 }}
+                    />
+                  )}
+                  {(chartMetric === 'all' || chartMetric === 'users') && (
+                    <Line
+                      yAxisId="right"
+                      type="monotone"
+                      dataKey="users"
+                      name="Users"
+                      stroke="hsl(var(--success))"
+                      strokeWidth={2.5}
+                      dot={{ fill: 'hsl(var(--success))', strokeWidth: 2, r: 4 }}
+                      activeDot={{ r: 6, strokeWidth: 2 }}
+                    />
+                  )}
+                  {(chartMetric === 'all' || chartMetric === 'orders') && (
+                    <Line
+                      yAxisId="right"
+                      type="monotone"
+                      dataKey="orders"
+                      name="Orders"
+                      stroke="hsl(var(--warning))"
+                      strokeWidth={2.5}
+                      dot={{ fill: 'hsl(var(--warning))', strokeWidth: 2, r: 4 }}
+                      activeDot={{ r: 6, strokeWidth: 2 }}
+                    />
+                  )}
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Year Comparison Summary */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6 pt-6 border-t">
+              {years.map((year) => {
+                const data = yearlyData[year]
+                const totalRevenue = data.reduce((sum, item) => sum + item.revenue, 0)
+                const isSelected = year === selectedYear
+                
+                return (
+                  <button
+                    key={year}
+                    onClick={() => setSelectedYear(year)}
+                    className={cn(
+                      'p-4 rounded-lg text-left transition-all',
+                      isSelected 
+                        ? 'bg-primary/10 border-2 border-primary' 
+                        : 'bg-muted/50 border-2 border-transparent hover:border-muted-foreground/20'
+                    )}
+                  >
+                    <p className="text-sm text-muted-foreground">{year}</p>
+                    <p className="text-lg font-bold mt-1">{formatCurrency(totalRevenue)}</p>
+                    <p className="text-xs text-muted-foreground mt-1">Total Revenue</p>
+                  </button>
+                )
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+
       {/* Content Grid */}
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Quick Actions */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: 0.4 }}
+          transition={{ duration: 0.3, delay: 0.5 }}
         >
           <Card>
             <CardHeader>
@@ -126,15 +348,16 @@ export default function Dashboard() {
                   { icon: FolderTree, label: 'Add Category', color: 'bg-purple-500/10 text-purple-500' },
                   { icon: ShoppingCart, label: 'View Orders', color: 'bg-orange-500/10 text-orange-500' },
                 ].map((action) => (
-                  <button
+                  <Button
                     key={action.label}
-                    className="flex items-center gap-3 p-4 rounded-lg border hover:bg-muted/50 transition-colors"
+                    variant="outline"
+                    className="h-auto flex items-center gap-3 p-4 justify-start"
                   >
                     <div className={cn('p-2 rounded-lg', action.color)}>
                       <action.icon className="h-5 w-5" />
                     </div>
                     <span className="font-medium text-sm">{action.label}</span>
-                  </button>
+                  </Button>
                 ))}
               </div>
             </CardContent>
@@ -145,7 +368,7 @@ export default function Dashboard() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: 0.5 }}
+          transition={{ duration: 0.3, delay: 0.6 }}
         >
           <Card>
             <CardHeader>
@@ -179,4 +402,3 @@ export default function Dashboard() {
     </div>
   )
 }
-

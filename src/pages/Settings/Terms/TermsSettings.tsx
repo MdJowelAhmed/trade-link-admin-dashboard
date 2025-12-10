@@ -1,42 +1,57 @@
-import React, { useState } from 'react'
-import { FileText, Save } from 'lucide-react'
+import { useState } from 'react'
+import { FileText, Save, RotateCcw, Eye } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Textarea } from '@/components/ui/textarea'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { TiptapEditor } from '@/components/common'
 import { toast } from '@/components/ui/use-toast'
 import { motion } from 'framer-motion'
 
-const defaultTerms = `# Terms and Conditions
+const defaultTerms = `<h1>Terms and Conditions</h1>
+<p><em>Last updated: January 2024</em></p>
 
-Last updated: January 2024
+<h2>1. Introduction</h2>
+<p>Welcome to our Dashboard. By accessing or using our service, you agree to be bound by these Terms and Conditions.</p>
 
-## 1. Introduction
+<h2>2. Use License</h2>
+<p>Permission is granted to temporarily use our dashboard for personal, non-commercial transitory viewing only. This is the grant of a license, not a transfer of title, and under this license you may not:</p>
+<ul>
+  <li>Modify or copy the materials</li>
+  <li>Use the materials for any commercial purpose</li>
+  <li>Attempt to decompile or reverse engineer any software</li>
+  <li>Remove any copyright or other proprietary notations</li>
+</ul>
 
-Welcome to our Dashboard. By accessing or using our service, you agree to be bound by these Terms and Conditions.
+<h2>3. Disclaimer</h2>
+<p>The materials on our dashboard are provided on an <strong>'as is'</strong> basis. We make no warranties, expressed or implied, and hereby disclaim and negate all other warranties including:</p>
+<ul>
+  <li>Implied warranties or conditions of merchantability</li>
+  <li>Fitness for a particular purpose</li>
+  <li>Non-infringement of intellectual property</li>
+</ul>
 
-## 2. Use License
+<h2>4. Limitations</h2>
+<p>In no event shall we or our suppliers be liable for any damages (including, without limitation, damages for loss of data or profit, or due to business interruption) arising out of the use or inability to use the materials on our dashboard.</p>
 
-Permission is granted to temporarily use our dashboard for personal, non-commercial transitory viewing only.
+<h2>5. Accuracy of Materials</h2>
+<p>The materials appearing on our dashboard could include technical, typographical, or photographic errors. We do not warrant that any of the materials are accurate, complete, or current.</p>
 
-## 3. Disclaimer
+<h2>6. Links</h2>
+<p>We have not reviewed all of the sites linked to our dashboard and are not responsible for the contents of any such linked site. The inclusion of any link does not imply endorsement by us.</p>
 
-The materials on our dashboard are provided on an 'as is' basis. We make no warranties, expressed or implied, and hereby disclaim and negate all other warranties.
+<h2>7. Modifications</h2>
+<p>We may revise these terms of service at any time without notice. By using this dashboard you are agreeing to be bound by the then current version of these terms.</p>
 
-## 4. Limitations
+<h2>8. Governing Law</h2>
+<p>These terms and conditions are governed by and construed in accordance with the laws and you irrevocably submit to the exclusive jurisdiction of the courts in that location.</p>
 
-In no event shall we or our suppliers be liable for any damages arising out of the use or inability to use the materials on our dashboard.
-
-## 5. Revisions
-
-We may revise these terms of service at any time without notice. By using this dashboard you are agreeing to be bound by the then current version.
-
-## 6. Governing Law
-
-These terms and conditions are governed by and construed in accordance with the laws and you irrevocably submit to the exclusive jurisdiction of the courts.`
+<hr>
+<p><em>If you have any questions about these Terms and Conditions, please contact us at <a href="mailto:legal@example.com">legal@example.com</a></em></p>`
 
 export default function TermsSettings() {
   const [terms, setTerms] = useState(defaultTerms)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [activeTab, setActiveTab] = useState('edit')
 
   const handleSave = async () => {
     setIsSubmitting(true)
@@ -52,6 +67,14 @@ export default function TermsSettings() {
     setIsSubmitting(false)
   }
 
+  const handleReset = () => {
+    setTerms(defaultTerms)
+    toast({
+      title: 'Reset Complete',
+      description: 'Terms have been reset to default content.',
+    })
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -61,28 +84,22 @@ export default function TermsSettings() {
     >
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <FileText className="h-5 w-5 text-primary" />
-            Terms & Conditions
-          </CardTitle>
-          <CardDescription>
-            Manage your platform's Terms and Conditions. Supports Markdown formatting.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <Textarea
-            value={terms}
-            onChange={(e) => setTerms(e.target.value)}
-            placeholder="Enter your terms and conditions..."
-            className="min-h-[500px] font-mono text-sm"
-          />
-          <div className="flex justify-between items-center">
-            <p className="text-sm text-muted-foreground">
-              {terms.length} characters
-            </p>
-            <div className="flex gap-3">
-              <Button variant="outline" onClick={() => setTerms(defaultTerms)}>
-                Reset to Default
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                <FileText className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <CardTitle>Terms & Conditions</CardTitle>
+                <CardDescription>
+                  Manage your platform's Terms and Conditions
+                </CardDescription>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={handleReset}>
+                <RotateCcw className="h-4 w-4 mr-2" />
+                Reset
               </Button>
               <Button onClick={handleSave} isLoading={isSubmitting}>
                 <Save className="h-4 w-4 mr-2" />
@@ -90,26 +107,40 @@ export default function TermsSettings() {
               </Button>
             </div>
           </div>
-        </CardContent>
-      </Card>
-
-      {/* Preview Card */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Preview</CardTitle>
-          <CardDescription>
-            This is how your Terms & Conditions will appear to users
-          </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="prose prose-sm dark:prose-invert max-w-none">
-            <div className="whitespace-pre-wrap text-sm leading-relaxed">
-              {terms}
-            </div>
-          </div>
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="mb-4">
+              <TabsTrigger value="edit" className="gap-2">
+                <FileText className="h-4 w-4" />
+                Edit
+              </TabsTrigger>
+              <TabsTrigger value="preview" className="gap-2">
+                <Eye className="h-4 w-4" />
+                Preview
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="edit" className="mt-0">
+              <TiptapEditor
+                content={terms}
+                onChange={setTerms}
+                placeholder="Write your terms and conditions here..."
+                className="min-h-[500px]"
+              />
+            </TabsContent>
+
+            <TabsContent value="preview" className="mt-0">
+              <div className="border rounded-xl p-6 min-h-[500px] bg-muted/20">
+                <div 
+                  className="prose prose-sm dark:prose-invert max-w-none"
+                  dangerouslySetInnerHTML={{ __html: terms }}
+                />
+              </div>
+            </TabsContent>
+          </Tabs>
         </CardContent>
       </Card>
     </motion.div>
   )
 }
-

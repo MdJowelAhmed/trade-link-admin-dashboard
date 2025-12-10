@@ -1,4 +1,4 @@
-import React from 'react'
+
 import { Outlet } from 'react-router-dom'
 import { Sidebar } from './Sidebar'
 import { Header } from './Header'
@@ -20,7 +20,7 @@ export default function DashboardLayout() {
           )}
         >
           <Header />
-          <main className="p-4 lg:p-6 bg-gray-200">
+          <main className="p-4 lg:p-6 bg-gray-200 h-full min-h-[calc(100vh-4rem)]">
             <Outlet />
           </main>
         </div>

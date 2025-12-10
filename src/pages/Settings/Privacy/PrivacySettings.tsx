@@ -1,61 +1,79 @@
-import React, { useState } from 'react'
-import { Shield, Save } from 'lucide-react'
+import { useState } from 'react'
+import { Shield, Save, RotateCcw, Eye } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Textarea } from '@/components/ui/textarea'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { TiptapEditor } from '@/components/common'
 import { toast } from '@/components/ui/use-toast'
 import { motion } from 'framer-motion'
 
-const defaultPrivacy = `# Privacy Policy
+const defaultPrivacy = `<h1>Privacy Policy</h1>
+<p><em>Last updated: January 2024</em></p>
 
-Last updated: January 2024
+<h2>1. Information We Collect</h2>
+<p>We collect information you provide directly to us, such as when you:</p>
+<ul>
+  <li>Create an account</li>
+  <li>Make a purchase</li>
+  <li>Contact us for support</li>
+  <li>Subscribe to our newsletter</li>
+  <li>Participate in surveys or promotions</li>
+</ul>
 
-## 1. Information We Collect
+<h2>2. How We Use Your Information</h2>
+<p>We use the information we collect to:</p>
+<ul>
+  <li><strong>Provide services:</strong> Deliver, maintain, and improve our services</li>
+  <li><strong>Process transactions:</strong> Handle payments and send related information</li>
+  <li><strong>Communications:</strong> Send technical notices and support messages</li>
+  <li><strong>Support:</strong> Respond to your comments and questions</li>
+  <li><strong>Analytics:</strong> Monitor and analyze trends, usage, and activities</li>
+</ul>
 
-We collect information you provide directly to us, such as when you create an account, make a purchase, or contact us for support.
+<h2>3. Information Sharing</h2>
+<p>We do not share your personal information with third parties except:</p>
+<ul>
+  <li>With your explicit consent</li>
+  <li>For legal compliance reasons</li>
+  <li>To protect rights, property, and safety</li>
+  <li>With service providers who assist our operations</li>
+</ul>
 
-## 2. How We Use Your Information
+<h2>4. Data Security</h2>
+<p>We take reasonable measures to help protect your personal information from loss, theft, misuse, and unauthorized access. This includes:</p>
+<ul>
+  <li>Encryption of data in transit and at rest</li>
+  <li>Regular security assessments</li>
+  <li>Access controls and authentication</li>
+  <li>Employee training on data protection</li>
+</ul>
 
-We use the information we collect to:
-- Provide, maintain, and improve our services
-- Process transactions and send related information
-- Send you technical notices and support messages
-- Respond to your comments and questions
+<h2>5. Your Rights</h2>
+<p>You have the right to:</p>
+<ul>
+  <li><strong>Access:</strong> Request access to your personal data</li>
+  <li><strong>Correction:</strong> Request correction of inaccurate data</li>
+  <li><strong>Deletion:</strong> Request deletion of your data</li>
+  <li><strong>Objection:</strong> Object to processing of your data</li>
+  <li><strong>Portability:</strong> Request transfer of your data</li>
+</ul>
 
-## 3. Information Sharing
+<h2>6. Cookies</h2>
+<p>We use cookies and similar technologies to collect information about your browsing activities. You can control cookies through your browser settings.</p>
 
-We do not share your personal information with third parties except:
-- With your consent
-- For legal reasons
-- To protect rights and safety
+<h2>7. Children's Privacy</h2>
+<p>Our services are not intended for children under 13. We do not knowingly collect personal information from children under 13.</p>
 
-## 4. Data Security
+<h2>8. Changes to This Policy</h2>
+<p>We may update this privacy policy from time to time. We will notify you of any changes by posting the new policy on this page and updating the "Last updated" date.</p>
 
-We take reasonable measures to help protect your personal information from loss, theft, misuse, and unauthorized access.
-
-## 5. Your Rights
-
-You have the right to:
-- Access your personal data
-- Correct inaccurate data
-- Request deletion of your data
-- Object to processing of your data
-
-## 6. Cookies
-
-We use cookies and similar technologies to collect information about your browsing activities.
-
-## 7. Changes to This Policy
-
-We may update this privacy policy from time to time. We will notify you of any changes by posting the new policy on this page.
-
-## 8. Contact Us
-
-If you have any questions about this Privacy Policy, please contact us at privacy@example.com.`
+<hr>
+<p><em>If you have any questions about this Privacy Policy, please contact us at <a href="mailto:privacy@example.com">privacy@example.com</a></em></p>`
 
 export default function PrivacySettings() {
   const [privacy, setPrivacy] = useState(defaultPrivacy)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [activeTab, setActiveTab] = useState('edit')
 
   const handleSave = async () => {
     setIsSubmitting(true)
@@ -71,6 +89,14 @@ export default function PrivacySettings() {
     setIsSubmitting(false)
   }
 
+  const handleReset = () => {
+    setPrivacy(defaultPrivacy)
+    toast({
+      title: 'Reset Complete',
+      description: 'Privacy Policy has been reset to default content.',
+    })
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -80,28 +106,22 @@ export default function PrivacySettings() {
     >
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Shield className="h-5 w-5 text-primary" />
-            Privacy Policy
-          </CardTitle>
-          <CardDescription>
-            Manage your platform's Privacy Policy. Supports Markdown formatting.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <Textarea
-            value={privacy}
-            onChange={(e) => setPrivacy(e.target.value)}
-            placeholder="Enter your privacy policy..."
-            className="min-h-[500px] font-mono text-sm"
-          />
-          <div className="flex justify-between items-center">
-            <p className="text-sm text-muted-foreground">
-              {privacy.length} characters
-            </p>
-            <div className="flex gap-3">
-              <Button variant="outline" onClick={() => setPrivacy(defaultPrivacy)}>
-                Reset to Default
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                <Shield className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <CardTitle>Privacy Policy</CardTitle>
+                <CardDescription>
+                  Manage your platform's Privacy Policy
+                </CardDescription>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={handleReset}>
+                <RotateCcw className="h-4 w-4 mr-2" />
+                Reset
               </Button>
               <Button onClick={handleSave} isLoading={isSubmitting}>
                 <Save className="h-4 w-4 mr-2" />
@@ -109,26 +129,40 @@ export default function PrivacySettings() {
               </Button>
             </div>
           </div>
-        </CardContent>
-      </Card>
-
-      {/* Preview Card */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Preview</CardTitle>
-          <CardDescription>
-            This is how your Privacy Policy will appear to users
-          </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="prose prose-sm dark:prose-invert max-w-none">
-            <div className="whitespace-pre-wrap text-sm leading-relaxed">
-              {privacy}
-            </div>
-          </div>
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="mb-4">
+              <TabsTrigger value="edit" className="gap-2">
+                <Shield className="h-4 w-4" />
+                Edit
+              </TabsTrigger>
+              <TabsTrigger value="preview" className="gap-2">
+                <Eye className="h-4 w-4" />
+                Preview
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="edit" className="mt-0">
+              <TiptapEditor
+                content={privacy}
+                onChange={setPrivacy}
+                placeholder="Write your privacy policy here..."
+                className="min-h-[500px]"
+              />
+            </TabsContent>
+
+            <TabsContent value="preview" className="mt-0">
+              <div className="border rounded-xl p-6 min-h-[500px] bg-muted/20">
+                <div 
+                  className="prose prose-sm dark:prose-invert max-w-none"
+                  dangerouslySetInnerHTML={{ __html: privacy }}
+                />
+              </div>
+            </TabsContent>
+          </Tabs>
         </CardContent>
       </Card>
     </motion.div>
   )
 }
-

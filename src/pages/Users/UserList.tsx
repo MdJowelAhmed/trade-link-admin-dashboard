@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import { useMemo, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Plus } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -14,6 +14,7 @@ import {
 import { UserActionMenu } from './components/UserActionMenu'
 import { useAppDispatch, useAppSelector } from '@/redux/hooks'
 import { setFilters, setPage, setLimit } from '@/redux/slices/userSlice'
+import { useUrlParams } from '@/hooks/useUrlState'
 import { USER_ROLES, USER_STATUSES } from '@/utils/constants'
 import { formatDate, getInitials } from '@/utils/formatters'
 import type { User, TableColumn } from '@/types'
@@ -22,9 +23,35 @@ import { motion } from 'framer-motion'
 export default function UserList() {
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
-  const { filteredList, filters, pagination, isLoading } = useAppSelector(
+  const { filteredList, isLoading } = useAppSelector(
     (state) => state.users
   )
+
+  // URL-based state management
+  const { getParam, getNumberParam, setParam, setParams } = useUrlParams()
+  
+  const search = getParam('search', '')
+  const status = getParam('status', 'all')
+  const role = getParam('role', 'all')
+  const page = getNumberParam('page', 1)
+  const limit = getNumberParam('limit', 10)
+
+  // Sync URL params with Redux
+  useEffect(() => {
+    dispatch(setFilters({ 
+      search, 
+      status: status as User['status'] | 'all', 
+      role: role as User['role'] | 'all' 
+    }))
+  }, [search, status, role, dispatch])
+
+  useEffect(() => {
+    dispatch(setPage(page))
+  }, [page, dispatch])
+
+  useEffect(() => {
+    dispatch(setLimit(limit))
+  }, [limit, dispatch])
 
   const columns: TableColumn<User>[] = useMemo(
     () => [
@@ -80,21 +107,29 @@ export default function UserList() {
 
   // Calculate paginated data
   const paginatedData = useMemo(() => {
-    const start = (pagination.page - 1) * pagination.limit
-    const end = start + pagination.limit
+    const start = (page - 1) * limit
+    const end = start + limit
     return filteredList.slice(start, end)
-  }, [filteredList, pagination.page, pagination.limit])
+  }, [filteredList, page, limit])
 
-  const handleSearch = (search: string) => {
-    dispatch(setFilters({ search }))
+  const handleSearch = (value: string) => {
+    setParams({ search: value, page: 1 })
   }
 
-  const handleStatusFilter = (status: string) => {
-    dispatch(setFilters({ status: status as User['status'] | 'all' }))
+  const handleStatusFilter = (value: string) => {
+    setParams({ status: value, page: 1 })
   }
 
-  const handleRoleFilter = (role: string) => {
-    dispatch(setFilters({ role: role as User['role'] | 'all' }))
+  const handleRoleFilter = (value: string) => {
+    setParams({ role: value, page: 1 })
+  }
+
+  const handlePageChange = (newPage: number) => {
+    setParam('page', newPage)
+  }
+
+  const handleLimitChange = (newLimit: number) => {
+    setParams({ limit: newLimit, page: 1 })
   }
 
   const handleRowClick = (user: User) => {
@@ -125,20 +160,20 @@ export default function UserList() {
           {/* Filters */}
           <div className="flex flex-col sm:flex-row gap-4 mb-6">
             <SearchInput
-              value={filters.search}
+              value={search}
               onChange={handleSearch}
               placeholder="Search by name, email, phone..."
               className="sm:w-80"
             />
             <div className="flex gap-3">
               <FilterDropdown
-                value={filters.status}
+                value={status}
                 options={USER_STATUSES}
                 onChange={handleStatusFilter}
                 placeholder="All Status"
               />
               <FilterDropdown
-                value={filters.role}
+                value={role}
                 options={USER_ROLES}
                 onChange={handleRoleFilter}
                 placeholder="All Roles"
@@ -159,16 +194,15 @@ export default function UserList() {
 
           {/* Pagination */}
           <Pagination
-            currentPage={pagination.page}
-            totalPages={pagination.totalPages}
-            totalItems={pagination.total}
-            itemsPerPage={pagination.limit}
-            onPageChange={(page) => dispatch(setPage(page))}
-            onItemsPerPageChange={(limit) => dispatch(setLimit(limit))}
+            currentPage={page}
+            totalPages={Math.ceil(filteredList.length / limit)}
+            totalItems={filteredList.length}
+            itemsPerPage={limit}
+            onPageChange={handlePageChange}
+            onItemsPerPageChange={handleLimitChange}
           />
         </CardContent>
       </Card>
     </motion.div>
   )
 }
-
