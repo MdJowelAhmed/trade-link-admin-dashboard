@@ -54,13 +54,13 @@ export function DataTable<T>({
       <div className="overflow-x-auto scrollbar-thin">
         <table className="w-full border-collapse">
           <thead>
-            <tr className="border-b bg-muted/50">
+            <tr className="border-b bg-primary text-white">
               {columns.map((column) => (
                 <th
                   key={String(column.key)}
                   className={cn(
-                    'px-4 py-3 text-left text-sm font-semibold text-foreground',
-                    column.sortable && 'cursor-pointer select-none hover:bg-muted transition-colors',
+                    'px-4 py-3 text-left text-sm font-semibold text-white',
+                    column.sortable && 'cursor-pointer select-none  transition-colors',
                     column.width && `w-[${column.width}]`
                   )}
                   onClick={() => column.sortable && onSort?.(String(column.key))}
@@ -72,7 +72,7 @@ export function DataTable<T>({
                 </th>
               ))}
               {actions && (
-                <th className="px-4 py-3 text-right text-sm font-semibold text-foreground w-[100px]">
+                <th className="px-4 py-3 text-right text-sm font-semibold text-white w-[100px]">
                   Actions
                 </th>
               )}
