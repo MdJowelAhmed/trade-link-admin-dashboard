@@ -1,6 +1,5 @@
 import { useState, useMemo } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import {
   Select,
   SelectContent,
@@ -8,7 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Users, Package, FolderTree, DollarSign, TrendingUp, TrendingDown, ShoppingCart, Clock } from 'lucide-react'
+import { Users, Package, FolderTree, DollarSign, TrendingUp, TrendingDown, Clock } from 'lucide-react'
 import {
   LineChart,
   Line,

@@ -23,7 +23,7 @@ import { motion } from 'framer-motion'
 
 export default function ProductList() {
   const dispatch = useAppDispatch()
-  const { filteredList, pagination, isLoading, selectedProduct } = useAppSelector(
+  const { filteredList, isLoading, selectedProduct } = useAppSelector(
     (state) => state.products
   )
   const { list: categories } = useAppSelector((state) => state.categories)

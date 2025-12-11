@@ -1,4 +1,4 @@
-import React from 'react'
+
 import { useParams, useNavigate } from 'react-router-dom'
 import { ArrowLeft, Mail, Phone, MapPin, Calendar, Shield, Edit, Trash2 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'

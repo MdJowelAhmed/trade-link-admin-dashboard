@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Separator } from '@/components/ui/separator'
-import { FormInput, FormTextarea } from '@/components/common'
+import { FormInput } from '@/components/common'
 import { toast } from '@/components/ui/use-toast'
 import { motion } from 'framer-motion'
 

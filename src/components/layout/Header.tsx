@@ -1,7 +1,6 @@
 import { useLocation, useNavigate } from 'react-router-dom'
-import { Menu, Bell, Sun, Moon, Search, LogOut, User, Settings } from 'lucide-react'
+import { Menu, Bell, Sun, Moon, LogOut, User, Settings } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   DropdownMenu,

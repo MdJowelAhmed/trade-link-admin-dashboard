@@ -1,14 +1,13 @@
-import React, { useState, useEffect } from 'react'
+import  { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { ModalWrapper, FormInput, FormSelect, FormTextarea, ImageUploader } from '@/components/common'
+import { ModalWrapper, FormInput, FormTextarea, ImageUploader } from '@/components/common'
 import { Button } from '@/components/ui/button'
 import { useAppDispatch } from '@/redux/hooks'
 import { addCategory, updateCategory } from '@/redux/slices/categorySlice'
-import { CATEGORY_STATUSES } from '@/utils/constants'
 import { slugify } from '@/utils/formatters'
-import type { Category, CategoryStatus } from '@/types'
+import type { Category } from '@/types'
 import { toast } from '@/components/ui/use-toast'
 
 const categorySchema = z.object({
@@ -32,7 +31,7 @@ export function AddEditCategoryModal({ open, onClose, mode, category }: AddEditC
   const [image, setImage] = useState<File | string | null>(category?.image || null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const statusOptions = CATEGORY_STATUSES.filter((s) => s.value !== 'all')
+ 
 
   const {
     register,

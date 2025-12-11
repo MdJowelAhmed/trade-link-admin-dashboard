@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import  { useState } from 'react'
 import { ConfirmDialog } from '@/components/common'
 import { useAppDispatch } from '@/redux/hooks'
 import { deleteProduct } from '@/redux/slices/productSlice'
