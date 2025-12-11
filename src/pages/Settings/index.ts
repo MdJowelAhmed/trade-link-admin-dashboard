@@ -4,3 +4,4 @@ export { default as TermsSettings } from './Terms/TermsSettings'
 export { default as PrivacySettings } from './Privacy/PrivacySettings'
 
 
+
