@@ -1,34 +1,38 @@
-import { useState } from 'react'
-import { Link, useNavigate, useLocation } from 'react-router-dom'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-import { Eye, EyeOff, Mail, Lock, ArrowRight } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Separator } from '@/components/ui/separator'
-import { useAppDispatch, useAppSelector } from '@/redux/hooks'
-import { loginStart, loginSuccess, loginFailure } from '@/redux/slices/authSlice'
-import { cn } from '@/utils/cn'
-import { motion } from 'framer-motion'
+import { useState } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { Eye, EyeOff, Mail, Lock, ArrowRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import { useAppDispatch, useAppSelector } from "@/redux/hooks";
+import {
+  loginStart,
+  loginSuccess,
+  loginFailure,
+} from "@/redux/slices/authSlice";
+import { cn } from "@/utils/cn";
+import { motion } from "framer-motion";
 
 const loginSchema = z.object({
-  email: z.string().email('Please enter a valid email'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
+  email: z.string().email("Please enter a valid email"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
   remember: z.boolean().optional(),
-})
+});
 
-type LoginFormData = z.infer<typeof loginSchema>
+type LoginFormData = z.infer<typeof loginSchema>;
 
 export default function Login() {
-  const navigate = useNavigate()
-  const location = useLocation()
-  const dispatch = useAppDispatch()
-  const { isLoading, error } = useAppSelector((state) => state.auth)
-  const [showPassword, setShowPassword] = useState(false)
+  const navigate = useNavigate();
+  const location = useLocation();
+  const dispatch = useAppDispatch();
+  const { isLoading, error } = useAppSelector((state) => state.auth);
+  const [showPassword, setShowPassword] = useState(false);
 
-  const from = location.state?.from?.pathname || '/dashboard'
+  const from = location.state?.from?.pathname || "/dashboard";
 
   const {
     register,
@@ -37,42 +41,42 @@ export default function Login() {
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: '',
-      password: '',
+      email: "",
+      password: "",
       remember: false,
     },
-  })
+  });
 
   const onSubmit = async (data: LoginFormData) => {
-    dispatch(loginStart())
+    dispatch(loginStart());
 
     try {
       // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500))
+      await new Promise((resolve) => setTimeout(resolve, 1500));
 
       // Mock successful login - In production, replace with actual API call
-      if (data.email === 'admin@example.com' && data.password === 'password') {
+      if (data.email === "admin@example.com" && data.password === "password") {
         dispatch(
           loginSuccess({
             user: {
-              id: '1',
+              id: "1",
               email: data.email,
-              firstName: 'Admin',
-              lastName: 'User',
-              avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Admin',
-              role: 'admin',
+              firstName: "Admin",
+              lastName: "User",
+              avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Admin",
+              role: "admin",
             },
-            token: 'mock-jwt-token-' + Date.now(),
+            token: "mock-jwt-token-" + Date.now(),
           })
-        )
-        navigate(from, { replace: true })
+        );
+        navigate(from, { replace: true });
       } else {
-        dispatch(loginFailure('Invalid email or password'))
+        dispatch(loginFailure("Invalid email or password"));
       }
     } catch {
-      dispatch(loginFailure('An error occurred. Please try again.'))
+      dispatch(loginFailure("An error occurred. Please try again."));
     }
-  }
+  };
 
   return (
     <div className="space-y-6">
@@ -110,8 +114,8 @@ export default function Login() {
               id="email"
               type="email"
               placeholder="name@example.com"
-              className={cn('pl-10', errors.email && 'border-destructive')}
-              {...register('email')}
+              className={cn("pl-10", errors.email && "border-destructive")}
+              {...register("email")}
             />
           </div>
           {errors.email && (
@@ -122,48 +126,67 @@ export default function Login() {
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <Label htmlFor="password">Password</Label>
-            <Link
-              to="/auth/forgot-password"
-              className="text-sm text-primary hover:underline"
-            >
-              Forgot password?
-            </Link>
           </div>
           <div className="relative">
             <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               id="password"
-              type={showPassword ? 'text' : 'password'}
+              type={showPassword ? "text" : "password"}
               placeholder="Enter your password"
-              className={cn('pl-10 pr-10', errors.password && 'border-destructive')}
-              {...register('password')}
+              className={cn(
+                "pl-10 pr-10",
+                errors.password && "border-destructive"
+              )}
+              {...register("password")}
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
             >
-              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              {showPassword ? (
+                <EyeOff className="h-4 w-4" />
+              ) : (
+                <Eye className="h-4 w-4" />
+              )}
             </button>
           </div>
           {errors.password && (
-            <p className="text-xs text-destructive">{errors.password.message}</p>
+            <p className="text-xs text-destructive">
+              {errors.password.message}
+            </p>
           )}
         </div>
 
-        <div className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            id="remember"
-            className="h-4 w-4 rounded border-input"
-            {...register('remember')}
-          />
-          <Label htmlFor="remember" className="text-sm font-normal cursor-pointer">
-            Remember me for 30 days
-          </Label>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="remember"
+              className="h-4 w-4 rounded border-input"
+              {...register("remember")}
+            />
+            <Label
+              htmlFor="remember"
+              className="text-sm font-normal cursor-pointer"
+            >
+              Remember me for 30 days
+            </Label>
+          </div>
+          <Link
+            to="/auth/forgot-password"
+            className="text-sm text-primary hover:underline"
+          >
+            Forgot password?
+          </Link>
         </div>
 
-        <Button type="submit" className="w-full" size="lg" isLoading={isLoading}>
+        <Button
+          type="submit"
+          className="w-full"
+          size="lg"
+          isLoading={isLoading}
+        >
           {!isLoading && (
             <>
               Sign In
@@ -181,17 +204,13 @@ export default function Login() {
       </div>
 
       <div className="p-4 rounded-lg bg-muted/50 border text-sm space-y-1">
-        <p><strong>Email:</strong> admin@example.com</p>
-        <p><strong>Password:</strong> password</p>
+        <p>
+          <strong>Email:</strong> admin@example.com
+        </p>
+        <p>
+          <strong>Password:</strong> password
+        </p>
       </div>
-
-      <p className="text-center text-sm text-muted-foreground">
-        Don't have an account?{' '}
-        <Link to="/auth/register" className="text-primary font-medium hover:underline">
-          Sign up
-        </Link>
-      </p>
     </div>
-  )
+  );
 }
-
