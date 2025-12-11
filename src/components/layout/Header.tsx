@@ -35,7 +35,7 @@ export function Header() {
   const pageTitle = routeTitles[location.pathname] || 'Dashboard'
 
   return (
-    <header className="sticky top-0 z-30 h-16 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-30 h-24 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="flex h-full items-center justify-between px-4 lg:px-6">
         {/* Left side */}
         <div className="flex items-center gap-4">
