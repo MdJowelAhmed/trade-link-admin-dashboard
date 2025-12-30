@@ -102,9 +102,9 @@ export function Sidebar() {
         )}
       >
         {/* Logo */}
-        <div className="flex items-center justify-between h-24 px-4 border-b">
+        <div className="flex items-center justify-between h-36 px-4 border-b">
           <div className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded-lg bg-primary flex items-center justify-center">
+            <div className="h-12 w-12 rounded-lg bg-primary flex items-center justify-center">
               <span className="text-primary-foreground font-bold text-lg">D</span>
             </div>
             {!sidebarCollapsed && (
