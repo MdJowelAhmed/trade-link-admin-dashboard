@@ -1,3 +1,5 @@
+import { CompletedBooking, PendingBooking, UpcomingBooking } from '@/components/common/svg/BookingSVG'
+import { AvailableCars } from '@/components/common/svg/dashboardSVG'
 import { Calendar, Clock, CheckCircle, Car } from 'lucide-react'
 
 // Booking statistics data
@@ -6,7 +8,7 @@ export const bookingStats = [
         title: 'Upcoming Bookings',
         value: 145,
         description: 'From Last Week',
-        icon: Calendar,
+        icon: UpcomingBooking,
         bgColor: '#FFF',
         iconBgColor: 'bg-blue-100',
         iconColor: 'text-blue-600',
@@ -15,7 +17,7 @@ export const bookingStats = [
         title: 'Pending Bookings',
         value: 367,
         description: 'From Last Week',
-        icon: Clock,
+        icon: PendingBooking,
         bgColor: '#FFF',
         iconBgColor: 'bg-yellow-100',
         iconColor: 'text-yellow-600',
@@ -24,7 +26,7 @@ export const bookingStats = [
         title: 'Completed Bookings',
         value: 145,
         description: 'From Last Week',
-        icon: CheckCircle,
+        icon: CompletedBooking,
         bgColor: '#FFF',
         iconBgColor: 'bg-green-100',
         iconColor: 'text-green-600',
@@ -33,7 +35,7 @@ export const bookingStats = [
         title: 'Available Cars',
         value: 245,
         description: 'From Last Week',
-        icon: Car,
+        icon: AvailableCars,
         bgColor: '#FFF',
         iconBgColor: 'bg-teal-100',
         iconColor: 'text-teal-600',
