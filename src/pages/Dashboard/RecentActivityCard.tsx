@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { motion } from 'framer-motion'
-import { Search, Filter, RefreshCw, Calendar, CheckCircle } from 'lucide-react'
+import {  RefreshCw, Calendar, CheckCircle } from 'lucide-react'
 import { carBookingsData } from './dashboardData'
 
 export function RecentActivityCard() {
@@ -45,13 +45,13 @@ export function RecentActivityCard() {
                                         <td className="px-6 py-4">
                                             <div className="flex flex-col gap-1 text-xs">
                                                 <div className="flex items-center gap-2">
-                                                    <span className="text-gray-500 w-8">Start</span>
+                                                    <span className="text-accent-foreground w-8">Start</span>
                                                     <span className="bg-secondary text-white px-3 py-1 rounded text-[11px] font-medium min-w-[80px] text-center">
                                                         {booking.startDate}
                                                     </span>
                                                 </div>
                                                 <div className="flex items-center gap-2">
-                                                    <span className="text-gray-500 w-8">End</span>
+                                                    <span className="text-accent-foreground w-8">End</span>
                                                     <span className="bg-primary-foreground text-white px-3 py-1 rounded text-[11px] font-medium min-w-[80px] text-center">
                                                         {booking.endDate}
                                                     </span>
@@ -64,7 +64,7 @@ export function RecentActivityCard() {
                                         <td className="px-6 py-4">
                                             <div className="flex flex-col gap-1">
                                                 <span className="text-sm font-medium text-slate-700">{booking.carModel}</span>
-                                                <span className="bg-gray-100 text-gray-500 text-xs px-2 py-0.5 rounded w-fit">
+                                                <span className="bg-gray-100 text-accent-foreground text-xs px-2 py-0.5 rounded w-fit">
                                                     {booking.licensePlate}
                                                 </span>
                                             </div>
@@ -74,11 +74,11 @@ export function RecentActivityCard() {
                                         </td>
                                         <td className="px-6 py-4">
                                             <div className="flex flex-col items-center gap-1">
-                                                <span className="text-sm font-semibold text-slate-700">{booking.payment}</span>
+                                                <span className="text-sm font-semiboldv bg-gray-100 text-accent-foreground text-slate-700">{booking.payment}</span>
                                                 <span
                                                     className={`text-xs px-3 py-1 rounded-full font-medium ${booking.paymentStatus === 'Paid'
-                                                            ? 'bg-gray-100 text-green-600'
-                                                            : 'bg-gray-100 text-red-500'
+                                                            ? 'bg-gray-100 text-accent-foreground'
+                                                            : 'bg-gray-100 text-accent-foreground'
                                                         }`}
                                                 >
                                                     {booking.paymentStatus}
@@ -88,10 +88,10 @@ export function RecentActivityCard() {
                                         <td className="px-6 py-4 text-right">
                                             <button
                                                 className={`inline-flex items-center gap-2 px-4 py-2 rounded-md text-white text-xs font-semibold w-[120px] justify-center transition-colors ${booking.status === 'Completed'
-                                                        ? 'bg-gray-100 hover:bg-emerald-600'
+                                                        ? 'bg-primary hover:bg-primary/80'
                                                         : booking.status === 'Running'
-                                                            ? 'bg-gray-100 hover:bg-cyan-600'
-                                                            : 'bg-gray-100 hover:bg-indigo-700'
+                                                            ? 'bg-secondary-foreground hover:bg-secondary/80'
+                                                            : 'bg-primary-foreground hover:bg-primary/80'
                                                     }`}
                                             >
                                                 {booking.status === 'Completed' && <CheckCircle className="h-3.5 w-3.5" />}
