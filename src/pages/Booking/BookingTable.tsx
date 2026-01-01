@@ -111,8 +111,8 @@ export function BookingTable() {
       status === "Completed"
         ? "bg-primary"
         : status === "Runing"
-        ? "bg-primary-foreground"
-        : "bg-secondary-foreground"
+        ? "bg-secondary-foreground"
+        : "bg-primary-foreground"
     }
   `}
           >

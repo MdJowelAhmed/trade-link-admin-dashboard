@@ -3,7 +3,7 @@ import { bookingStats } from './bookingData'
 
 export function BookingStatCard() {
     return (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 lg:gap-8 md:grid-cols-2 lg:grid-cols-4">
             {bookingStats.map((stat, index) => {
                 const Icon = stat.icon
                 return (
@@ -19,17 +19,19 @@ export function BookingStatCard() {
                                 <Icon className={`h-6 w-6 ${stat.iconColor}`} />
                             </div>
                             <div className="flex-1">
-                                <p className="text-sm font-medium text-gray-600">
+                                <p className="lg:text-xl font-medium lg:font-semibold text-gray-600">
                                     {stat.title}
                                 </p>
-                                <div className="flex items-baseline gap-2 mt-1">
+                                <div className="flex items-center justify-between gap-2 mt-1">
                                     <h3 className="text-3xl font-bold text-gray-900">
                                         {stat.value}
                                     </h3>
-                                </div>
-                                <p className="text-xs text-orange-500 mt-1">
+
+                                    <p className="text-sm text-accent-foreground mt-1">
                                     {stat.description}
                                 </p>
+                                </div>
+                              
                             </div>
                         </div>
                     </motion.div>
