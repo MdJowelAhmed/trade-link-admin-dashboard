@@ -165,14 +165,14 @@ export function BookingTable() {
                         <SearchInput
                             value={searchQuery}
                             onChange={setSearchQuery}
-                            placeholder="Search client name & car etc."
-                            className="w-[220px]"
+                            placeholder="Search client name & car etc..."
+                            className="w-[270px]"
                         />
 
                         {/* Filter Dropdown */}
                         <div className="w-[120px]">
                             <Select value={statusFilter} onValueChange={setStatusFilter}>
-                                <SelectTrigger className="w-full bg-primary text-white border-0">
+                                <SelectTrigger className="w-full bg-secondary border text-white ">
                                     <Filter className="h-4 w-4 mr-2" />
                                     <SelectValue placeholder="Filter" />
                                 </SelectTrigger>
@@ -187,7 +187,7 @@ export function BookingTable() {
                         </div>
 
                         {/* Add Bookings Button */}
-                        <Button className="bg-primary hover:bg-primary/90 text-white">
+                        <Button className="bg-primary-foreground hover:bg-primary/90 text-white">
                             <Plus className="h-4 w-4 mr-2" />
                             Add Bookings
                         </Button>
