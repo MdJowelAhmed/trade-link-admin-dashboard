@@ -59,6 +59,11 @@ const navItems: NavItem[] = [
     href: '/cars',
     icon: Car,
   },
+  {
+    title: 'Client Management',
+    href: '/clients',
+    icon: Users,
+  },
 ]
 
 const settingsItems: NavItem[] = [

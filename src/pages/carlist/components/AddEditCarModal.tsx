@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
+import { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import {
   DoorOpen,
   Luggage,
@@ -13,67 +13,73 @@ import {
   Snowflake,
   Upload,
   X,
-} from 'lucide-react'
-import { ModalWrapper, FormSelect, TiptapEditor } from '@/components/common'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+  Car as CarIcon,
+  Hash,
+  Star,
+  DollarSign,
+} from "lucide-react";
+import { ModalWrapper, FormSelect, TiptapEditor } from "@/components/common";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
-import { useAppDispatch } from '@/redux/hooks'
-import { addCar, updateCar } from '@/redux/slices/carSlice'
-import { useToast } from '@/components/ui/use-toast'
-import { carClassFilterOptions } from '@/pages/carlist/carData'
-import type { Car, CarClass } from '@/types'
-import { cn } from '@/utils/cn'
+} from "@/components/ui/select";
+import { useAppDispatch } from "@/redux/hooks";
+import { addCar, updateCar } from "@/redux/slices/carSlice";
+import { useToast } from "@/components/ui/use-toast";
+import { carClassFilterOptions } from "@/pages/carlist/carData";
+import type { Car, CarClass } from "@/types";
+import { cn } from "@/utils/cn";
 
 const carSchema = z.object({
-  name: z.string().min(1, 'Car name is required'),
+  name: z.string().min(1, "Car name is required"),
   carNumber: z.string().optional(),
-  doors: z.number().min(1, 'Doors must be at least 1'),
-  suitcases: z.string().min(1, 'Suitcases is required'),
-  seats: z.number().min(1, 'Seats must be at least 1'),
-  location: z.string().min(1, 'Location is required'),
-  fuelPolicy: z.string().min(1, 'Fuel policy is required'),
-  kilometers: z.string().min(1, 'Kilometers is required'),
-  carClass: z.string().min(1, 'Class is required'),
-  transmission: z.enum(['Automatic', 'Manual']),
-  climate: z.string().min(1, 'Climate is required'),
-  amount: z.number().min(0.01, 'Price must be greater than 0'),
+  doors: z.number().min(1, "Doors must be at least 1"),
+  suitcases: z.string().min(1, "Suitcases is required"),
+  seats: z.number().min(1, "Seats must be at least 1"),
+  location: z.string().min(1, "Location is required"),
+  fuelPolicy: z.string().min(1, "Fuel policy is required"),
+  kilometers: z.string().min(1, "Kilometers is required"),
+  carClass: z.string().min(1, "Class is required"),
+  transmission: z.enum(["Automatic", "Manual"]),
+  climate: z.string().min(1, "Climate is required"),
+  amount: z.number().min(0.01, "Price must be greater than 0"),
   insuranceCoverage: z.string().optional(),
   termsConditions: z.string().optional(),
-})
+});
 
-type CarFormData = z.infer<typeof carSchema>
+type CarFormData = z.infer<typeof carSchema>;
 
 interface AddEditCarModalProps {
-  open: boolean
-  onClose: () => void
-  car?: Car | null
+  open: boolean;
+  onClose: () => void;
+  car?: Car | null;
 }
 
 const transmissionOptions = [
-  { value: 'Automatic', label: 'Automatic' },
-  { value: 'Manual', label: 'Manual' },
-]
+  { value: "Automatic", label: "Automatic" },
+  { value: "Manual", label: "Manual" },
+];
 
-const carClassOptions = carClassFilterOptions.filter((opt) => opt.value !== 'all')
+const carClassOptions = carClassFilterOptions.filter(
+  (opt) => opt.value !== "all"
+);
 
 export function AddEditCarModal({ open, onClose, car }: AddEditCarModalProps) {
-  const dispatch = useAppDispatch()
-  const { toast } = useToast()
-  const [images, setImages] = useState<File[]>([])
-  const [imagePreviews, setImagePreviews] = useState<string[]>([])
-  const [insuranceContent, setInsuranceContent] = useState('')
-  const [termsContent, setTermsContent] = useState('')
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const dispatch = useAppDispatch();
+  const { toast } = useToast();
+  const [images, setImages] = useState<File[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [insuranceContent, setInsuranceContent] = useState("");
+  const [termsContent, setTermsContent] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const isEditMode = !!car
+  const isEditMode = !!car;
 
   const {
     register,
@@ -85,22 +91,22 @@ export function AddEditCarModal({ open, onClose, car }: AddEditCarModalProps) {
   } = useForm<CarFormData>({
     resolver: zodResolver(carSchema),
     defaultValues: {
-      name: '',
-      carNumber: '',
+      name: "",
+      carNumber: "",
       doors: 4,
-      suitcases: '',
+      suitcases: "",
       seats: 5,
-      location: '',
-      fuelPolicy: '',
-      kilometers: '',
-      carClass: '',
-      transmission: 'Automatic',
-      climate: '',
+      location: "",
+      fuelPolicy: "",
+      kilometers: "",
+      carClass: "",
+      transmission: "Automatic",
+      climate: "",
       amount: 0,
-      insuranceCoverage: '',
-      termsConditions: '',
+      insuranceCoverage: "",
+      termsConditions: "",
     },
-  })
+  });
 
   // Reset form when modal opens or car changes
   useEffect(() => {
@@ -108,80 +114,80 @@ export function AddEditCarModal({ open, onClose, car }: AddEditCarModalProps) {
       if (isEditMode && car) {
         reset({
           name: car.name,
-          carNumber: car.carNumber || '',
+          carNumber: car.carNumber || "",
           doors: car.doors,
-          suitcases: car.suitcases || '',
+          suitcases: car.suitcases || "",
           seats: car.seats,
-          location: car.location || '',
-          fuelPolicy: car.fuelPolicy || '',
-          kilometers: car.kilometers || '',
+          location: car.location || "",
+          fuelPolicy: car.fuelPolicy || "",
+          kilometers: car.kilometers || "",
           carClass: car.carClass,
           transmission: car.transmission,
-          climate: car.climate || '',
+          climate: car.climate || "",
           amount: car.amount,
-          insuranceCoverage: car.insuranceCoverage || '',
-          termsConditions: car.termsConditions || '',
-        })
-        setInsuranceContent(car.insuranceCoverage || '')
-        setTermsContent(car.termsConditions || '')
+          insuranceCoverage: car.insuranceCoverage || "",
+          termsConditions: car.termsConditions || "",
+        });
+        setInsuranceContent(car.insuranceCoverage || "");
+        setTermsContent(car.termsConditions || "");
         if (car.images && car.images.length > 0) {
-          setImagePreviews(car.images)
+          setImagePreviews(car.images);
         }
       } else {
         reset({
-          name: '',
-          carNumber: '',
+          name: "",
+          carNumber: "",
           doors: 4,
-          suitcases: '',
+          suitcases: "",
           seats: 5,
-          location: '',
-          fuelPolicy: '',
-          kilometers: '',
-          carClass: '',
-          transmission: 'Automatic',
-          climate: '',
+          location: "",
+          fuelPolicy: "",
+          kilometers: "",
+          carClass: "",
+          transmission: "Automatic",
+          climate: "",
           amount: 0,
-          insuranceCoverage: '',
-          termsConditions: '',
-        })
-        setInsuranceContent('')
-        setTermsContent('')
-        setImages([])
-        setImagePreviews([])
+          insuranceCoverage: "",
+          termsConditions: "",
+        });
+        setInsuranceContent("");
+        setTermsContent("");
+        setImages([]);
+        setImagePreviews([]);
       }
     }
-  }, [open, isEditMode, car, reset])
+  }, [open, isEditMode, car, reset]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || [])
+    const files = Array.from(e.target.files || []);
     if (files.length > 0) {
-      const newImages = [...images, ...files]
-      setImages(newImages)
-      
-      const newPreviews = files.map((file) => URL.createObjectURL(file))
-      setImagePreviews([...imagePreviews, ...newPreviews])
+      const newImages = [...images, ...files];
+      setImages(newImages);
+
+      const newPreviews = files.map((file) => URL.createObjectURL(file));
+      setImagePreviews([...imagePreviews, ...newPreviews]);
     }
-  }
+  };
 
   const removeImage = (index: number) => {
-    const newImages = images.filter((_, i) => i !== index)
-    const newPreviews = imagePreviews.filter((_, i) => i !== index)
-    setImages(newImages)
-    setImagePreviews(newPreviews)
-  }
+    const newImages = images.filter((_, i) => i !== index);
+    const newPreviews = imagePreviews.filter((_, i) => i !== index);
+    setImages(newImages);
+    setImagePreviews(newPreviews);
+  };
 
   const onSubmit = async (data: CarFormData) => {
-    setIsSubmitting(true)
+    setIsSubmitting(true);
 
     // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    await new Promise((resolve) => setTimeout(resolve, 1000));
 
     const carData: Car = {
       id: isEditMode && car ? car.id : Date.now().toString(),
       name: data.name,
       carNumber: data.carNumber,
       description: `${data.name} - ${data.carClass}`,
-      image: imagePreviews[0] || car?.image || '',
+      image: imagePreviews[0] || car?.image || "",
       images: imagePreviews,
       doors: data.doors,
       transmission: data.transmission,
@@ -192,37 +198,37 @@ export function AddEditCarModal({ open, onClose, car }: AddEditCarModalProps) {
       kilometers: data.kilometers,
       climate: data.climate,
       amount: data.amount,
-      priceDuration: 'Per Day',
+      priceDuration: "Per Day",
       carClass: data.carClass as CarClass,
       insuranceCoverage: insuranceContent,
       termsConditions: termsContent,
       createdAt: isEditMode && car ? car.createdAt : new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-    }
+    };
 
     if (isEditMode) {
-      dispatch(updateCar(carData))
+      dispatch(updateCar(carData));
       toast({
-        title: 'Car Updated',
+        title: "Car Updated",
         description: `${data.name} has been updated successfully.`,
-      })
+      });
     } else {
-      dispatch(addCar(carData))
+      dispatch(addCar(carData));
       toast({
-        title: 'Car Created',
+        title: "Car Created",
         description: `${data.name} has been created successfully.`,
-      })
+      });
     }
 
-    setIsSubmitting(false)
-    onClose()
-  }
+    setIsSubmitting(false);
+    onClose();
+  };
 
   return (
     <ModalWrapper
       open={open}
       onClose={onClose}
-      title={isEditMode ? 'Edit Car' : 'Add New Car'}
+      title={isEditMode ? "Edit Car" : "Add New Car"}
       size="full"
       className="max-w-3xl bg-white"
     >
@@ -231,12 +237,15 @@ export function AddEditCarModal({ open, onClose, car }: AddEditCarModalProps) {
         <div className="grid grid-cols-2 gap-3 gap-x-5">
           {/* Car Name */}
           <div className="space-y-1.5">
-            <Label htmlFor="name">Car Name</Label>
+            <div className="flex items-center gap-2">
+              <CarIcon className="h-4 w-4 text-muted-foreground" />
+              <Label htmlFor="name">Car Name</Label>
+            </div>
             <Input
               id="name"
-              placeholder="Audi 500"
+              placeholder="Enter Car Name"
               error={!!errors.name}
-              {...register('name')}
+              {...register("name")}
             />
             {errors.name && (
               <p className="text-xs text-destructive">{errors.name.message}</p>
@@ -245,15 +254,20 @@ export function AddEditCarModal({ open, onClose, car }: AddEditCarModalProps) {
 
           {/* Car Number */}
           <div className="space-y-1.5">
-            <Label htmlFor="carNumber">Car Number</Label>
+            <div className="flex items-center gap-2">
+              <Hash className="h-4 w-4 text-muted-foreground" />
+              <Label htmlFor="carNumber">Car Number</Label>
+            </div>
             <Input
               id="carNumber"
-              placeholder="ABC-1234"
+              placeholder="Enter Car Number"
               error={!!errors.carNumber}
-              {...register('carNumber')}
+              {...register("carNumber")}
             />
             {errors.carNumber && (
-              <p className="text-xs text-destructive">{errors.carNumber.message}</p>
+              <p className="text-xs text-destructive">
+                {errors.carNumber.message}
+              </p>
             )}
           </div>
 
@@ -266,9 +280,9 @@ export function AddEditCarModal({ open, onClose, car }: AddEditCarModalProps) {
             <Input
               id="doors"
               type="number"
-              placeholder="4"
+              placeholder="Enter Number of Doors"
               error={!!errors.doors}
-              {...register('doors', { valueAsNumber: true })}
+              {...register("doors", { valueAsNumber: true })}
             />
             {errors.doors && (
               <p className="text-xs text-destructive">{errors.doors.message}</p>
@@ -283,12 +297,14 @@ export function AddEditCarModal({ open, onClose, car }: AddEditCarModalProps) {
             </div>
             <Input
               id="suitcases"
-              placeholder="2 Suitcases"
+              placeholder="Enter Number of Suitcases"
               error={!!errors.suitcases}
-              {...register('suitcases')}
+              {...register("suitcases")}
             />
             {errors.suitcases && (
-              <p className="text-xs text-destructive">{errors.suitcases.message}</p>
+              <p className="text-xs text-destructive">
+                {errors.suitcases.message}
+              </p>
             )}
           </div>
 
@@ -301,25 +317,26 @@ export function AddEditCarModal({ open, onClose, car }: AddEditCarModalProps) {
             <Input
               id="seats"
               type="number"
-              placeholder="5"
+              placeholder="Enter Number of Seats"
               error={!!errors.seats}
-              {...register('seats', { valueAsNumber: true })}
+              {...register("seats", { valueAsNumber: true })}
             />
             {errors.seats && (
               <p className="text-xs text-destructive">{errors.seats.message}</p>
             )}
           </div>
 
-       
-
           {/* Class */}
           <div className="space-y-1.5">
+            <div className="flex items-center gap-2">
+              <Star className="h-4 w-4 text-muted-foreground" />
+              <Label htmlFor="carClass">Class</Label>
+            </div>
             <FormSelect
-              label="Class"
-              value={watch('carClass')}
+              value={watch("carClass")}
               options={carClassOptions}
-              onChange={(value) => setValue('carClass', value)}
-              placeholder="Upper Class"
+              onChange={(value) => setValue("carClass", value)}
+              placeholder="Select Car Class"
               error={errors.carClass?.message}
               required
             />
@@ -332,11 +349,13 @@ export function AddEditCarModal({ open, onClose, car }: AddEditCarModalProps) {
               <Label htmlFor="transmission">Transmission</Label>
             </div>
             <Select
-              value={watch('transmission')}
-              onValueChange={(value) => setValue('transmission', value as 'Automatic' | 'Manual')}
+              value={watch("transmission")}
+              onValueChange={(value) =>
+                setValue("transmission", value as "Automatic" | "Manual")
+              }
             >
               <SelectTrigger error={!!errors.transmission}>
-                <SelectValue placeholder="Automatic" />
+                <SelectValue placeholder="Select Transmission" />
               </SelectTrigger>
               <SelectContent>
                 {transmissionOptions.map((option) => (
@@ -347,7 +366,9 @@ export function AddEditCarModal({ open, onClose, car }: AddEditCarModalProps) {
               </SelectContent>
             </Select>
             {errors.transmission && (
-              <p className="text-xs text-destructive">{errors.transmission.message}</p>
+              <p className="text-xs text-destructive">
+                {errors.transmission.message}
+              </p>
             )}
           </div>
 
@@ -359,46 +380,54 @@ export function AddEditCarModal({ open, onClose, car }: AddEditCarModalProps) {
             </div>
             <Input
               id="climate"
-              placeholder="Automatic"
+              placeholder="Select Climate"
               error={!!errors.climate}
-              {...register('climate')}
+              {...register("climate")}
             />
             {errors.climate && (
-              <p className="text-xs text-destructive">{errors.climate.message}</p>
+              <p className="text-xs text-destructive">
+                {errors.climate.message}
+              </p>
             )}
           </div>
 
           {/* Per Day Price */}
           <div className="space-y-1.5">
-            <Label htmlFor="amount">Per Day Price</Label>
+            <div className="flex items-center gap-2">
+              <DollarSign className="h-4 w-4 text-muted-foreground" />
+              <Label htmlFor="amount">Per Day Price</Label>
+            </div>
             <Input
               id="amount"
               type="number"
               step="0.01"
-              placeholder="€46.91"
+              placeholder="Enter Per Day Price"
               error={!!errors.amount}
-              {...register('amount', { valueAsNumber: true })}
+              {...register("amount", { valueAsNumber: true })}
             />
             {errors.amount && (
-              <p className="text-xs text-destructive">{errors.amount.message}</p>
+              <p className="text-xs text-destructive">
+                {errors.amount.message}
+              </p>
             )}
           </div>
 
-
-             {/* Location */}
-             <div className="space-y-1.5">
+          {/* Location */}
+          <div className="space-y-1.5 ">
             <div className="flex items-center gap-2">
               <MapPin className="h-4 w-4 text-muted-foreground" />
               <Label htmlFor="location">Location</Label>
             </div>
             <Input
               id="location"
-              placeholder="IPH Road-04 Mohakhali, Dhaka"
+              placeholder="Enter Location"
               error={!!errors.location}
-              {...register('location')}
+              {...register("location")}
             />
             {errors.location && (
-              <p className="text-xs text-destructive">{errors.location.message}</p>
+              <p className="text-xs text-destructive">
+                {errors.location.message}
+              </p>
             )}
           </div>
 
@@ -410,12 +439,14 @@ export function AddEditCarModal({ open, onClose, car }: AddEditCarModalProps) {
             </div>
             <Input
               id="fuelPolicy"
-              placeholder="Fair"
+              placeholder="Enter Fuel Policy"
               error={!!errors.fuelPolicy}
-              {...register('fuelPolicy')}
+              {...register("fuelPolicy")}
             />
             {errors.fuelPolicy && (
-              <p className="text-xs text-destructive">{errors.fuelPolicy.message}</p>
+              <p className="text-xs text-destructive">
+                {errors.fuelPolicy.message}
+              </p>
             )}
           </div>
 
@@ -427,12 +458,14 @@ export function AddEditCarModal({ open, onClose, car }: AddEditCarModalProps) {
             </div>
             <Input
               id="kilometers"
-              placeholder="1,400 km free"
+              placeholder="Enter Kilometers"
               error={!!errors.kilometers}
-              {...register('kilometers')}
+              {...register("kilometers")}
             />
             {errors.kilometers && (
-              <p className="text-xs text-destructive">{errors.kilometers.message}</p>
+              <p className="text-xs text-destructive">
+                {errors.kilometers.message}
+              </p>
             )}
           </div>
         </div>
@@ -443,8 +476,8 @@ export function AddEditCarModal({ open, onClose, car }: AddEditCarModalProps) {
           <TiptapEditor
             content={insuranceContent}
             onChange={(content) => {
-              setInsuranceContent(content)
-              setValue('insuranceCoverage', content)
+              setInsuranceContent(content);
+              setValue("insuranceCoverage", content);
             }}
             placeholder="Enter insurance and coverage details..."
             className="h-[280px]"
@@ -457,8 +490,8 @@ export function AddEditCarModal({ open, onClose, car }: AddEditCarModalProps) {
           <TiptapEditor
             content={termsContent}
             onChange={(content) => {
-              setTermsContent(content)
-              setValue('termsConditions', content)
+              setTermsContent(content);
+              setValue("termsConditions", content);
             }}
             placeholder="Enter terms and conditions..."
             className="h-[280px]"
@@ -470,8 +503,8 @@ export function AddEditCarModal({ open, onClose, car }: AddEditCarModalProps) {
           <Label>Photos</Label>
           <div
             className={cn(
-              'border-2 border-dashed rounded-lg p-6 transition-colors',
-              'border-green-300 bg-green-50/30 hover:border-green-400'
+              "border-2 border-dashed rounded-lg p-6 transition-colors",
+              "border-green-300 bg-green-50/30 hover:border-green-400"
             )}
           >
             <div className="flex flex-col items-center justify-center gap-3">
@@ -479,14 +512,16 @@ export function AddEditCarModal({ open, onClose, car }: AddEditCarModalProps) {
                 <div className="rounded-full bg-purple-100 p-3">
                   <Upload className="h-6 w-6 text-purple-600" />
                 </div>
-                <p className="text-sm font-medium text-gray-700">Photos, Jpg, Png...</p>
+                <p className="text-sm font-medium text-gray-700">
+                  Photos, Jpg, Png...
+                </p>
               </div>
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
-                className="bg-blue-600 text-white hover:bg-blue-700 border-blue-600"
-                onClick={() => document.getElementById('car-images')?.click()}
+                className="bg-secondary hover:bg-secondary/80 text-white  border-secondary hover:text-white"
+                onClick={() => document.getElementById("car-images")?.click()}
               >
                 Select files
               </Button>
@@ -532,13 +567,16 @@ export function AddEditCarModal({ open, onClose, car }: AddEditCarModalProps) {
           <Button
             type="submit"
             disabled={isSubmitting}
-            className="bg-green-600 hover:bg-green-700 text-white"
+            className="bg-primary-foreground hover:bg-primary-foreground/80 text-white"
           >
-            {isSubmitting ? 'Saving...' : isEditMode ? 'Save Changes' : 'Save Car'}
+            {isSubmitting
+              ? "Saving..."
+              : isEditMode
+              ? "Save Changes"
+              : "Add New Car"}
           </Button>
         </div>
       </form>
     </ModalWrapper>
-  )
+  );
 }
-

@@ -270,3 +270,33 @@ export interface BookingFilters {
   search: string
   status: BookingStatus | 'all'
 }
+
+// ==================== Client Types ====================
+export interface Client {
+  id: string
+  name: string
+  phone: string
+  email: string
+  status: ClientStatus
+  country: string
+  avatar?: string
+  photo?: string
+  createdAt: string
+  updatedAt: string
+}
+
+export type ClientStatus = 'active' | 'inactive'
+
+export interface ClientFilters {
+  search: string
+  status: ClientStatus | 'all'
+  country: string | 'all'
+}
+
+export interface ClientFormData {
+  name: string
+  phone: string
+  email: string
+  country: string
+  photo?: File | string
+}

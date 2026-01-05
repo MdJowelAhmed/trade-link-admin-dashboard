@@ -23,6 +23,7 @@ import TermsSettings from '@/pages/Settings/Terms/TermsSettings'
 import PrivacySettings from '@/pages/Settings/Privacy/PrivacySettings'
 import BookingManagement from './pages/Booking/BookingManagement'
 import CarList from './pages/carlist/CarList'
+import ClientManagement from './pages/ClientManagement/ClientManagement'
 
 function App() {
   const dispatch = useAppDispatch()
@@ -63,6 +64,9 @@ function App() {
           
           {/* Car Management */}
           <Route path="cars" element={<CarList />} />
+          
+          {/* Client Management */}
+          <Route path="clients" element={<ClientManagement />} />
           
           {/* Product Management */}
           <Route path="products" element={<ProductList />} />
