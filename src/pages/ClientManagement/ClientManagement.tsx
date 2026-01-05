@@ -7,6 +7,7 @@ import { SearchInput } from '@/components/common/SearchInput'
 import { ClientFilterDropdown } from './components/ClientFilterDropdown'
 import { ClientTable } from './components/ClientTable'
 import { AddEditClientModal } from './components/AddEditClientModal'
+import { ViewClientDetailsModal } from './components/ViewClientDetailsModal'
 import { useAppDispatch, useAppSelector } from '@/redux/hooks'
 import {
   setFilters,
@@ -31,6 +32,7 @@ export default function ClientManagement() {
 
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false)
   const [selectedClient, setSelectedClient] = useState<Client | null>(null)
 
   // URL state management
@@ -72,11 +74,8 @@ export default function ClientManagement() {
 
   // Handlers
   const handleView = (client: Client) => {
-    // View client details - you can implement a view modal here
-    toast({
-      title: 'View Client',
-      description: `Viewing details for ${client.name}`,
-    })
+    setSelectedClient(client)
+    setIsViewModalOpen(true)
   }
 
   const handleToggleStatus = (client: Client) => {
@@ -243,6 +242,16 @@ export default function ClientManagement() {
       <AddEditClientModal
         open={isModalOpen}
         onClose={handleCloseModal}
+        client={selectedClient}
+      />
+
+      {/* View Client Details Modal */}
+      <ViewClientDetailsModal
+        open={isViewModalOpen}
+        onClose={() => {
+          setIsViewModalOpen(false)
+          setSelectedClient(null)
+        }}
         client={selectedClient}
       />
     </motion.div>
