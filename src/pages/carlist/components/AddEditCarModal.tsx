@@ -34,6 +34,7 @@ import { cn } from '@/utils/cn'
 
 const carSchema = z.object({
   name: z.string().min(1, 'Car name is required'),
+  carNumber: z.string().optional(),
   doors: z.number().min(1, 'Doors must be at least 1'),
   suitcases: z.string().min(1, 'Suitcases is required'),
   seats: z.number().min(1, 'Seats must be at least 1'),
@@ -85,6 +86,7 @@ export function AddEditCarModal({ open, onClose, car }: AddEditCarModalProps) {
     resolver: zodResolver(carSchema),
     defaultValues: {
       name: '',
+      carNumber: '',
       doors: 4,
       suitcases: '',
       seats: 5,
@@ -106,6 +108,7 @@ export function AddEditCarModal({ open, onClose, car }: AddEditCarModalProps) {
       if (isEditMode && car) {
         reset({
           name: car.name,
+          carNumber: car.carNumber || '',
           doors: car.doors,
           suitcases: car.suitcases || '',
           seats: car.seats,
@@ -127,6 +130,7 @@ export function AddEditCarModal({ open, onClose, car }: AddEditCarModalProps) {
       } else {
         reset({
           name: '',
+          carNumber: '',
           doors: 4,
           suitcases: '',
           seats: 5,
@@ -175,6 +179,7 @@ export function AddEditCarModal({ open, onClose, car }: AddEditCarModalProps) {
     const carData: Car = {
       id: isEditMode && car ? car.id : Date.now().toString(),
       name: data.name,
+      carNumber: data.carNumber,
       description: `${data.name} - ${data.carClass}`,
       image: imagePreviews[0] || car?.image || '',
       images: imagePreviews,
@@ -222,138 +227,148 @@ export function AddEditCarModal({ open, onClose, car }: AddEditCarModalProps) {
       className="max-w-5xl bg-white"
     >
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-        {/* Two Column Layout */}
+        {/* Grid Layout - 2 Columns */}
         <div className="grid grid-cols-2 gap-6">
-          {/* Left Column */}
-          <div className="space-y-4">
-            {/* Car Name */}
-            <div className="space-y-1.5">
-              <Label htmlFor="name">Car Name</Label>
-              <Input
-                id="name"
-                placeholder="Audi 500"
-                error={!!errors.name}
-                {...register('name')}
-              />
-              {errors.name && (
-                <p className="text-xs text-destructive">{errors.name.message}</p>
-              )}
-            </div>
-
-            {/* Doors */}
-            <div className="space-y-1.5">
-              <Label htmlFor="doors">Doors</Label>
-              <div className="relative">
-                <DoorOpen className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  id="doors"
-                  type="number"
-                  placeholder="4"
-                  className="pl-10"
-                  error={!!errors.doors}
-                  {...register('doors', { valueAsNumber: true })}
-                />
-              </div>
-              {errors.doors && (
-                <p className="text-xs text-destructive">{errors.doors.message}</p>
-              )}
-            </div>
-
-            {/* Suitcases */}
-            <div className="space-y-1.5">
-              <Label htmlFor="suitcases">Suitcases</Label>
-              <div className="relative">
-                <Luggage className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  id="suitcases"
-                  placeholder="Automatic"
-                  className="pl-10"
-                  error={!!errors.suitcases}
-                  {...register('suitcases')}
-                />
-              </div>
-              {errors.suitcases && (
-                <p className="text-xs text-destructive">{errors.suitcases.message}</p>
-              )}
-            </div>
-
-            {/* Seats */}
-            <div className="space-y-1.5">
-              <Label htmlFor="seats">Seats</Label>
-              <div className="relative">
-                <Users className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  id="seats"
-                  type="number"
-                  placeholder="5"
-                  className="pl-10"
-                  error={!!errors.seats}
-                  {...register('seats', { valueAsNumber: true })}
-                />
-              </div>
-              {errors.seats && (
-                <p className="text-xs text-destructive">{errors.seats.message}</p>
-              )}
-            </div>
-
-            {/* Location */}
-            <div className="space-y-1.5">
-              <Label htmlFor="location">Location</Label>
-              <div className="relative">
-                <MapPin className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  id="location"
-                  placeholder="IPH Road-04 Mohakhali, Dhaka"
-                  className="pl-10"
-                  error={!!errors.location}
-                  {...register('location')}
-                />
-              </div>
-              {errors.location && (
-                <p className="text-xs text-destructive">{errors.location.message}</p>
-              )}
-            </div>
-
-            {/* Fuel Policy */}
-            <div className="space-y-1.5">
-              <Label htmlFor="fuelPolicy">Fuel Policy</Label>
-              <div className="relative">
-                <Fuel className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  id="fuelPolicy"
-                  placeholder="Fair"
-                  className="pl-10"
-                  error={!!errors.fuelPolicy}
-                  {...register('fuelPolicy')}
-                />
-              </div>
-              {errors.fuelPolicy && (
-                <p className="text-xs text-destructive">{errors.fuelPolicy.message}</p>
-              )}
-            </div>
-
-            {/* Kilometers */}
-            <div className="space-y-1.5">
-              <Label htmlFor="kilometers">Kilometers</Label>
-              <div className="relative">
-                <Gauge className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  id="kilometers"
-                  placeholder="1,400 km free"
-                  className="pl-10"
-                  error={!!errors.kilometers}
-                  {...register('kilometers')}
-                />
-              </div>
-              {errors.kilometers && (
-                <p className="text-xs text-destructive">{errors.kilometers.message}</p>
-              )}
-            </div>
+          {/* Car Name */}
+          <div className="space-y-1.5">
+            <Label htmlFor="name">Car Name</Label>
+            <Input
+              id="name"
+              placeholder="Audi 500"
+              error={!!errors.name}
+              {...register('name')}
+            />
+            {errors.name && (
+              <p className="text-xs text-destructive">{errors.name.message}</p>
+            )}
           </div>
 
-          {/* Right Column */}
-          <div className="space-y-4">
-            {/* Class */}
+          {/* Car Number */}
+          <div className="space-y-1.5">
+            <Label htmlFor="carNumber">Car Number</Label>
+            <Input
+              id="carNumber"
+              placeholder="ABC-1234"
+              error={!!errors.carNumber}
+              {...register('carNumber')}
+            />
+            {errors.carNumber && (
+              <p className="text-xs text-destructive">{errors.carNumber.message}</p>
+            )}
+          </div>
+
+          {/* Doors */}
+          <div className="space-y-1.5">
+            <Label htmlFor="doors">Doors</Label>
+            <div className="relative">
+              <DoorOpen className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                id="doors"
+                type="number"
+                placeholder="4"
+                className="pl-10"
+                error={!!errors.doors}
+                {...register('doors', { valueAsNumber: true })}
+              />
+            </div>
+            {errors.doors && (
+              <p className="text-xs text-destructive">{errors.doors.message}</p>
+            )}
+          </div>
+
+          {/* Suitcases */}
+          <div className="space-y-1.5">
+            <Label htmlFor="suitcases">Suitcases</Label>
+            <div className="relative">
+              <Luggage className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                id="suitcases"
+                placeholder="2 Suitcases"
+                className="pl-10"
+                error={!!errors.suitcases}
+                {...register('suitcases')}
+              />
+            </div>
+            {errors.suitcases && (
+              <p className="text-xs text-destructive">{errors.suitcases.message}</p>
+            )}
+          </div>
+
+          {/* Seats */}
+          <div className="space-y-1.5">
+            <Label htmlFor="seats">Seats</Label>
+            <div className="relative">
+              <Users className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                id="seats"
+                type="number"
+                placeholder="5"
+                className="pl-10"
+                error={!!errors.seats}
+                {...register('seats', { valueAsNumber: true })}
+              />
+            </div>
+            {errors.seats && (
+              <p className="text-xs text-destructive">{errors.seats.message}</p>
+            )}
+          </div>
+
+          {/* Location */}
+          <div className="space-y-1.5">
+            <Label htmlFor="location">Location</Label>
+            <div className="relative">
+              <MapPin className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                id="location"
+                placeholder="IPH Road-04 Mohakhali, Dhaka"
+                className="pl-10"
+                error={!!errors.location}
+                {...register('location')}
+              />
+            </div>
+            {errors.location && (
+              <p className="text-xs text-destructive">{errors.location.message}</p>
+            )}
+          </div>
+
+          {/* Fuel Policy */}
+          <div className="space-y-1.5">
+            <Label htmlFor="fuelPolicy">Fuel Policy</Label>
+            <div className="relative">
+              <Fuel className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                id="fuelPolicy"
+                placeholder="Fair"
+                className="pl-10"
+                error={!!errors.fuelPolicy}
+                {...register('fuelPolicy')}
+              />
+            </div>
+            {errors.fuelPolicy && (
+              <p className="text-xs text-destructive">{errors.fuelPolicy.message}</p>
+            )}
+          </div>
+
+          {/* Kilometers */}
+          <div className="space-y-1.5">
+            <Label htmlFor="kilometers">Kilometers</Label>
+            <div className="relative">
+              <Gauge className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                id="kilometers"
+                placeholder="1,400 km free"
+                className="pl-10"
+                error={!!errors.kilometers}
+                {...register('kilometers')}
+              />
+            </div>
+            {errors.kilometers && (
+              <p className="text-xs text-destructive">{errors.kilometers.message}</p>
+            )}
+          </div>
+
+          {/* Class */}
+          <div className="space-y-1.5">
             <FormSelect
               label="Class"
               value={watch('carClass')}
@@ -363,66 +378,66 @@ export function AddEditCarModal({ open, onClose, car }: AddEditCarModalProps) {
               error={errors.carClass?.message}
               required
             />
+          </div>
 
-            {/* Transmission */}
-            <div className="space-y-1.5">
-              <Label htmlFor="transmission">Transmission</Label>
-              <div className="relative">
-                <Settings className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground z-10 pointer-events-none" />
-                <Select
-                  value={watch('transmission')}
-                  onValueChange={(value) => setValue('transmission', value as 'Automatic' | 'Manual')}
-                >
-                  <SelectTrigger className="pl-10" error={!!errors.transmission}>
-                    <SelectValue placeholder="Automatic" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {transmissionOptions.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              {errors.transmission && (
-                <p className="text-xs text-destructive">{errors.transmission.message}</p>
-              )}
+          {/* Transmission */}
+          <div className="space-y-1.5">
+            <Label htmlFor="transmission">Transmission</Label>
+            <div className="relative">
+              <Settings className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground z-10 pointer-events-none" />
+              <Select
+                value={watch('transmission')}
+                onValueChange={(value) => setValue('transmission', value as 'Automatic' | 'Manual')}
+              >
+                <SelectTrigger className="pl-10" error={!!errors.transmission}>
+                  <SelectValue placeholder="Automatic" />
+                </SelectTrigger>
+                <SelectContent>
+                  {transmissionOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
+            {errors.transmission && (
+              <p className="text-xs text-destructive">{errors.transmission.message}</p>
+            )}
+          </div>
 
-            {/* Climate */}
-            <div className="space-y-1.5">
-              <Label htmlFor="climate">Climate</Label>
-              <div className="relative">
-                <Snowflake className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  id="climate"
-                  placeholder="Automatic"
-                  className="pl-10"
-                  error={!!errors.climate}
-                  {...register('climate')}
-                />
-              </div>
-              {errors.climate && (
-                <p className="text-xs text-destructive">{errors.climate.message}</p>
-              )}
-            </div>
-
-            {/* Per Day Price */}
-            <div className="space-y-1.5">
-              <Label htmlFor="amount">Per Day Price</Label>
+          {/* Climate */}
+          <div className="space-y-1.5">
+            <Label htmlFor="climate">Climate</Label>
+            <div className="relative">
+              <Snowflake className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
-                id="amount"
-                type="number"
-                step="0.01"
-                placeholder="€46.91"
-                error={!!errors.amount}
-                {...register('amount', { valueAsNumber: true })}
+                id="climate"
+                placeholder="Automatic"
+                className="pl-10"
+                error={!!errors.climate}
+                {...register('climate')}
               />
-              {errors.amount && (
-                <p className="text-xs text-destructive">{errors.amount.message}</p>
-              )}
             </div>
+            {errors.climate && (
+              <p className="text-xs text-destructive">{errors.climate.message}</p>
+            )}
+          </div>
+
+          {/* Per Day Price */}
+          <div className="space-y-1.5">
+            <Label htmlFor="amount">Per Day Price</Label>
+            <Input
+              id="amount"
+              type="number"
+              step="0.01"
+              placeholder="€46.91"
+              error={!!errors.amount}
+              {...register('amount', { valueAsNumber: true })}
+            />
+            {errors.amount && (
+              <p className="text-xs text-destructive">{errors.amount.message}</p>
+            )}
           </div>
         </div>
 

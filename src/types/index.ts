@@ -103,6 +103,7 @@ export interface CarOwner {
 export interface Car {
   id: string
   name: string
+  carNumber?: string
   description: string
   image: string
   images?: string[]
