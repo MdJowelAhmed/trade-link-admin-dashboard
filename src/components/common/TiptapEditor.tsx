@@ -106,6 +106,7 @@ export function TiptapEditor({
   return (
     <div className={cn('border rounded-xl overflow-hidden bg-background', className)}>
       {/* Toolbar */}
+      {editable && (
       <div className="flex flex-wrap items-center gap-1 p-2 border-b bg-muted/30">
         {/* History */}
         <ToolbarButton
@@ -268,6 +269,7 @@ export function TiptapEditor({
           <LinkIcon className="h-4 w-4" />
         </ToolbarButton>
       </div>
+      )}
 
       {/* Editor Content */}
       <EditorContent

@@ -94,6 +94,12 @@ export interface CategoryFormData {
 }
 
 // ==================== Car Types ====================
+export interface CarOwner {
+  name: string
+  email: string
+  phone: string
+}
+
 export interface Car {
   id: string
   name: string
@@ -113,6 +119,8 @@ export interface Car {
   carClass: CarClass
   insuranceCoverage?: string
   termsConditions?: string
+  owner?: CarOwner
+  rating?: number
   createdAt: string
   updatedAt: string
 }

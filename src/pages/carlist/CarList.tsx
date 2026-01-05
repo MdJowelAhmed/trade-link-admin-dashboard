@@ -7,6 +7,7 @@ import { SearchInput } from '@/components/common/SearchInput'
 import { CarFilterDropdown } from './components/CarFilterDropdown'
 import { CarTable } from './components/CarTable'
 import { AddEditCarModal } from './components/AddEditCarModal'
+import { ViewCarDetailsModal } from './components/ViewCarDetailsModal'
 import { useAppDispatch, useAppSelector } from '@/redux/hooks'
 import {
   setFilters,
@@ -31,6 +32,7 @@ export default function CarList() {
 
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false)
   const [selectedCar, setSelectedCar] = useState<Car | null>(null)
 
   // URL state management
@@ -77,11 +79,8 @@ export default function CarList() {
   }
 
   const handleView = (car: Car) => {
-    toast({
-      title: 'View Car',
-      description: `Viewing details for ${car.name}`,
-    })
-    // TODO: Open view modal
+    setSelectedCar(car)
+    setIsViewModalOpen(true)
   }
 
   const handleDelete = (car: Car) => {
@@ -251,6 +250,16 @@ export default function CarList() {
       <AddEditCarModal
         open={isModalOpen}
         onClose={handleCloseModal}
+        car={selectedCar}
+      />
+
+      {/* View Car Details Modal */}
+      <ViewCarDetailsModal
+        open={isViewModalOpen}
+        onClose={() => {
+          setIsViewModalOpen(false)
+          setSelectedCar(null)
+        }}
         car={selectedCar}
       />
     </motion.div>
