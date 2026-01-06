@@ -18,6 +18,9 @@ const clientSchema = z.object({
   phone: z.string().min(1, 'Phone is required'),
   email: z.string().email('Invalid email address'),
   country: z.string().min(1, 'Country is required'),
+  fullAddress: z.string().min(1, 'Full address is required'),
+  gender: z.string().optional(),
+  licenseNumber: z.string().optional(),
 })
 
 type ClientFormData = z.infer<typeof clientSchema>
@@ -66,6 +69,9 @@ export function AddEditClientModal({ open, onClose, client }: AddEditClientModal
       phone: '',
       email: '',
       country: '',
+      fullAddress: '',
+      gender: '',
+      licenseNumber: '',
     },
   })
 
@@ -78,6 +84,9 @@ export function AddEditClientModal({ open, onClose, client }: AddEditClientModal
           phone: client.phone,
           email: client.email,
           country: client.country,
+          fullAddress: client.fullAddress || '',
+          gender: client.gender || '',
+          licenseNumber: client.licenseNumber || '',
         })
         setPhotoPreview(client.avatar || '')
       } else {
@@ -86,6 +95,9 @@ export function AddEditClientModal({ open, onClose, client }: AddEditClientModal
           phone: '',
           email: '',
           country: '',
+          fullAddress: '',
+          gender: '',
+          licenseNumber: '',
         })
         setPhoto(null)
         setPhotoPreview('')
@@ -122,7 +134,10 @@ export function AddEditClientModal({ open, onClose, client }: AddEditClientModal
       phone: data.phone,
       email: data.email,
       country: data.country,
-      status: isEditMode && client ? client.status : 'active',
+      fullAddress: data.fullAddress,
+      gender: data.gender,
+      licenseNumber: data.licenseNumber,
+      status: isEditMode && client ? client.status : 'requested',
       avatar: photoPreview || client?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${data.name}`,
       createdAt: isEditMode && client ? client.createdAt : new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -236,6 +251,48 @@ export function AddEditClientModal({ open, onClose, client }: AddEditClientModal
             {errors.country && (
               <p className="text-xs text-destructive">{errors.country.message}</p>
             )}
+          </div>
+
+          {/* Full Address */}
+          <div className="space-y-1.5 col-span-2">
+            <div className="flex items-center gap-2">
+              <MapPin className="h-4 w-4 text-muted-foreground" />
+              <Label htmlFor="fullAddress">Full Address</Label>
+            </div>
+            <Input
+              id="fullAddress"
+              placeholder="Enter Full Address"
+              error={!!errors.fullAddress}
+              {...register('fullAddress')}
+            />
+            {errors.fullAddress && (
+              <p className="text-xs text-destructive">{errors.fullAddress.message}</p>
+            )}
+          </div>
+
+          {/* Gender */}
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-2">
+              <User className="h-4 w-4 text-muted-foreground" />
+              <Label htmlFor="gender">Gender</Label>
+            </div>
+            <Input
+              id="gender"
+              placeholder="Enter Gender"
+              {...register('gender')}
+            />
+          </div>
+
+          {/* License Number */}
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-2">
+              <Label htmlFor="licenseNumber">License Number</Label>
+            </div>
+            <Input
+              id="licenseNumber"
+              placeholder="Enter License Number"
+              {...register('licenseNumber')}
+            />
           </div>
         </div>
 

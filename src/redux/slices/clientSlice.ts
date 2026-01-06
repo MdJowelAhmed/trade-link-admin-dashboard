@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import type { Client, ClientFilters, PaginationState } from '@/types'
+import type { Client, ClientFilters, ClientStatus, PaginationState } from '@/types'
 import { DEFAULT_PAGINATION } from '@/utils/constants'
 
 // Mock data for demonstration
@@ -9,9 +9,13 @@ const mockClients: Client[] = [
     name: 'Alice Johnson',
     phone: '+33-1-42-36-72-38',
     email: 'alice.johnson@example.com',
-    status: 'active',
+    status: 'verified',
     country: 'France',
     avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Alice',
+    gender: 'Female',
+    fullAddress: '123 Rue de Rivoli, 75001 Paris, France',
+    licenseNumber: 'FR-ALICE-12345',
+    licenseDocumentUrl: 'https://via.placeholder.com/600x400.png?text=Alice+License',
     createdAt: '2024-01-15T10:30:00Z',
     updatedAt: '2024-01-20T14:45:00Z',
   },
@@ -20,9 +24,13 @@ const mockClients: Client[] = [
     name: 'Michael Chen',
     phone: '+49-30-1234-5678',
     email: 'michael.chen@example.com',
-    status: 'active',
+    status: 'requested',
     country: 'Germany',
     avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Michael',
+    gender: 'Male',
+    fullAddress: '456 Alexanderplatz, 10178 Berlin, Germany',
+    licenseNumber: 'DE-MICHAEL-98765',
+    licenseDocumentUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
     createdAt: '2024-01-16T11:30:00Z',
     updatedAt: '2024-01-21T15:45:00Z',
   },
@@ -31,7 +39,7 @@ const mockClients: Client[] = [
     name: 'Emma Rodriguez',
     phone: '+34-91-456-7890',
     email: 'emma.rodriguez@example.com',
-    status: 'inactive',
+    status: 'unverified',
     country: 'Spain',
     avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Emma',
     createdAt: '2024-01-17T12:30:00Z',
@@ -42,7 +50,7 @@ const mockClients: Client[] = [
     name: 'David Thompson',
     phone: '+1-212-555-0123',
     email: 'david.thompson@example.com',
-    status: 'active',
+    status: 'verified',
     country: 'USA',
     avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=David',
     createdAt: '2024-01-18T13:30:00Z',
@@ -53,7 +61,7 @@ const mockClients: Client[] = [
     name: 'Sophie Martin',
     phone: '+33-1-56-78-90-12',
     email: 'sophie.martin@example.com',
-    status: 'active',
+    status: 'requested',
     country: 'France',
     avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Sophie',
     createdAt: '2024-01-19T14:30:00Z',
@@ -64,7 +72,7 @@ const mockClients: Client[] = [
     name: 'Marco Rossi',
     phone: '+39-06-1234-5678',
     email: 'marco.rossi@example.com',
-    status: 'inactive',
+    status: 'unverified',
     country: 'Italy',
     avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Marco',
     createdAt: '2024-01-20T15:30:00Z',
@@ -75,7 +83,7 @@ const mockClients: Client[] = [
     name: 'Sarah Williams',
     phone: '+44-20-7946-0958',
     email: 'sarah.williams@example.com',
-    status: 'active',
+    status: 'verified',
     country: 'UK',
     avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah',
     createdAt: '2024-01-21T16:30:00Z',
@@ -86,7 +94,7 @@ const mockClients: Client[] = [
     name: 'James Wilson',
     phone: '+1-416-555-0198',
     email: 'james.wilson@example.com',
-    status: 'active',
+    status: 'verified',
     country: 'Canada',
     avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=James',
     createdAt: '2024-01-22T17:30:00Z',
@@ -97,7 +105,7 @@ const mockClients: Client[] = [
     name: 'Lisa Anderson',
     phone: '+61-2-9374-4000',
     email: 'lisa.anderson@example.com',
-    status: 'active',
+    status: 'verified',
     country: 'Australia',
     avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Lisa',
     createdAt: '2024-01-23T18:30:00Z',
@@ -108,7 +116,7 @@ const mockClients: Client[] = [
     name: 'Thomas Brown',
     phone: '+49-89-1234-5678',
     email: 'thomas.brown@example.com',
-    status: 'inactive',
+    status: 'unverified',
     country: 'Germany',
     avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Thomas',
     createdAt: '2024-01-24T19:30:00Z',
@@ -119,7 +127,7 @@ const mockClients: Client[] = [
     name: 'Maria Garcia',
     phone: '+34-93-456-7890',
     email: 'maria.garcia@example.com',
-    status: 'active',
+    status: 'verified',
     country: 'Spain',
     avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Maria',
     createdAt: '2024-01-25T20:30:00Z',
@@ -130,7 +138,7 @@ const mockClients: Client[] = [
     name: 'Robert Taylor',
     phone: '+44-131-496-0000',
     email: 'robert.taylor@example.com',
-    status: 'active',
+    status: 'verified',
     country: 'UK',
     avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Robert',
     createdAt: '2024-01-26T21:30:00Z',
@@ -229,6 +237,24 @@ const clientSlice = createSlice({
       )
       state.pagination.page = 1
     },
+    setClientStatus: (
+      state,
+      action: PayloadAction<{ id: string; status: ClientStatus }>
+    ) => {
+      const { id, status } = action.payload
+
+      const client = state.list.find((c) => c.id === id)
+      if (client) {
+        client.status = status
+        client.updatedAt = new Date().toISOString()
+      }
+
+      const filteredClient = state.filteredList.find((c) => c.id === id)
+      if (filteredClient) {
+        filteredClient.status = status
+        filteredClient.updatedAt = new Date().toISOString()
+      }
+    },
     addClient: (state, action: PayloadAction<Client>) => {
       state.list.unshift(action.payload)
       state.filteredList.unshift(action.payload)
@@ -250,12 +276,13 @@ const clientSlice = createSlice({
     toggleClientStatus: (state, action: PayloadAction<string>) => {
       const client = state.list.find((c) => c.id === action.payload)
       if (client) {
-        client.status = client.status === 'active' ? 'inactive' : 'active'
+        client.status = client.status === 'verified' ? 'unverified' : 'verified'
         client.updatedAt = new Date().toISOString()
       }
       const filteredClient = state.filteredList.find((c) => c.id === action.payload)
       if (filteredClient) {
-        filteredClient.status = filteredClient.status === 'active' ? 'inactive' : 'active'
+        filteredClient.status =
+          filteredClient.status === 'verified' ? 'unverified' : 'verified'
         filteredClient.updatedAt = new Date().toISOString()
       }
     },
@@ -288,6 +315,7 @@ export const {
   deleteClient,
   setLoading,
   setError,
+  setClientStatus,
 } = clientSlice.actions
 
 export default clientSlice.reducer

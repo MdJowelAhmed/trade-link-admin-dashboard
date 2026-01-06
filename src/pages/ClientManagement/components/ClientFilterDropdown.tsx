@@ -18,8 +18,9 @@ interface ClientFilterDropdownProps {
 
 const statusFilterOptions = [
   { value: 'all', label: 'All Status' },
-  { value: 'active', label: 'Active' },
-  { value: 'inactive', label: 'Inactive' },
+  { value: 'verified', label: 'Verified' },
+  { value: 'unverified', label: 'Unverified' },
+  { value: 'requested', label: 'Requested' },
 ] as const
 
 export function ClientFilterDropdown({ value, onChange, className }: ClientFilterDropdownProps) {

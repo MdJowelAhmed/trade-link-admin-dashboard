@@ -1,4 +1,4 @@
-import { User, Mail, Phone, MapPin, Calendar, CheckCircle, XCircle } from 'lucide-react'
+import { User, Mail, Phone, MapPin, Calendar, CheckCircle, XCircle, Clock } from 'lucide-react'
 import { ModalWrapper } from '@/components/common'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
@@ -39,14 +39,6 @@ export function ViewClientDetailsModal({ open, onClose, client }: ViewClientDeta
             </AvatarFallback>
           </Avatar>
           <h2 className="text-2xl font-bold text-gray-900 mb-2">{client.name}</h2>
-
-          {/* City under name instead of status */}
-          {client.city && (
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium bg-blue-50 text-blue-800">
-              <MapPin className="h-4 w-4" />
-              <span>{client.city}</span>
-            </div>
-          )}
         </div>
 
         {/* Contact Information */}
@@ -83,7 +75,7 @@ export function ViewClientDetailsModal({ open, onClose, client }: ViewClientDeta
               </CardContent>
             </Card>
 
-            {/* Location (Country & City) */}
+            {/* Country */}
             <Card className="border border-gray-200">
               <CardContent className="p-4">
                 <div className="flex items-center gap-4">
@@ -91,11 +83,8 @@ export function ViewClientDetailsModal({ open, onClose, client }: ViewClientDeta
                     <MapPin className="h-6 w-6 text-purple-600" />
                   </div>
                   <div className="flex-1">
-                    <p className="text-xs text-gray-500 mb-1">Location</p>
-                    <p className="font-medium text-gray-900">
-                      {client.country}
-                      {client.city ? `, ${client.city}` : ''}
-                    </p>
+                    <p className="text-xs text-gray-500 mb-1">Country</p>
+                    <p className="font-medium text-gray-900">{client.country}</p>
                   </div>
                 </div>
               </CardContent>
@@ -180,23 +169,82 @@ export function ViewClientDetailsModal({ open, onClose, client }: ViewClientDeta
             </Card>
           </div>
 
-          {/* Status moved here */}
+          {/* Status */}
           <div className="mt-4">
             <div
               className={cn(
                 'inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium',
-                client.status === 'active'
+                client.status === 'verified'
                   ? 'bg-green-100 text-green-800'
+                  : client.status === 'requested'
+                  ? 'bg-yellow-100 text-yellow-800'
                   : 'bg-gray-100 text-gray-800'
               )}
             >
-              {client.status === 'active' ? (
-                <CheckCircle className="h-4 w-4" />
-              ) : (
-                <XCircle className="h-4 w-4" />
-              )}
-              {client.status === 'active' ? 'Active' : 'Inactive'}
+              {client.status === 'verified' && <CheckCircle className="h-4 w-4" />}
+              {client.status === 'unverified' && <XCircle className="h-4 w-4" />}
+              {client.status === 'requested' && <Clock className="h-4 w-4" />}
+
+              {client.status === 'verified'
+                ? 'Verified'
+                : client.status === 'requested'
+                ? 'Requested'
+                : 'Unverified'}
             </div>
+          </div>
+
+          {/* License Information */}
+          <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* License Number */}
+            <Card className="border border-gray-200">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-lg bg-blue-100 flex items-center justify-center">
+                    <User className="h-5 w-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500 mb-1">License Number</p>
+                    <p className="font-medium text-gray-900">
+                      {client.licenseNumber || 'N/A'}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* License Document (Image/PDF proof) */}
+            <Card className="border border-gray-200">
+              <CardContent className="p-4">
+                <p className="text-xs text-gray-500 mb-2">License Document</p>
+                {client.licenseDocumentUrl ? (
+                  client.licenseDocumentUrl.toLowerCase().endsWith('.pdf') ? (
+                    <a
+                      href={client.licenseDocumentUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center justify-center px-3 py-2 rounded-md text-sm font-medium bg-blue-600 text-white hover:bg-blue-700"
+                    >
+                      View License PDF
+                    </a>
+                  ) : (
+                    <a
+                      href={client.licenseDocumentUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="block"
+                    >
+                      <img
+                        src={client.licenseDocumentUrl}
+                        alt="License Document"
+                        className="w-full max-h-40 object-contain rounded-md border border-gray-200"
+                      />
+                    </a>
+                  )
+                ) : (
+                  <p className="text-sm text-gray-500">No license document uploaded.</p>
+                )}
+              </CardContent>
+            </Card>
           </div>
         </div>
 

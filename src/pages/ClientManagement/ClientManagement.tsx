@@ -9,12 +9,7 @@ import { ClientTable } from './components/ClientTable'
 import { AddEditClientModal } from './components/AddEditClientModal'
 import { ViewClientDetailsModal } from './components/ViewClientDetailsModal'
 import { useAppDispatch, useAppSelector } from '@/redux/hooks'
-import {
-  setFilters,
-  setPage,
-  setLimit,
-  toggleClientStatus,
-} from '@/redux/slices/clientSlice'
+import { setFilters, setPage, setLimit, setClientStatus } from '@/redux/slices/clientSlice'
 import { useUrlString, useUrlNumber } from '@/hooks/useUrlState'
 import {
   Select,
@@ -78,11 +73,30 @@ export default function ClientManagement() {
     setIsViewModalOpen(true)
   }
 
-  const handleToggleStatus = (client: Client) => {
-    dispatch(toggleClientStatus(client.id))
+  const handleToggleVerification = (client: Client) => {
+    const nextStatus: ClientStatus =
+      client.status === 'verified' ? 'unverified' : 'verified'
+
+    dispatch(setClientStatus({ id: client.id, status: nextStatus }))
     toast({
       title: 'Status Updated',
-      description: `${client.name} status has been ${client.status === 'active' ? 'deactivated' : 'activated'}.`,
+      description: `${client.name} is now ${nextStatus}.`,
+    })
+  }
+
+  const handleApproveRequest = (client: Client) => {
+    dispatch(setClientStatus({ id: client.id, status: 'verified' }))
+    toast({
+      title: 'Request Approved',
+      description: `${client.name} has been verified.`,
+    })
+  }
+
+  const handleRejectRequest = (client: Client) => {
+    dispatch(setClientStatus({ id: client.id, status: 'unverified' }))
+    toast({
+      title: 'Request Rejected',
+      description: `${client.name}'s request has been rejected.`,
     })
   }
 
@@ -161,7 +175,9 @@ export default function ClientManagement() {
           <ClientTable
             clients={paginatedData}
             onView={handleView}
-            onToggleStatus={handleToggleStatus}
+            onToggleStatus={handleToggleVerification}
+            onApproveRequest={handleApproveRequest}
+            onRejectRequest={handleRejectRequest}
           />
 
           {/* Pagination */}

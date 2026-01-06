@@ -7,9 +7,17 @@ interface ClientTableProps {
   clients: Client[]
   onView: (client: Client) => void
   onToggleStatus: (client: Client) => void
+  onApproveRequest: (client: Client) => void
+  onRejectRequest: (client: Client) => void
 }
 
-export function ClientTable({ clients, onView, onToggleStatus }: ClientTableProps) {
+export function ClientTable({
+  clients,
+  onView,
+  onToggleStatus,
+  onApproveRequest,
+  onRejectRequest,
+}: ClientTableProps) {
   return (
     <div className="w-full overflow-auto">
       <table className="w-full min-w-[900px]">
@@ -42,7 +50,11 @@ export function ClientTable({ clients, onView, onToggleStatus }: ClientTableProp
                 transition={{ delay: 0.05 * index }}
                 className={cn(
                   'hover:bg-gray-50 transition-colors border-l-4',
-                  client.status === 'active' ? 'border-green-500' : 'border-gray-200'
+                  client.status === 'verified'
+                    ? 'border-green-500'
+                    : client.status === 'requested'
+                    ? 'border-yellow-500'
+                    : 'border-gray-200'
                 )}
               >
                 {/* Client Name Column */}
@@ -78,12 +90,18 @@ export function ClientTable({ clients, onView, onToggleStatus }: ClientTableProp
                   <span
                     className={cn(
                       'inline-flex items-center px-3 py-1 rounded-md text-xs font-medium',
-                      client.status === 'active'
+                      client.status === 'verified'
                         ? 'bg-green-100 text-green-800'
+                        : client.status === 'requested'
+                        ? 'bg-yellow-100 text-yellow-800'
                         : 'bg-gray-100 text-gray-800'
                     )}
                   >
-                    {client.status === 'active' ? 'Active' : 'Inactive'}
+                    {client.status === 'verified'
+                      ? 'Verified'
+                      : client.status === 'requested'
+                      ? 'Requested'
+                      : 'Unverified'}
                   </span>
                 </td>
 
@@ -100,6 +118,8 @@ export function ClientTable({ clients, onView, onToggleStatus }: ClientTableProp
                     client={client}
                     onView={onView}
                     onToggleStatus={onToggleStatus}
+                    onApproveRequest={onApproveRequest}
+                    onRejectRequest={onRejectRequest}
                   />
                 </td>
               </motion.tr>

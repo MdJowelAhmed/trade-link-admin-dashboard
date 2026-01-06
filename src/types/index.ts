@@ -279,16 +279,17 @@ export interface Client {
   email: string
   status: ClientStatus
   country: string
-  city?: string
   gender?: string
   fullAddress?: string
+  licenseNumber?: string
+  licenseDocumentUrl?: string
   avatar?: string
   photo?: string
   createdAt: string
   updatedAt: string
 }
 
-export type ClientStatus = 'active' | 'inactive'
+export type ClientStatus = 'verified' | 'unverified' | 'requested'
 
 export interface ClientFilters {
   search: string
