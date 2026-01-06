@@ -39,27 +39,20 @@ export function ViewClientDetailsModal({ open, onClose, client }: ViewClientDeta
             </AvatarFallback>
           </Avatar>
           <h2 className="text-2xl font-bold text-gray-900 mb-2">{client.name}</h2>
-          <div
-            className={cn(
-              'inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium',
-              client.status === 'active'
-                ? 'bg-green-100 text-green-800'
-                : 'bg-gray-100 text-gray-800'
-            )}
-          >
-            {client.status === 'active' ? (
-              <CheckCircle className="h-4 w-4" />
-            ) : (
-              <XCircle className="h-4 w-4" />
-            )}
-            {client.status === 'active' ? 'Active' : 'Inactive'}
-          </div>
+
+          {/* City under name instead of status */}
+          {client.city && (
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium bg-blue-50 text-blue-800">
+              <MapPin className="h-4 w-4" />
+              <span>{client.city}</span>
+            </div>
+          )}
         </div>
 
         {/* Contact Information */}
         <div>
           <h3 className="text-lg font-semibold mb-4 text-gray-900">Contact Information</h3>
-          <div className="grid grid-cols-1 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Email */}
             <Card className="border border-gray-200">
               <CardContent className="p-4">
@@ -90,7 +83,7 @@ export function ViewClientDetailsModal({ open, onClose, client }: ViewClientDeta
               </CardContent>
             </Card>
 
-            {/* Country */}
+            {/* Location (Country & City) */}
             <Card className="border border-gray-200">
               <CardContent className="p-4">
                 <div className="flex items-center gap-4">
@@ -98,8 +91,47 @@ export function ViewClientDetailsModal({ open, onClose, client }: ViewClientDeta
                     <MapPin className="h-6 w-6 text-purple-600" />
                   </div>
                   <div className="flex-1">
-                    <p className="text-xs text-gray-500 mb-1">Country</p>
-                    <p className="font-medium text-gray-900">{client.country}</p>
+                    <p className="text-xs text-gray-500 mb-1">Location</p>
+                    <p className="font-medium text-gray-900">
+                      {client.country}
+                      {client.city ? `, ${client.city}` : ''}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Gender */}
+            <Card className="border border-gray-200">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-4">
+                  <div className="h-12 w-12 rounded-lg bg-pink-100 flex items-center justify-center flex-shrink-0">
+                    <User className="h-6 w-6 text-pink-600" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-xs text-gray-500 mb-1">Gender</p>
+                    <p className="font-medium text-gray-900">
+                      {client.gender || 'N/A'}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Full Address */}
+          <div className="mt-4">
+            <Card className="border border-gray-200">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-4">
+                  <div className="h-12 w-12 rounded-lg bg-orange-100 flex items-center justify-center flex-shrink-0">
+                    <MapPin className="h-6 w-6 text-orange-600" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-xs text-gray-500 mb-1">Full Address</p>
+                    <p className="font-medium text-gray-900">
+                      {client.fullAddress || 'N/A'}
+                    </p>
                   </div>
                 </div>
               </CardContent>
@@ -147,6 +179,25 @@ export function ViewClientDetailsModal({ open, onClose, client }: ViewClientDeta
               </CardContent>
             </Card>
           </div>
+
+          {/* Status moved here */}
+          <div className="mt-4">
+            <div
+              className={cn(
+                'inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium',
+                client.status === 'active'
+                  ? 'bg-green-100 text-green-800'
+                  : 'bg-gray-100 text-gray-800'
+              )}
+            >
+              {client.status === 'active' ? (
+                <CheckCircle className="h-4 w-4" />
+              ) : (
+                <XCircle className="h-4 w-4" />
+              )}
+              {client.status === 'active' ? 'Active' : 'Inactive'}
+            </div>
+          </div>
         </div>
 
         {/* Close Button */}
@@ -159,4 +210,5 @@ export function ViewClientDetailsModal({ open, onClose, client }: ViewClientDeta
     </ModalWrapper>
   )
 }
+
 

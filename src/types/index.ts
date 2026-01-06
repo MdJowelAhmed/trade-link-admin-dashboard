@@ -279,6 +279,9 @@ export interface Client {
   email: string
   status: ClientStatus
   country: string
+  city?: string
+  gender?: string
+  fullAddress?: string
   avatar?: string
   photo?: string
   createdAt: string
