@@ -42,21 +42,21 @@ const navItems: NavItem[] = [
     href: '/booking-management',
     icon: LayoutDashboard,
   },
-  {
-    title: 'Users',
-    href: '/users',
-    icon: Users,
-  },
-  {
-    title: 'Products',
-    href: '/products',
-    icon: Package,
-  },
-  {
-    title: 'Categories',
-    href: '/categories',
-    icon: FolderTree,
-  },
+  // {
+  //   title: 'Users',
+  //   href: '/users',
+  //   icon: Users,
+  // },
+  // {
+  //   title: 'Products',
+  //   href: '/products',
+  //   icon: Package,
+  // },
+  // {
+  //   title: 'Categories',
+  //   href: '/categories',
+  //   icon: FolderTree,
+  // },
   {
     title: 'Car List',
     href: '/cars',
