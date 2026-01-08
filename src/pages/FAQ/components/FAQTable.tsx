@@ -41,8 +41,8 @@ export function FAQTable({
             <th className="px-6 py-4 text-left text-sm font-bold">Question</th>
             <th className="px-6 py-4 text-left text-sm font-bold">Answer</th>
             <th className="px-6 py-4 text-left text-sm font-bold">Position</th>
-            <th className="px-6 py-4 text-left text-sm font-bold">Created At</th>
-            <th className="px-6 py-4 text-left text-sm font-bold">Updated At</th>
+            {/* <th className="px-6 py-4 text-left text-sm font-bold">Created At</th>
+            <th className="px-6 py-4 text-left text-sm font-bold">Updated At</th> */}
             <th className="px-6 py-4 text-right text-sm font-bold">Action</th>
           </tr>
         </thead>
@@ -74,7 +74,7 @@ export function FAQTable({
 
                 {/* Answer Column */}
                 <td className="px-6 py-4">
-                  <span className="text-sm text-slate-700 line-clamp-2 max-w-md">
+                  <span className="text-sm text-slate-700 line-clamp-2 max-w-lg">
                     {faq.answer}
                   </span>
                 </td>
@@ -92,18 +92,18 @@ export function FAQTable({
                 </td>
 
                 {/* Created At Column */}
-                <td className="px-6 py-4">
+                {/* <td className="px-6 py-4">
                   <span className="text-sm text-slate-700">
                     {formatDate(faq.createdAt, 'dd MMM yyyy HH:mm')}
                   </span>
-                </td>
+                </td> */}
 
                 {/* Updated At Column */}
-                <td className="px-6 py-4">
+                {/* <td className="px-6 py-4">
                   <span className="text-sm text-slate-700">
                     {formatDate(faq.updatedAt, 'dd MMM yyyy HH:mm')}
                   </span>
-                </td>
+                </td> */}
 
                 {/* Actions Column */}
                 <td className="px-6 py-4">
