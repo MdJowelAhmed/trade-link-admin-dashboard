@@ -182,135 +182,43 @@ export function BookingDetailsModal({
 
         <Separator />
 
-        {/* Client Information */}
-        <div>
-          <h3 className="text-lg font-semibold mb-4 text-gray-900">
-            Client Information
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Client Name */}
-            <Card className="border border-gray-200">
-              <CardContent className="p-4">
-                <div className="flex items-center gap-4">
-                  <div className="h-12 w-12 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
-                    <User className="h-6 w-6 text-blue-600" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-xs text-gray-500 mb-1">Client Name</p>
-                    <p className="font-medium text-gray-900">
-                      {booking.clientName}
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Client Email */}
-            {booking.clientEmail && (
+        {/* Client Information and Car Information Side by Side */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Client Information - Left Side */}
+          <div>
+            <h3 className="text-lg font-semibold mb-4 text-gray-900">
+              Client Information
+            </h3>
+            <div className="space-y-4">
+              {/* Client Name */}
               <Card className="border border-gray-200">
                 <CardContent className="p-4">
                   <div className="flex items-center gap-4">
-                    <div className="h-12 w-12 rounded-lg bg-green-100 flex items-center justify-center flex-shrink-0">
-                      <Mail className="h-6 w-6 text-green-600" />
+                    <div className="h-12 w-12 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
+                      <User className="h-6 w-6 text-blue-600" />
                     </div>
                     <div className="flex-1">
-                      <p className="text-xs text-gray-500 mb-1">Email</p>
+                      <p className="text-xs text-gray-500 mb-1">Client Name</p>
                       <p className="font-medium text-gray-900">
-                        {booking.clientEmail}
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Client Phone */}
-            {booking.clientPhone && (
-              <Card className="border border-gray-200 md:col-span-2">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-4">
-                    <div className="h-12 w-12 rounded-lg bg-purple-100 flex items-center justify-center flex-shrink-0">
-                      <Phone className="h-6 w-6 text-purple-600" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-xs text-gray-500 mb-1">Phone</p>
-                      <p className="font-medium text-gray-900">
-                        {booking.clientPhone}
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-          </div>
-        </div>
-
-        <Separator />
-
-        {/* Car Information */}
-        {booking.carInfo && (
-          <div>
-            <h3 className="text-lg font-semibold mb-4 text-gray-900">
-              Car Information
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Car Image and Name */}
-              <Card className="border border-gray-200 md:col-span-2">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-4">
-                    {booking.carInfo.image && (
-                      <div className="h-24 w-24 rounded-lg overflow-hidden flex-shrink-0">
-                        <img
-                          src={booking.carInfo.image}
-                          alt={booking.carInfo.name}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    )}
-                    <div className="flex-1">
-                      <p className="text-xs text-gray-500 mb-1">Car Model</p>
-                      <p className="font-medium text-gray-900 text-lg">
-                        {booking.carInfo.name || booking.carModel}
-                      </p>
-                      <p className="text-sm text-gray-600 mt-1">
-                        License: {booking.licensePlate}
+                        {booking.clientName}
                       </p>
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
-              {/* Transmission */}
-              {booking.carInfo.transmission && (
-                <Card className="border border-gray-200">
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-4">
-                      <div className="h-12 w-12 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
-                        <Car className="h-6 w-6 text-blue-600" />
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-xs text-gray-500 mb-1">Transmission</p>
-                        <p className="font-medium text-gray-900">
-                          {booking.carInfo.transmission}
-                        </p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* Seats */}
-              {booking.carInfo.seats && (
+              {/* Client Email */}
+              {booking.clientEmail && (
                 <Card className="border border-gray-200">
                   <CardContent className="p-4">
                     <div className="flex items-center gap-4">
                       <div className="h-12 w-12 rounded-lg bg-green-100 flex items-center justify-center flex-shrink-0">
-                        <User className="h-6 w-6 text-green-600" />
+                        <Mail className="h-6 w-6 text-green-600" />
                       </div>
                       <div className="flex-1">
-                        <p className="text-xs text-gray-500 mb-1">Seats</p>
+                        <p className="text-xs text-gray-500 mb-1">Email</p>
                         <p className="font-medium text-gray-900">
-                          {booking.carInfo.seats}
+                          {booking.clientEmail}
                         </p>
                       </div>
                     </div>
@@ -318,56 +226,18 @@ export function BookingDetailsModal({
                 </Card>
               )}
 
-              {/* Car Class */}
-              {booking.carInfo.carClass && (
+              {/* Client Phone */}
+              {booking.clientPhone && (
                 <Card className="border border-gray-200">
                   <CardContent className="p-4">
                     <div className="flex items-center gap-4">
                       <div className="h-12 w-12 rounded-lg bg-purple-100 flex items-center justify-center flex-shrink-0">
-                        <Car className="h-6 w-6 text-purple-600" />
+                        <Phone className="h-6 w-6 text-purple-600" />
                       </div>
                       <div className="flex-1">
-                        <p className="text-xs text-gray-500 mb-1">Car Class</p>
+                        <p className="text-xs text-gray-500 mb-1">Phone</p>
                         <p className="font-medium text-gray-900">
-                          {booking.carInfo.carClass}
-                        </p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* Location */}
-              {booking.carInfo.location && (
-                <Card className="border border-gray-200">
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-4">
-                      <div className="h-12 w-12 rounded-lg bg-orange-100 flex items-center justify-center flex-shrink-0">
-                        <MapPin className="h-6 w-6 text-orange-600" />
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-xs text-gray-500 mb-1">Location</p>
-                        <p className="font-medium text-gray-900">
-                          {booking.carInfo.location}
-                        </p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* Price */}
-              {booking.carInfo.amount && booking.carInfo.priceDuration && (
-                <Card className="border border-gray-200">
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-4">
-                      <div className="h-12 w-12 rounded-lg bg-indigo-100 flex items-center justify-center flex-shrink-0">
-                        <CreditCard className="h-6 w-6 text-indigo-600" />
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-xs text-gray-500 mb-1">Rental Price</p>
-                        <p className="font-medium text-gray-900">
-                          €{booking.carInfo.amount} / {booking.carInfo.priceDuration}
+                          {booking.clientPhone}
                         </p>
                       </div>
                     </div>
@@ -376,7 +246,138 @@ export function BookingDetailsModal({
               )}
             </div>
           </div>
-        )}
+
+          {/* Car Information - Right Side */}
+          {booking.carInfo && (
+            <div>
+              <h3 className="text-lg font-semibold mb-4 text-gray-900">
+                Car Information
+              </h3>
+              <div className="space-y-4">
+                {/* Car Image and Name */}
+                <Card className="border border-gray-200">
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-4">
+                      {booking.carInfo.image && (
+                        <div className="h-20 w-20 rounded-lg overflow-hidden flex-shrink-0">
+                          <img
+                            src={booking.carInfo.image}
+                            alt={booking.carInfo.name}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      )}
+                      <div className="flex-1">
+                        <p className="text-xs text-gray-500 mb-1">Car Model</p>
+                        <p className="font-medium text-gray-900 text-lg">
+                          {booking.carInfo.name || booking.carModel}
+                        </p>
+                        <p className="text-sm text-gray-600 mt-1">
+                          License: {booking.licensePlate}
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Transmission */}
+                {booking.carInfo.transmission && (
+                  <Card className="border border-gray-200">
+                    <CardContent className="p-4">
+                      <div className="flex items-center gap-4">
+                        <div className="h-12 w-12 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
+                          <Car className="h-6 w-6 text-blue-600" />
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-xs text-gray-500 mb-1">Transmission</p>
+                          <p className="font-medium text-gray-900">
+                            {booking.carInfo.transmission}
+                          </p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Seats */}
+                {booking.carInfo.seats && (
+                  <Card className="border border-gray-200">
+                    <CardContent className="p-4">
+                      <div className="flex items-center gap-4">
+                        <div className="h-12 w-12 rounded-lg bg-green-100 flex items-center justify-center flex-shrink-0">
+                          <User className="h-6 w-6 text-green-600" />
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-xs text-gray-500 mb-1">Seats</p>
+                          <p className="font-medium text-gray-900">
+                            {booking.carInfo.seats}
+                          </p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Car Class */}
+                {booking.carInfo.carClass && (
+                  <Card className="border border-gray-200">
+                    <CardContent className="p-4">
+                      <div className="flex items-center gap-4">
+                        <div className="h-12 w-12 rounded-lg bg-purple-100 flex items-center justify-center flex-shrink-0">
+                          <Car className="h-6 w-6 text-purple-600" />
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-xs text-gray-500 mb-1">Car Class</p>
+                          <p className="font-medium text-gray-900">
+                            {booking.carInfo.carClass}
+                          </p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Location */}
+                {booking.carInfo.location && (
+                  <Card className="border border-gray-200">
+                    <CardContent className="p-4">
+                      <div className="flex items-center gap-4">
+                        <div className="h-12 w-12 rounded-lg bg-orange-100 flex items-center justify-center flex-shrink-0">
+                          <MapPin className="h-6 w-6 text-orange-600" />
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-xs text-gray-500 mb-1">Location</p>
+                          <p className="font-medium text-gray-900">
+                            {booking.carInfo.location}
+                          </p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Price */}
+                {booking.carInfo.amount && booking.carInfo.priceDuration && (
+                  <Card className="border border-gray-200">
+                    <CardContent className="p-4">
+                      <div className="flex items-center gap-4">
+                        <div className="h-12 w-12 rounded-lg bg-indigo-100 flex items-center justify-center flex-shrink-0">
+                          <CreditCard className="h-6 w-6 text-indigo-600" />
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-xs text-gray-500 mb-1">Rental Price</p>
+                          <p className="font-medium text-gray-900">
+                            €{booking.carInfo.amount} / {booking.carInfo.priceDuration}
+                          </p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
 
         <Separator />
 

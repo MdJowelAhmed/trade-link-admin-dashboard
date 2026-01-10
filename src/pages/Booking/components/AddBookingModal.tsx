@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Calendar, User, Car, CreditCard, Clock } from 'lucide-react'
+import { Calendar, User, Car, CreditCard, Clock, Mail, Phone, DollarSign, CheckCircle, AlertCircle } from 'lucide-react'
 import { ModalWrapper } from '@/components/common'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -216,7 +216,10 @@ export function AddBookingModal({ open, onClose }: AddBookingModalProps) {
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="clientEmail">Client Email</Label>
+              <div className="flex items-center gap-2">
+                <Mail className="h-4 w-4 text-muted-foreground" />
+                <Label htmlFor="clientEmail">Client Email</Label>
+              </div>
               <Input
                 id="clientEmail"
                 type="email"
@@ -232,7 +235,10 @@ export function AddBookingModal({ open, onClose }: AddBookingModalProps) {
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="clientPhone">Client Phone</Label>
+              <div className="flex items-center gap-2">
+                <Phone className="h-4 w-4 text-muted-foreground" />
+                <Label htmlFor="clientPhone">Client Phone</Label>
+              </div>
               <Input
                 id="clientPhone"
                 placeholder="Enter client phone"
@@ -376,7 +382,10 @@ export function AddBookingModal({ open, onClose }: AddBookingModalProps) {
         {/* Payment Status and Booking Status */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-1.5">
-            <Label htmlFor="paymentStatus">Payment Status *</Label>
+            <div className="flex items-center gap-2">
+              <DollarSign className="h-4 w-4 text-muted-foreground" />
+              <Label htmlFor="paymentStatus">Payment Status *</Label>
+            </div>
             <select
               id="paymentStatus"
               {...register('paymentStatus')}
@@ -398,7 +407,10 @@ export function AddBookingModal({ open, onClose }: AddBookingModalProps) {
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="status">Booking Status *</Label>
+            <div className="flex items-center gap-2">
+              <CheckCircle className="h-4 w-4 text-muted-foreground" />
+              <Label htmlFor="status">Booking Status *</Label>
+            </div>
             <select
               id="status"
               {...register('status')}
