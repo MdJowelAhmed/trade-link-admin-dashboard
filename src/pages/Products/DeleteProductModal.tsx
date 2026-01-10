@@ -3,7 +3,7 @@ import { ConfirmDialog } from '@/components/common'
 import { useAppDispatch } from '@/redux/hooks'
 import { deleteProduct } from '@/redux/slices/productSlice'
 import type { Product } from '@/types'
-import { toast } from '@/components/ui/use-toast'
+import { toast } from '@/utils/toast'
 
 interface DeleteProductModalProps {
   open: boolean

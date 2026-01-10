@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { useAppDispatch } from '@/redux/hooks'
 import { addFAQ, updateFAQ } from '@/redux/slices/faqSlice'
-import { useToast } from '@/components/ui/use-toast'
+import { toast } from '@/utils/toast'
 import type { FAQ, FAQPosition } from '@/types'
 import { cn } from '@/utils/cn'
 
@@ -37,7 +37,6 @@ const POSITION_OPTIONS: { value: FAQPosition; label: string }[] = [
 
 export function AddEditFAQModal({ open, onClose, faq }: AddEditFAQModalProps) {
   const dispatch = useAppDispatch()
-  const { toast } = useToast()
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const isEditMode = !!faq

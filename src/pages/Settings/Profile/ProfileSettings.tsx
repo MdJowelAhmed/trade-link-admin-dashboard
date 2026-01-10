@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Separator } from '@/components/ui/separator'
 import { FormInput } from '@/components/common'
-import { toast } from '@/components/ui/use-toast'
+import { toast } from '@/utils/toast'
 import { motion } from 'framer-motion'
 
 const profileSchema = z.object({

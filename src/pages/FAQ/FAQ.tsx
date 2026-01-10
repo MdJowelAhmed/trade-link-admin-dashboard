@@ -19,12 +19,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { useToast } from '@/components/ui/use-toast'
+import { toast } from '@/utils/toast'
 import type { FAQ, FAQPosition } from '@/types'
 
 const FAQ = () => {
   const dispatch = useAppDispatch()
-  const { toast } = useToast()
 
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false)

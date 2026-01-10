@@ -8,6 +8,7 @@ import { ClientFilterDropdown } from './components/ClientFilterDropdown'
 import { ClientTable } from './components/ClientTable'
 import { AddEditClientModal } from './components/AddEditClientModal'
 import { ViewClientDetailsModal } from './components/ViewClientDetailsModal'
+import { ConfirmDialog } from '@/components/common/ConfirmDialog'
 import { useAppDispatch, useAppSelector } from '@/redux/hooks'
 import { setFilters, setPage, setLimit, setClientStatus } from '@/redux/slices/clientSlice'
 import { useUrlString, useUrlNumber } from '@/hooks/useUrlState'
@@ -18,17 +19,24 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { useToast } from '@/components/ui/use-toast'
+import { toast } from '@/utils/toast'
 import type { Client, ClientStatus } from '@/types'
 
 export default function ClientManagement() {
   const dispatch = useAppDispatch()
-  const { toast } = useToast()
 
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isViewModalOpen, setIsViewModalOpen] = useState(false)
   const [selectedClient, setSelectedClient] = useState<Client | null>(null)
+
+  // Confirmation dialog state
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false)
+  const [confirmAction, setConfirmAction] = useState<{
+    type: 'toggle' | 'approve' | 'reject'
+    client: Client
+  } | null>(null)
+  const [isConfirmLoading, setIsConfirmLoading] = useState(false)
 
   // URL state management
   const [searchQuery, setSearchQuery] = useUrlString('search', '')
@@ -74,30 +82,95 @@ export default function ClientManagement() {
   }
 
   const handleToggleVerification = (client: Client) => {
-    const nextStatus: ClientStatus =
-      client.status === 'verified' ? 'unverified' : 'verified'
-
-    dispatch(setClientStatus({ id: client.id, status: nextStatus }))
-    toast({
-      title: 'Status Updated',
-      description: `${client.name} is now ${nextStatus}.`,
-    })
+    setConfirmAction({ type: 'toggle', client })
+    setIsConfirmOpen(true)
   }
 
   const handleApproveRequest = (client: Client) => {
-    dispatch(setClientStatus({ id: client.id, status: 'verified' }))
-    toast({
-      title: 'Request Approved',
-      description: `${client.name} has been verified.`,
-    })
+    setConfirmAction({ type: 'approve', client })
+    setIsConfirmOpen(true)
   }
 
   const handleRejectRequest = (client: Client) => {
-    dispatch(setClientStatus({ id: client.id, status: 'unverified' }))
-    toast({
-      title: 'Request Rejected',
-      description: `${client.name}'s request has been rejected.`,
-    })
+    setConfirmAction({ type: 'reject', client })
+    setIsConfirmOpen(true)
+  }
+
+  const handleConfirmAction = async () => {
+    if (!confirmAction) return
+
+    setIsConfirmLoading(true)
+    try {
+      const { type, client } = confirmAction
+
+      if (type === 'toggle') {
+        const nextStatus: ClientStatus =
+          client.status === 'verified' ? 'unverified' : 'verified'
+        dispatch(setClientStatus({ id: client.id, status: nextStatus }))
+        toast({
+          title: 'Success',
+          description: `${client.name} is now ${nextStatus}.`,
+          variant: 'success',
+        })
+      } else if (type === 'approve') {
+        dispatch(setClientStatus({ id: client.id, status: 'verified' }))
+        toast({
+          title: 'Success',
+          description: `${client.name} has been verified successfully.`,
+          variant: 'success',
+        })
+      } else if (type === 'reject') {
+        dispatch(setClientStatus({ id: client.id, status: 'unverified' }))
+        toast({
+          title: 'Success',
+          description: `${client.name}'s request has been rejected.`,
+          variant: 'success',
+        })
+      }
+
+      setIsConfirmOpen(false)
+      setConfirmAction(null)
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to update client status. Please try again.',
+        variant: 'destructive',
+      })
+    } finally {
+      setIsConfirmLoading(false)
+    }
+  }
+
+  const getConfirmDialogConfig = () => {
+    if (!confirmAction) return null
+
+    const { type, client } = confirmAction
+
+    if (type === 'toggle') {
+      const nextStatus = client.status === 'verified' ? 'unverified' : 'verified'
+      return {
+        title: 'Change Status',
+        description: `Are you sure you want to change ${client.name}'s status to ${nextStatus}?`,
+        variant: 'warning' as const,
+        confirmText: 'Change Status',
+      }
+    } else if (type === 'approve') {
+      return {
+        title: 'Approve Request',
+        description: `Are you sure you want to approve and verify ${client.name}?`,
+        variant: 'info' as const,
+        confirmText: 'Approve',
+      }
+    } else if (type === 'reject') {
+      return {
+        title: 'Reject Request',
+        description: `Are you sure you want to reject ${client.name}'s verification request?`,
+        variant: 'danger' as const,
+        confirmText: 'Reject',
+      }
+    }
+
+    return null
   }
 
   const handleAddNew = () => {
@@ -270,6 +343,23 @@ export default function ClientManagement() {
         }}
         client={selectedClient}
       />
+
+      {/* Confirmation Dialog */}
+      {confirmAction && getConfirmDialogConfig() && (
+        <ConfirmDialog
+          open={isConfirmOpen}
+          onClose={() => {
+            setIsConfirmOpen(false)
+            setConfirmAction(null)
+          }}
+          onConfirm={handleConfirmAction}
+          title={getConfirmDialogConfig()!.title}
+          description={getConfirmDialogConfig()!.description}
+          variant={getConfirmDialogConfig()!.variant}
+          confirmText={getConfirmDialogConfig()!.confirmText}
+          isLoading={isConfirmLoading}
+        />
+      )}
     </motion.div>
   )
 }

@@ -31,7 +31,7 @@ import {
 } from "@/components/ui/select";
 import { useAppDispatch } from "@/redux/hooks";
 import { addCar, updateCar } from "@/redux/slices/carSlice";
-import { useToast } from "@/components/ui/use-toast";
+import { toast } from "@/utils/toast";
 import { carClassFilterOptions } from "@/pages/carlist/carData";
 import type { Car, CarClass } from "@/types";
 import { cn } from "@/utils/cn";
@@ -116,7 +116,6 @@ const fuelTypeOptions = [
 
 export function AddEditCarModal({ open, onClose, car }: AddEditCarModalProps) {
   const dispatch = useAppDispatch();
-  const { toast } = useToast();
   const [images, setImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [insuranceContent, setInsuranceContent] = useState("");

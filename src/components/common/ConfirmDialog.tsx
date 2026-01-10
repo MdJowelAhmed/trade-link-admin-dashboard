@@ -15,13 +15,14 @@ import { AlertTriangle, Trash2, Info } from 'lucide-react'
 interface ConfirmDialogProps {
   open: boolean
   onClose: () => void
-  onConfirm: () => void
+  onConfirm: () => void | Promise<void>
   title: string
   description: string
   confirmText?: string
   cancelText?: string
   variant?: 'danger' | 'warning' | 'info'
   isLoading?: boolean
+  onSuccess?: () => void
 }
 
 const variantConfig = {
@@ -55,21 +56,30 @@ export function ConfirmDialog({
   cancelText = 'Cancel',
   variant = 'danger',
   isLoading = false,
+  onSuccess,
 }: ConfirmDialogProps) {
   const config = variantConfig[variant]
   const Icon = config.icon
 
-  const handleConfirm = () => {
-    onConfirm()
+  const handleConfirm = async () => {
+    try {
+      await Promise.resolve(onConfirm())
+      if (onSuccess) {
+        onSuccess()
+      }
+    } catch (error) {
+      // Error handling can be added here if needed
+      console.error('Confirmation action failed:', error)
+    }
   }
 
   return (
-    <AlertDialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
+    <AlertDialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()} >
       <AlertDialogContent>
         <AlertDialogHeader>
           <div className="flex items-center gap-4">
             <div className={cn('p-3 rounded-full', config.bgClass)}>
-              <Icon className={cn('h-6 w-6', config.iconClass)} />
+              <Icon className={cn('h-6 w-6  ', config.iconClass) } />
             </div>
             <div>
               <AlertDialogTitle>{title}</AlertDialogTitle>

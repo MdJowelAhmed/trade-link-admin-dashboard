@@ -9,7 +9,7 @@ import { addProduct, updateProduct } from '@/redux/slices/productSlice'
 import { PRODUCT_STATUSES } from '@/utils/constants'
 import { generateSKU } from '@/utils/formatters'
 import type { Product, ProductStatus } from '@/types'
-import { toast } from '@/components/ui/use-toast'
+import { toast } from '@/utils/toast'
 
 const productSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),

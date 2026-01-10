@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/select'
 import { useAppDispatch } from '@/redux/hooks'
 import { addClient, updateClient } from '@/redux/slices/clientSlice'
-import { useToast } from '@/components/ui/use-toast'
+import { toast } from '@/utils/toast'
 import type { Client } from '@/types'
 import { cn } from '@/utils/cn'
 
@@ -65,7 +65,6 @@ const genderOptions = [
 
 export function AddEditClientModal({ open, onClose, client }: AddEditClientModalProps) {
   const dispatch = useAppDispatch()
-  const { toast } = useToast()
   const [_photo, setPhoto] = useState<File | null>(null)
   const [photoPreview, setPhotoPreview] = useState<string>('')
   const [_licenseFile, setLicenseFile] = useState<File | null>(null)

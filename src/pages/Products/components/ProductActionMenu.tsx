@@ -9,7 +9,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import type { Product } from '@/types'
-import { toast } from '@/components/ui/use-toast'
+import { toast } from '@/utils/toast'
 
 interface ProductActionMenuProps {
   product: Product

@@ -11,7 +11,7 @@ import { cn } from '@/utils/cn'
 import { useAppDispatch } from '@/redux/hooks'
 import { addAgency, updateAgency } from '@/redux/slices/agencySlice'
 import type { Agency } from '@/types'
-import { useToast } from '@/components/ui/use-toast'
+import { toast } from '@/utils/toast'
 
 const agencySchema = z.object({
   name: z.string().min(1, 'Agency name is required'),
@@ -47,7 +47,6 @@ export function AddEditAgencyModal({
   agency,
 }: AddEditAgencyModalProps) {
   const dispatch = useAppDispatch()
-  const { toast } = useToast()
 
   const [_logoFile, setLogoFile] = useState<File | null>(null)
   const [logoPreview, setLogoPreview] = useState<string>('')

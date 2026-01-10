@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { TiptapEditor } from '@/components/common'
-import { toast } from '@/components/ui/use-toast'
+import { toast } from '@/utils/toast'
 import { motion } from 'framer-motion'
 
 const defaultTerms = `<h1>Terms and Conditions</h1>

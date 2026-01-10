@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useAppDispatch, useAppSelector } from '@/redux/hooks'
 import { addBooking } from '@/redux/slices/bookingSlice'
-import { useToast } from '@/components/ui/use-toast'
+import { toast } from '@/utils/toast'
 // import type { BookingStatus, BookingFormData } from '@/types'
 import { cn } from '@/utils/cn' 
 
@@ -35,7 +35,6 @@ interface AddBookingModalProps {
 
 export function AddBookingModal({ open, onClose }: AddBookingModalProps) {
   const dispatch = useAppDispatch()
-  const { toast } = useToast()
   const { list: cars } = useAppSelector((state) => state.cars)
   const [isSubmitting, setIsSubmitting] = useState(false)
 

@@ -14,14 +14,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { useToast } from '@/components/ui/use-toast'
+import { toast } from '@/utils/toast'
 import type { Agency, AgencyStatus } from '@/types'
 import { AgencyTable } from './components/AgencyTable'
 import { AddEditAgencyModal } from './components/AddEditAgencyModal'
 
 export default function AgencyManagement() {
   const dispatch = useAppDispatch()
-  const { toast } = useToast()
 
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [selectedAgency, setSelectedAgency] = useState<Agency | null>(null)

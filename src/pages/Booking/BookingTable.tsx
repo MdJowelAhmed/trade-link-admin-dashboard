@@ -35,7 +35,7 @@ import {
   updateBookingStatus,
 } from "@/redux/slices/bookingSlice";
 import { SearchInput } from "@/components/common/SearchInput";
-import { useToast } from "@/components/ui/use-toast";
+import { toast } from '@/utils/toast'
 import type { BookingStatus, Booking } from "@/types";
 
 interface BookingTableProps {
@@ -45,7 +45,6 @@ interface BookingTableProps {
 
 export function BookingTable({ onAddBooking, onViewDetails }: BookingTableProps) {
   const dispatch = useAppDispatch();
-  const { toast } = useToast();
 
   // URL state management
   const [searchQuery, setSearchQuery] = useUrlString("search", "");

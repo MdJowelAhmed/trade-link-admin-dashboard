@@ -23,12 +23,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { useToast } from '@/components/ui/use-toast'
+import { toast } from '@/utils/toast'
 import type { Car, CarClass } from '@/types'
 
 export default function CarList() {
   const dispatch = useAppDispatch()
-  const { toast } = useToast()
 
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false)

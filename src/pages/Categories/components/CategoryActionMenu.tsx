@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import type { Category } from '@/types'
-import { toast } from '@/components/ui/use-toast'
+import { toast } from '@/utils/toast'
 
 interface CategoryActionMenuProps {
   category: Category

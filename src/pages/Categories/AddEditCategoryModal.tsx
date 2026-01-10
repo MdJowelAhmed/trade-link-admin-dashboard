@@ -8,7 +8,7 @@ import { useAppDispatch } from '@/redux/hooks'
 import { addCategory, updateCategory } from '@/redux/slices/categorySlice'
 import { slugify } from '@/utils/formatters'
 import type { Category } from '@/types'
-import { toast } from '@/components/ui/use-toast'
+import { toast } from '@/utils/toast'
 
 const categorySchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),

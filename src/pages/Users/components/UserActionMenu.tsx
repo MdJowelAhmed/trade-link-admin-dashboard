@@ -14,7 +14,7 @@ import { ConfirmDialog } from '@/components/common'
 import { useAppDispatch } from '@/redux/hooks'
 import { updateUserStatus, deleteUser } from '@/redux/slices/userSlice'
 import type { User } from '@/types'
-import { toast } from '@/components/ui/use-toast'
+import { toast } from '@/utils/toast'
 
 interface UserActionMenuProps {
   user: User

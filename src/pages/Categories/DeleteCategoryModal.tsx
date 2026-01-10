@@ -3,7 +3,7 @@ import { ConfirmDialog } from '@/components/common'
 import { useAppDispatch } from '@/redux/hooks'
 import { deleteCategory } from '@/redux/slices/categorySlice'
 import type { Category } from '@/types'
-import { toast } from '@/components/ui/use-toast'
+import { toast } from '@/utils/toast'
 
 interface DeleteCategoryModalProps {
   open: boolean

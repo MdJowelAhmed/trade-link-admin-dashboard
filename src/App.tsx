@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
-import { Toaster } from '@/components/ui/toaster'
+import { Toaster } from 'sonner'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import AuthLayout from '@/components/layout/AuthLayout'
@@ -101,7 +101,7 @@ function App() {
         {/* Catch all - redirect to dashboard or login */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-      <Toaster />
+      <Toaster position="top-right" richColors closeButton />
     </TooltipProvider>
   )
 }
