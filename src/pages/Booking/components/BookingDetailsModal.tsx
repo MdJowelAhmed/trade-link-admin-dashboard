@@ -9,19 +9,19 @@ import {
   CheckCircle,
   Clock,
   RefreshCw,
-} from 'lucide-react'
-import { ModalWrapper } from '@/components/common'
-import { Button } from '@/components/ui/button'
-import { Separator } from '@/components/ui/separator'
-import { Card, CardContent } from '@/components/ui/card'
-import type { Booking } from '@/types'
-import { cn } from '@/utils/cn'
-import { formatDateTime } from '@/utils/formatters'
+} from "lucide-react";
+import { ModalWrapper } from "@/components/common";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { Card, CardContent } from "@/components/ui/card";
+import type { Booking } from "@/types";
+import { cn } from "@/utils/cn";
+import { formatDateTime } from "@/utils/formatters";
 
 interface BookingDetailsModalProps {
-  open: boolean
-  onClose: () => void
-  booking: Booking | null
+  open: boolean;
+  onClose: () => void;
+  booking: Booking | null;
 }
 
 export function BookingDetailsModal({
@@ -29,33 +29,35 @@ export function BookingDetailsModal({
   onClose,
   booking,
 }: BookingDetailsModalProps) {
-  if (!booking) return null
+  if (!booking) return null;
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'Completed':
-        return <CheckCircle className="h-5 w-5 text-green-600" />
-      case 'Runing':
-        return <RefreshCw className="h-5 w-5 text-blue-600 animate-spin" />
-      case 'Upcoming':
-        return <Clock className="h-5 w-5 text-orange-600" />
+      case "Completed":
+        return <CheckCircle className="h-5 w-5 text-green-600" />;
+      case "Runing":
+        return <RefreshCw className="h-5 w-5 text-blue-600 animate-spin" />;
+      case "Upcoming":
+        return <Clock className="h-5 w-5 text-orange-600" />;
       default:
-        return <Clock className="h-5 w-5 text-gray-600" />
+        return <Clock className="h-5 w-5 text-gray-600" />;
     }
-  }
+  };
 
   const getStatusBadgeColor = (status: string) => {
     switch (status) {
-      case 'Completed':
-        return 'bg-green-100 text-green-800'
-      case 'Runing':
-        return 'bg-blue-100 text-blue-800'
-      case 'Upcoming':
-        return 'bg-orange-100 text-orange-800'
+      case "Completed":
+        return "bg-green-100 text-green-800";
+      case "Runing":
+        return "bg-blue-100 text-blue-800";
+      case "Upcoming":
+        return "bg-orange-100 text-orange-800";
       default:
-        return 'bg-gray-100 text-gray-800'
+        return "bg-gray-100 text-gray-800";
     }
-  }
+  };
+
+  console.log(booking);
 
   return (
     <ModalWrapper
@@ -76,7 +78,7 @@ export function BookingDetailsModal({
           </h2>
           <div
             className={cn(
-              'inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium',
+              "inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium",
               getStatusBadgeColor(booking.status)
             )}
           >
@@ -115,13 +117,15 @@ export function BookingDetailsModal({
                   </div>
                   <div className="flex-1">
                     <p className="text-xs text-gray-500 mb-1">Payment</p>
-                    <p className="font-medium text-gray-900">{booking.payment}</p>
+                    <p className="font-medium text-gray-900">
+                      {booking.payment}
+                    </p>
                     <span
                       className={cn(
-                        'inline-block mt-1 px-2 py-0.5 rounded text-xs font-medium',
-                        booking.paymentStatus === 'Paid'
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-orange-100 text-orange-800'
+                        "inline-block mt-1 px-2 py-0.5 rounded text-xs font-medium",
+                        booking.paymentStatus === "Paid"
+                          ? "bg-green-100 text-green-800"
+                          : "bg-orange-100 text-orange-800"
                       )}
                     >
                       {booking.paymentStatus}
@@ -157,7 +161,9 @@ export function BookingDetailsModal({
                   </div>
                   <div className="flex-1">
                     <p className="text-xs text-gray-500 mb-1">End Date</p>
-                    <p className="font-medium text-gray-900">{booking.endDate}</p>
+                    <p className="font-medium text-gray-900">
+                      {booking.endDate}
+                    </p>
                   </div>
                 </div>
               </CardContent>
@@ -192,8 +198,8 @@ export function BookingDetailsModal({
             <div className="space-y-4">
               {/* Client Name */}
               <Card className="border border-gray-200">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-4">
+                <CardContent className="p-4 flex flex-col gap-4">
+                  <div className="flex items-center  gap-4">
                     <div className="h-12 w-12 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
                       <User className="h-6 w-6 text-blue-600" />
                     </div>
@@ -204,46 +210,21 @@ export function BookingDetailsModal({
                       </p>
                     </div>
                   </div>
+
+                  <div className="flex items-center gap-4">
+                    <p className="text-xs text-gray-500 mb-1">Client Email</p>
+                    <p className="font-medium text-gray-900">
+                      {booking.clientEmail || "N/A"}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <p className="text-xs text-gray-500 mb-1">Client Phone</p>
+                    <p className="font-medium text-gray-900">
+                      {booking.clientPhone || "N/A"}
+                    </p>
+                  </div>
                 </CardContent>
               </Card>
-
-              {/* Client Email */}
-              {booking.clientEmail && (
-                <Card className="border border-gray-200">
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-4">
-                      <div className="h-12 w-12 rounded-lg bg-green-100 flex items-center justify-center flex-shrink-0">
-                        <Mail className="h-6 w-6 text-green-600" />
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-xs text-gray-500 mb-1">Email</p>
-                        <p className="font-medium text-gray-900">
-                          {booking.clientEmail}
-                        </p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* Client Phone */}
-              {booking.clientPhone && (
-                <Card className="border border-gray-200">
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-4">
-                      <div className="h-12 w-12 rounded-lg bg-purple-100 flex items-center justify-center flex-shrink-0">
-                        <Phone className="h-6 w-6 text-purple-600" />
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-xs text-gray-500 mb-1">Phone</p>
-                        <p className="font-medium text-gray-900">
-                          {booking.clientPhone}
-                        </p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
             </div>
           </div>
 
@@ -289,7 +270,9 @@ export function BookingDetailsModal({
                           <Car className="h-6 w-6 text-blue-600" />
                         </div>
                         <div className="flex-1">
-                          <p className="text-xs text-gray-500 mb-1">Transmission</p>
+                          <p className="text-xs text-gray-500 mb-1">
+                            Transmission
+                          </p>
                           <p className="font-medium text-gray-900">
                             {booking.carInfo.transmission}
                           </p>
@@ -327,7 +310,9 @@ export function BookingDetailsModal({
                           <Car className="h-6 w-6 text-purple-600" />
                         </div>
                         <div className="flex-1">
-                          <p className="text-xs text-gray-500 mb-1">Car Class</p>
+                          <p className="text-xs text-gray-500 mb-1">
+                            Car Class
+                          </p>
                           <p className="font-medium text-gray-900">
                             {booking.carInfo.carClass}
                           </p>
@@ -365,9 +350,12 @@ export function BookingDetailsModal({
                           <CreditCard className="h-6 w-6 text-indigo-600" />
                         </div>
                         <div className="flex-1">
-                          <p className="text-xs text-gray-500 mb-1">Rental Price</p>
+                          <p className="text-xs text-gray-500 mb-1">
+                            Rental Price
+                          </p>
                           <p className="font-medium text-gray-900">
-                            €{booking.carInfo.amount} / {booking.carInfo.priceDuration}
+                            €{booking.carInfo.amount} /{" "}
+                            {booking.carInfo.priceDuration}
                           </p>
                         </div>
                       </div>
@@ -459,7 +447,9 @@ export function BookingDetailsModal({
                           <Calendar className="h-5 w-5 text-gray-600" />
                         </div>
                         <div>
-                          <p className="text-xs text-gray-500 mb-1">Created At</p>
+                          <p className="text-xs text-gray-500 mb-1">
+                            Created At
+                          </p>
                           <p className="font-medium text-gray-900">
                             {formatDateTime(booking.createdAt)}
                           </p>
@@ -477,7 +467,9 @@ export function BookingDetailsModal({
                           <Calendar className="h-5 w-5 text-gray-600" />
                         </div>
                         <div>
-                          <p className="text-xs text-gray-500 mb-1">Last Updated</p>
+                          <p className="text-xs text-gray-500 mb-1">
+                            Last Updated
+                          </p>
                           <p className="font-medium text-gray-900">
                             {formatDateTime(booking.updatedAt)}
                           </p>
@@ -502,6 +494,5 @@ export function BookingDetailsModal({
         </div>
       </div>
     </ModalWrapper>
-  )
+  );
 }
-
