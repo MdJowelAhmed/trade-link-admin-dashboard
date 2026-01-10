@@ -127,34 +127,18 @@ export default function TransactionsHistory() {
             />
 
             {/* Filter Dropdown */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="bg-secondary hover:bg-secondary text-white border-secondary"
-                >
-                  {STATUS_OPTIONS.find(
-                    (option) => option.value === statusFilter
-                  )?.label || "Filter"}
-                  <ChevronDown className="h-4 w-4 ml-2" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-48 bg-secondary hover:bg-secondary text-white border-secondary">
+                <SelectValue placeholder="Filter" />
+              </SelectTrigger>
+              <SelectContent>
                 {STATUS_OPTIONS.map((option) => (
-                  <DropdownMenuItem
-                    key={option.value}
-                    onClick={() => setStatusFilter(option.value)}
-                    className={
-                      statusFilter === option.value
-                        ? "bg-secondary text-white"
-                        : ""
-                    }
-                  >
+                  <SelectItem key={option.value} value={option.value}>
                     {option.label}
-                  </DropdownMenuItem>
+                  </SelectItem>
                 ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
+              </SelectContent>
+            </Select>
           </div>
         </CardHeader>
 
