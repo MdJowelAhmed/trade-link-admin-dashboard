@@ -132,7 +132,7 @@ export default function TransactionsHistory() {
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="outline"
-                  className="bg-yellow-400 hover:bg-yellow-500 text-slate-800 border-yellow-400"
+                  className="bg-secondary hover:bg-secondary text-white border-secondary"
                 >
                   Filter
                   <ChevronDown className="h-4 w-4 ml-2" />
@@ -145,7 +145,7 @@ export default function TransactionsHistory() {
                     onClick={() => setStatusFilter(option.value)}
                     className={
                       statusFilter === option.value
-                        ? 'bg-accent text-accent-foreground'
+                        ? 'bg-secondary text-white'
                         : ''
                     }
                   >

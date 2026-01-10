@@ -8,6 +8,7 @@ import { CarFilterDropdown } from './components/CarFilterDropdown'
 import { CarTable } from './components/CarTable'
 import { AddEditCarModal } from './components/AddEditCarModal'
 import { ViewCarDetailsModal } from './components/ViewCarDetailsModal'
+import { ConfirmDialog } from '@/components/common/ConfirmDialog'
 import { useAppDispatch, useAppSelector } from '@/redux/hooks'
 import {
   setFilters,
@@ -33,6 +34,11 @@ export default function CarList() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isViewModalOpen, setIsViewModalOpen] = useState(false)
   const [selectedCar, setSelectedCar] = useState<Car | null>(null)
+
+  // Confirmation dialog state
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false)
+  const [carToDelete, setCarToDelete] = useState<Car | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   // URL state management
   const [searchQuery, setSearchQuery] = useUrlString('search', '')
@@ -83,12 +89,35 @@ export default function CarList() {
   }
 
   const handleDelete = (car: Car) => {
-    if (window.confirm(`Are you sure you want to delete ${car.name}?`)) {
-      dispatch(deleteCar(car.id))
+    setCarToDelete(car)
+    setIsConfirmOpen(true)
+  }
+
+  const handleConfirmDelete = async () => {
+    if (!carToDelete) return
+
+    setIsDeleting(true)
+    try {
+      // Simulate API call delay if needed
+      await new Promise((resolve) => setTimeout(resolve, 500))
+      
+      dispatch(deleteCar(carToDelete.id))
       toast({
+        variant: 'success',
         title: 'Car Deleted',
-        description: `${car.name} has been deleted successfully.`,
+        description: `${carToDelete.name} has been deleted successfully.`,
       })
+      
+      setIsConfirmOpen(false)
+      setCarToDelete(null)
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to delete car. Please try again.',
+        variant: 'destructive',
+      })
+    } finally {
+      setIsDeleting(false)
     }
   }
 
@@ -260,6 +289,21 @@ export default function CarList() {
           setSelectedCar(null)
         }}
         car={selectedCar}
+      />
+
+      {/* Confirmation Dialog */}
+      <ConfirmDialog
+        open={isConfirmOpen}
+        onClose={() => {
+          setIsConfirmOpen(false)
+          setCarToDelete(null)
+        }}
+        onConfirm={handleConfirmDelete}
+        title="Delete Car"
+        description={`Are you sure you want to delete "${carToDelete?.name}"? This action cannot be undone.`}
+        confirmText="Delete Car"
+        variant="danger"
+        isLoading={isDeleting}
       />
     </motion.div>
   )
