@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { FileText, Save, RotateCcw, Eye } from 'lucide-react'
+import { FileText, Save, Eye } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -67,13 +67,7 @@ export default function TermsSettings() {
     setIsSubmitting(false)
   }
 
-  const handleReset = () => {
-    setTerms(defaultTerms)
-    toast({
-      title: 'Reset Complete',
-      description: 'Terms have been reset to default content.',
-    })
-  }
+
 
   return (
     <motion.div
@@ -97,11 +91,8 @@ export default function TermsSettings() {
               </div>
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" onClick={handleReset}>
-                <RotateCcw className="h-4 w-4 mr-2" />
-                Reset
-              </Button>
-              <Button onClick={handleSave} isLoading={isSubmitting}>
+            
+              <Button onClick={handleSave} isLoading={isSubmitting} className="bg-primary text-white hover:bg-primary/80">
                 <Save className="h-4 w-4 mr-2" />
                 Save Changes
               </Button>

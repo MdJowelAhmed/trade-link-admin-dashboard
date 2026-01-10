@@ -1,5 +1,4 @@
 import React from 'react'
-import { ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react'
 import { cn } from '@/utils/cn'
 import type { TableColumn, SortConfig } from '@/types'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -20,7 +19,6 @@ interface DataTableProps<T> {
 export function DataTable<T>({
   columns,
   data,
-  sortConfig,
   onSort,
   actions,
   emptyMessage = 'No data found',
@@ -29,16 +27,6 @@ export function DataTable<T>({
   rowKeyExtractor,
   onRowClick,
 }: DataTableProps<T>) {
-  const getSortIcon = (key: string) => {
-    if (!sortConfig || sortConfig.key !== key) {
-      return <ArrowUpDown className="h-4 w-4 opacity-50" />
-    }
-    return sortConfig.direction === 'asc' ? (
-      <ArrowUp className="h-4 w-4" />
-    ) : (
-      <ArrowDown className="h-4 w-4" />
-    )
-  }
 
   const getCellValue = (row: T, column: TableColumn<T>) => {
     const keys = String(column.key).split('.')

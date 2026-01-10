@@ -1,6 +1,5 @@
 import { Edit, Eye, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { cn } from '@/utils/cn'
 import type { Car } from '@/types'
 
 interface CarActionButtonsProps {

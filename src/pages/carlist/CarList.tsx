@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button'
 import { Plus, ChevronLeft, ChevronRight } from 'lucide-react'
 import { SearchInput } from '@/components/common/SearchInput'
 import { CarFilterDropdown } from './components/CarFilterDropdown'
-import { CarFilterSidebar } from './components/CarFilterSidebar'
 import { CarTable } from './components/CarTable'
 import { AddEditCarModal } from './components/AddEditCarModal'
 import { ViewCarDetailsModal } from './components/ViewCarDetailsModal'
@@ -15,7 +14,6 @@ import {
   setPage,
   setLimit,
   deleteCar,
-  clearFilters,
 } from '@/redux/slices/carSlice'
 import { useUrlString, useUrlNumber } from '@/hooks/useUrlState'
 import {
@@ -44,7 +42,7 @@ export default function CarList() {
   const [itemsPerPage, setItemsPerPage] = useUrlNumber('limit', 10)
 
   // Redux state
-  const { filteredList, pagination, filters } = useAppSelector(
+  const { filteredList, pagination } = useAppSelector(
     (state) => state.cars
   )
 
@@ -127,16 +125,6 @@ export default function CarList() {
     return pages
   }
 
-  const handleFilterChange = (newFilters: Partial<typeof filters>) => {
-    dispatch(setFilters(newFilters))
-  }
-
-  const handleClearFilters = () => {
-    dispatch(clearFilters())
-    setSearchQuery('')
-    setCarClassFilter('all')
-  }
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -144,55 +132,45 @@ export default function CarList() {
       transition={{ duration: 0.3 }}
       className="space-y-6"
     >
-      <div className="">
-        {/* Filter Sidebar */}
-        {/* <CarFilterSidebar
-          filters={filters}
-          onFilterChange={handleFilterChange}
-          onClearFilters={handleClearFilters}
-        /> */}
+      <Card className="bg-white border-0 shadow-sm">
+        <CardHeader className="flex flex-row items-center justify-between pb-6">
+          <CardTitle className="text-xl font-bold text-slate-800">
+            Car List
+          </CardTitle>
+          <div className="flex items-center gap-3">
+            {/* Search Input */}
+            <SearchInput
+              value={searchQuery}
+              onChange={setSearchQuery}
+              placeholder="Search Car name & Transmission"
+              className="w-[300px]"
+            />
 
-        {/* Main Content */}
-        <div className="flex-1 space-y-6">
-          <Card className="bg-white border-0 shadow-sm">
-            <CardHeader className="flex flex-row items-center justify-between pb-6">
-              <CardTitle className="text-xl font-bold text-slate-800">
-                Car List
-              </CardTitle>
-              <div className="flex items-center gap-3">
-                {/* Search Input */}
-                <SearchInput
-                  value={searchQuery}
-                  onChange={setSearchQuery}
-                  placeholder="Search Car name & Transmission"
-                  className="w-[300px]"
-                />
+            {/* Filter Dropdown */}
+            <CarFilterDropdown
+              value={carClassFilter as CarClass | 'all'}
+              onChange={setCarClassFilter}
+            />
 
-                {/* Filter Dropdown */}
-                <CarFilterDropdown
-                  value={carClassFilter as CarClass | 'all'}
-                  onChange={setCarClassFilter}
-                />
+            {/* Add New Car Button */}
+            <Button
+              onClick={handleAddNew}
+              className="bg-primary-foreground hover:bg-blue-700 text-white"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add New Car
+            </Button>
+          </div>
+        </CardHeader>
 
-                {/* Add New Car Button */}
-                <Button
-                  onClick={handleAddNew}
-                  className="bg-primary-foreground hover:bg-blue-700 text-white"
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add New Car
-                </Button>
-              </div>
-            </CardHeader>
-
-            <CardContent className="p-0">
-              {/* Table */}
-              <CarTable
-                cars={paginatedData}
-                onEdit={handleEdit}
-                onView={handleView}
-                onDelete={handleDelete}
-              />
+        <CardContent className="p-0">
+          {/* Table */}
+          <CarTable
+            cars={paginatedData}
+            onEdit={handleEdit}
+            onView={handleView}
+            onDelete={handleDelete}
+          />
 
           {/* Pagination */}
           <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100">
@@ -264,11 +242,9 @@ export default function CarList() {
                 <ChevronRight className="h-4 w-4 ml-1" />
               </Button>
             </div>
-            </div>
-          </CardContent>
-        </Card>
-        </div>
-      </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Add/Edit Car Modal */}
       <AddEditCarModal

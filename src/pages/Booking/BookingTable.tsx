@@ -54,7 +54,7 @@ export function BookingTable({ onAddBooking, onViewDetails }: BookingTableProps)
   const [itemsPerPage, setItemsPerPage] = useUrlNumber("limit", 10);
 
   // Redux state
-  const { filteredList, pagination, filters } = useAppSelector(
+  const { filteredList, pagination } = useAppSelector(
     (state) => state.bookings
   );
 

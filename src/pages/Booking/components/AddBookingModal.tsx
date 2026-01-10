@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Calendar, User, Car, CreditCard, Clock, Mail, Phone, DollarSign, CheckCircle } from 'lucide-react'
+import { Calendar, User, Car, CreditCard, Mail, Phone, DollarSign } from 'lucide-react'
 import { ModalWrapper } from '@/components/common'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -32,17 +32,6 @@ interface AddBookingModalProps {
   open: boolean
   onClose: () => void
 }
-
-const PLAN_OPTIONS = [
-  { value: '1 Day', label: '1 Day' },
-  { value: '2 Days', label: '2 Days' },
-  { value: '3 Days', label: '3 Days' },
-  { value: '4 Days', label: '4 Days' },
-  { value: '5 Days', label: '5 Days' },
-  { value: '1 Week', label: '1 Week' },
-  { value: '2 Weeks', label: '2 Weeks' },
-  { value: '1 Month', label: '1 Month' },
-]
 
 export function AddBookingModal({ open, onClose }: AddBookingModalProps) {
   const dispatch = useAppDispatch()
@@ -74,7 +63,8 @@ export function AddBookingModal({ open, onClose }: AddBookingModalProps) {
   })
 
   const watchedCarId = watch('carId')
-  // const selectedCar = cars.find((car) => car.id === watchedCarId)
+  const watchedStartDate = watch('startDate')
+  const watchedEndDate = watch('endDate')
 
   // Reset form when modal opens
   useEffect(() => {
@@ -96,13 +86,11 @@ export function AddBookingModal({ open, onClose }: AddBookingModalProps) {
 
   // Calculate plan and payment based on dates
   useEffect(() => {
-    const startDate = watch('startDate')
-    const endDate = watch('endDate')
     const selectedCar = cars.find((car) => car.id === watchedCarId)
 
-    if (startDate && endDate && selectedCar) {
-      const start = new Date(startDate)
-      const end = new Date(endDate)
+    if (watchedStartDate && watchedEndDate && selectedCar) {
+      const start = new Date(watchedStartDate)
+      const end = new Date(watchedEndDate)
       const diffTime = Math.abs(end.getTime() - start.getTime())
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
 
@@ -119,7 +107,7 @@ export function AddBookingModal({ open, onClose }: AddBookingModalProps) {
         setValue('payment', `€${totalAmount}`)
       }
     }
-  }, [watch('startDate'), watch('endDate'), watchedCarId, cars, setValue])
+  }, [watchedStartDate, watchedEndDate, watchedCarId, cars, setValue])
 
   const onSubmit = async (data: BookingFormSchema) => {
     setIsSubmitting(true)

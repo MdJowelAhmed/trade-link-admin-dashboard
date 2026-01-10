@@ -15,8 +15,8 @@ export function BookingStatCard() {
                         className={`bg-[#FFF] rounded-xl p-5 shadow-sm`}
                     >
                         <div className="flex items-start gap-4">
-                            <div className={` p-3 rounded-lg`}>
-                                <Icon className={`h-6 w-6 ${stat.iconColor}`} />
+                            <div className={`p-3 rounded-lg ${stat.iconBgColor}`}>
+                                <Icon />
                             </div>
                             <div className="flex-1">
                                 <p className="lg:text-xl font-medium lg:font-semibold text-gray-600">

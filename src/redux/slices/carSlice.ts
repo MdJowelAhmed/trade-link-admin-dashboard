@@ -78,39 +78,41 @@ const carSlice = createSlice({
       if (state.filters.transmission !== 'all') {
         if (Array.isArray(state.filters.transmission)) {
           filtered = filtered.filter((car) => 
-            state.filters.transmission.includes(car.transmission)
+            (state.filters.transmission as ('Automatic' | 'Manual')[]).includes(car.transmission)
           )
-        } else {
-          filtered = filtered.filter((car) => car.transmission === state.filters.transmission)
         }
       }
       
       // Seats filter
       if (state.filters.seats !== 'all' && Array.isArray(state.filters.seats)) {
+        const seatsArray = state.filters.seats as (2 | 4 | 5 | 7 | 9)[]
         filtered = filtered.filter((car) => 
-          state.filters.seats.includes(car.seats as any)
+          seatsArray.includes(car.seats as 2 | 4 | 5 | 7 | 9)
         )
       }
       
       // Fuel type filter
       if (state.filters.fuelType !== 'all' && Array.isArray(state.filters.fuelType)) {
+        const fuelTypeArray = state.filters.fuelType as ('Petrol' | 'Diesel' | 'Electric' | 'Hybrid')[]
         filtered = filtered.filter((car) => 
-          car.fuelType && state.filters.fuelType.includes(car.fuelType as any)
+          car.fuelType && fuelTypeArray.includes(car.fuelType)
         )
       }
       
       // Doors filter
       if (state.filters.doors !== 'all' && Array.isArray(state.filters.doors)) {
+        const doorsArray = state.filters.doors as (2 | 4 | 5)[]
         filtered = filtered.filter((car) => 
-          state.filters.doors.includes(car.doors as any)
+          doorsArray.includes(car.doors as 2 | 4 | 5)
         )
       }
       
       // Mileage limit filter
       if (state.filters.mileageLimit !== 'all' && Array.isArray(state.filters.mileageLimit)) {
+        const mileageArray = state.filters.mileageLimit as ('Unlimited Mileage' | '200km (per day limit)' | '400km (per day limit)' | '500km (per day limit)')[]
         filtered = filtered.filter((car) => {
           if (!car.kilometers) return false
-          return state.filters.mileageLimit.some((limit) => 
+          return mileageArray.some((limit) => 
             car.kilometers?.includes(limit) || 
             (limit === 'Unlimited Mileage' && car.kilometers?.toLowerCase().includes('unlimited'))
           )
@@ -119,19 +121,21 @@ const carSlice = createSlice({
       
       // Fuel policy filter
       if (state.filters.fuelPolicy !== 'all' && Array.isArray(state.filters.fuelPolicy)) {
+        const fuelPolicyArray = state.filters.fuelPolicy as ('Full to Full' | 'Full to Empty' | 'Pre-paid' | 'Same to Same' | 'Fair')[]
         filtered = filtered.filter((car) => 
-          car.fuelPolicy && state.filters.fuelPolicy.includes(car.fuelPolicy as any)
+          car.fuelPolicy && fuelPolicyArray.includes(car.fuelPolicy)
         )
       }
       
       // Rating filter
       if (state.filters.rating !== 'all' && Array.isArray(state.filters.rating)) {
+        const ratingArray = state.filters.rating as ('Top Rated' | 'Most Popular')[]
         filtered = filtered.filter((car) => {
-          if (state.filters.rating.includes('Top Rated')) {
-            return car.isTopRated === true || (car.rating && car.rating >= 4.5)
+          if (ratingArray.includes('Top Rated')) {
+            if (car.isTopRated === true || (car.rating && car.rating >= 4.5)) return true
           }
-          if (state.filters.rating.includes('Most Popular')) {
-            return car.isMostPopular === true
+          if (ratingArray.includes('Most Popular')) {
+            if (car.isMostPopular === true) return true
           }
           return false
         })

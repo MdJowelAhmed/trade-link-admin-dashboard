@@ -1,11 +1,11 @@
 import { useState, useMemo } from 'react'
 import { formatCurrency, formatCompactNumber } from '@/utils/formatters'
-import { AvailableCars, RentalCars, TotalBooking, TotalRevenue } from '@/components/common/svg/dashboardSVG'
+import { AvailableCars, RentalCars, TotalBooking, TotalRevenue } from '@/components/common/svg/DashboardSVG'
 import { StatCard } from './StatCard'
 import { EarningsSummaryChart } from './EarningsSummaryChart'
 import { RentStatusChart } from './RentStatusChart'
 import { RecentActivityCard } from './RecentActivityCard'
-import { yearlyData, recentActivityData } from './dashboardData'
+import { yearlyData } from './dashboardData'
 
 export default function Dashboard() {
   const [selectedYear, setSelectedYear] = useState('2024')
@@ -69,7 +69,7 @@ export default function Dashboard() {
 
       {/* Recent Activity */}
       <div>
-        <RecentActivityCard activities={recentActivityData} />
+        <RecentActivityCard />
       </div>
     </div>
   )

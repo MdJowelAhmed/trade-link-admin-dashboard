@@ -51,8 +51,12 @@ export function RentStatusChart() {
                                     outerRadius={90}
                                     paddingAngle={2}
                                     dataKey="value"
-                                    label={({ cx, cy, midAngle, innerRadius, outerRadius, value, index }) => {
+                                    label={({ cx, cy, midAngle, outerRadius, value, index }) => {
                                         const RADIAN = Math.PI / 180;
+                                        
+                                        if (midAngle === undefined) {
+                                            return null;
+                                        }
 
                                         // Line coordinates - starts from border
                                         const x1 = cx + (outerRadius) * Math.cos(-midAngle * RADIAN);

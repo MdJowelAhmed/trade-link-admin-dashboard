@@ -49,7 +49,7 @@ export function AddEditAgencyModal({
   const dispatch = useAppDispatch()
   const { toast } = useToast()
 
-  const [logoFile, setLogoFile] = useState<File | null>(null)
+  const [_logoFile, setLogoFile] = useState<File | null>(null)
   const [logoPreview, setLogoPreview] = useState<string>('')
   const [docFiles, setDocFiles] = useState<File[]>([])
 

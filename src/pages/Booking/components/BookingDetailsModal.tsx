@@ -5,11 +5,9 @@ import {
   CreditCard,
   Phone,
   Mail,
-  MapPin,
   CheckCircle,
   Clock,
   RefreshCw,
-  CarIcon,
 } from "lucide-react";
 import { ModalWrapper } from "@/components/common";
 import { Button } from "@/components/ui/button";

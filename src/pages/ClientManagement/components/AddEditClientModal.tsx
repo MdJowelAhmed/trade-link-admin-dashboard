@@ -49,9 +49,9 @@ const countries = [
 export function AddEditClientModal({ open, onClose, client }: AddEditClientModalProps) {
   const dispatch = useAppDispatch()
   const { toast } = useToast()
-  const [photo, setPhoto] = useState<File | null>(null)
+  const [_photo, setPhoto] = useState<File | null>(null)
   const [photoPreview, setPhotoPreview] = useState<string>('')
-  const [licenseFile, setLicenseFile] = useState<File | null>(null)
+  const [_licenseFile, setLicenseFile] = useState<File | null>(null)
   const [licensePreview, setLicensePreview] = useState<string>('')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -60,8 +60,6 @@ export function AddEditClientModal({ open, onClose, client }: AddEditClientModal
   const {
     register,
     handleSubmit,
-    setValue,
-    watch,
     reset,
     formState: { errors },
   } = useForm<ClientFormData>({

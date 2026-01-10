@@ -1,6 +1,5 @@
 import { CompletedBooking, PendingBooking, UpcomingBooking } from '@/components/common/svg/BookingSVG'
-import { AvailableCars } from '@/components/common/svg/dashboardSVG'
-import { Calendar, Clock, CheckCircle, Car } from 'lucide-react'
+import { AvailableCars } from '@/components/common/svg/DashboardSVG'
 
 // Booking statistics data
 export const bookingStats = [

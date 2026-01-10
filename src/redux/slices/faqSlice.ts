@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import type { FAQ, FAQFilters, FAQPosition, PaginationState } from '@/types'
+import type { FAQ, FAQFilters, PaginationState } from '@/types'
 import { DEFAULT_PAGINATION } from '@/utils/constants'
 
 // Mock data for demonstration

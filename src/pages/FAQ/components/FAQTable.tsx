@@ -3,7 +3,6 @@ import { Button } from '@/components/ui/button'
 import { Eye, Edit, Trash2 } from 'lucide-react'
 import { cn } from '@/utils/cn'
 import type { FAQ } from '@/types'
-import { formatDate } from '@/utils/formatters'
 
 interface FAQTableProps {
   faqs: FAQ[]

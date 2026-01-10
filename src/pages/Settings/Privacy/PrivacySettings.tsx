@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Shield, Save, RotateCcw, Eye } from 'lucide-react'
+import { Shield, Save, Eye } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -89,13 +89,6 @@ export default function PrivacySettings() {
     setIsSubmitting(false)
   }
 
-  const handleReset = () => {
-    setPrivacy(defaultPrivacy)
-    toast({
-      title: 'Reset Complete',
-      description: 'Privacy Policy has been reset to default content.',
-    })
-  }
 
   return (
     <motion.div
@@ -119,11 +112,8 @@ export default function PrivacySettings() {
               </div>
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" onClick={handleReset}>
-                <RotateCcw className="h-4 w-4 mr-2" />
-                Reset
-              </Button>
-              <Button onClick={handleSave} isLoading={isSubmitting}>
+             
+              <Button onClick={handleSave} isLoading={isSubmitting} className="bg-primary text-white hover:bg-primary/80">
                 <Save className="h-4 w-4 mr-2" />
                 Save Changes
               </Button>
