@@ -43,12 +43,11 @@ export function CarTable({ cars, onEdit, onView, onDelete }: CarTableProps) {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.05 * index }}
                 className={cn(
-                  'hover:border  transition-colors',
-                  
+                  'hover:bg-gray-50 transition-colors',
                 )}
               >
                 {/* Car Name Column */}
-                <td className="px-6 py-4">
+                <td className="px-6 py-2">
                   <div className="flex items-center gap-3">
                     <img
                       src={car.image}
@@ -67,7 +66,7 @@ export function CarTable({ cars, onEdit, onView, onDelete }: CarTableProps) {
                 </td>
 
                 {/* Doors Column */}
-                <td className="px-6 py-4">
+                <td className="px-6 py-2">
                   <div className="flex items-center gap-2">
                     <DoorOpen className="h-5 w-5 text-gray-600" />
                     <span className="text-sm text-slate-700">
@@ -77,7 +76,7 @@ export function CarTable({ cars, onEdit, onView, onDelete }: CarTableProps) {
                 </td>
 
                 {/* Transmission Column */}
-                <td className="px-6 py-4">
+                <td className="px-6 py-2">
                   <div className="flex items-center gap-2">
                     <Gauge className="h-5 w-5 text-gray-600" />
                     <span className="text-sm text-slate-700">
@@ -87,7 +86,7 @@ export function CarTable({ cars, onEdit, onView, onDelete }: CarTableProps) {
                 </td>
 
                 {/* Car Seats Column */}
-                <td className="px-6 py-4">
+                <td className="px-6 py-2">
                   <div className="flex items-center gap-2">
                     <Users className="h-5 w-5 text-gray-600" />
                     <span className="text-sm text-slate-700">
@@ -97,7 +96,7 @@ export function CarTable({ cars, onEdit, onView, onDelete }: CarTableProps) {
                 </td>
 
                 {/* Amount Column */}
-                <td className="px-6 py-4">
+                <td className="px-6 py-2">
                   <div className="flex flex-col">
                     <span className="text-lg font-bold text-slate-800">
                       €{car.amount.toFixed(2)}
@@ -109,7 +108,7 @@ export function CarTable({ cars, onEdit, onView, onDelete }: CarTableProps) {
                 </td>
 
                 {/* Actions Column */}
-                <td className="px-6 py-4">
+                <td className="px-6 py-2">
                   <CarActionButtons
                     car={car}
                     onEdit={onEdit}

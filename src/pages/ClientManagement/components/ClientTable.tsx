@@ -49,7 +49,7 @@ export function ClientTable({
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.05 * index }}
                 className={cn(
-                  'hover:bg-gray-50 transition-colors border-l-4',
+                  'hover:bg-gray-50 transition-colors ',
                   client.status === 'verified'
                     ? 'border-green-500'
                     : client.status === 'requested'

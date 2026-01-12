@@ -48,8 +48,8 @@ export function AgencyTable({
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.05 * index }}
                 className={cn(
-                  'hover:bg-gray-50 transition-colors border-l-4',
-                  agency.status === 'active' ? 'border-green-500' : 'border-gray-300'
+                  'hover:bg-gray-50 transition-colors ',
+                  agency.status === 'active' ? ' border-green-500' : 'border-gray-300'
                 )}
               >
                 {/* Agency Name + Logo */}
