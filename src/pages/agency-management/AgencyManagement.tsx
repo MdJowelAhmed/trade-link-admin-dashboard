@@ -129,7 +129,7 @@ export default function AgencyManagement() {
               value={statusFilter}
               onValueChange={(val) => setStatusFilter(val)}
             >
-              <SelectTrigger className="w-[140px] h-9">
+              <SelectTrigger className="w-[140px] h-[44px] bg-secondary text-white">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>

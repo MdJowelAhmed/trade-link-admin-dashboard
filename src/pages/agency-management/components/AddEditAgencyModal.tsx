@@ -7,6 +7,13 @@ import { ModalWrapper } from '@/components/common'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { cn } from '@/utils/cn'
 import { useAppDispatch } from '@/redux/hooks'
 import { addAgency, updateAgency } from '@/redux/slices/agencySlice'
@@ -58,6 +65,8 @@ export function AddEditAgencyModal({
     register,
     handleSubmit,
     reset,
+    watch,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<AgencyFormData>({
     resolver: zodResolver(agencySchema),
@@ -229,24 +238,31 @@ export function AddEditAgencyModal({
 
           <div className="space-y-1.5">
             <Label htmlFor="country">Country</Label>
-            <select
-              id="country"
-              {...register('country')}
-              className={cn(
-                'flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background',
-                'file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground',
-                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
-                'disabled:cursor-not-allowed disabled:opacity-50',
-                errors.country && 'border-destructive'
-              )}
+            <Select
+              value={watch('country') || ''}
+              onValueChange={(val) => setValue('country', val)}
             >
-              <option value="">Select Country</option>
-              {countries.map((country) => (
-                <option key={country} value={country}>
-                  {country}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger
+                className={cn(
+                  'w-full',
+                  errors.country && 'border-destructive focus:ring-destructive'
+                )}
+                error={!!errors.country}
+              >
+                <SelectValue placeholder="Select Country" />
+              </SelectTrigger>
+              <SelectContent>
+                {countries.map((country) => (
+                  <SelectItem
+                    key={country}
+                    value={country}
+                    className="cursor-pointer"
+                  >
+                    {country}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             {errors.country && (
               <p className="text-xs text-destructive">
                 {errors.country.message}
@@ -368,7 +384,7 @@ export function AddEditAgencyModal({
                       <Upload className="h-6 w-6 text-blue-600" />
                     </div>
                     <p className="text-sm font-medium text-gray-700 text-center">
-                      Upload agency documents (Image/PDF)
+                      Upload (Image/PDF)
                     </p>
                   </div>
                   <Button
