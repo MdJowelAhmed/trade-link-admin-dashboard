@@ -24,8 +24,9 @@ export function ViewAgencyDetailsModal({
       title="Agency Details"
       description="View complete agency information"
       size="lg"
+      className="bg-white"
     >
-      <div className="space-y-6">
+      <div className="space-y-6 ">
         {/* Agency Logo & Basic Info */}
         <div className="flex gap-6">
           <div className="w-32 h-32 rounded-xl overflow-hidden bg-muted flex-shrink-0 border-2 border-gray-200">
@@ -94,23 +95,19 @@ export function ViewAgencyDetailsModal({
               label="Phone"
               value={agency.phone}
             />
-          </div>
-        </div>
-
-        <Separator />
-
-        {/* Location Information */}
-        <div>
-          <h4 className="text-sm font-semibold text-muted-foreground mb-3 flex items-center gap-2">
-            <MapPin className="h-4 w-4" />
-            Location Information
-          </h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <DetailItem
+               <DetailItem
               icon={Globe}
               label="Country"
               value={agency.country}
             />
+          </div>
+        </div>
+
+        {/* Location Information */}
+        <div>
+       
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          
             <DetailItem
               icon={MapPin}
               label="Address"
@@ -146,25 +143,7 @@ export function ViewAgencyDetailsModal({
           </>
         )}
 
-        {/* Timestamps */}
-        <div>
-          <h4 className="text-sm font-semibold text-muted-foreground mb-3 flex items-center gap-2">
-            <Calendar className="h-4 w-4" />
-            Timeline
-          </h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <DetailItem
-              icon={Calendar}
-              label="Created At"
-              value={formatDate(agency.createdAt)}
-            />
-            <DetailItem
-              icon={Calendar}
-              label="Last Updated"
-              value={formatDate(agency.updatedAt)}
-            />
-          </div>
-        </div>
+      
       </div>
     </ModalWrapper>
   )
