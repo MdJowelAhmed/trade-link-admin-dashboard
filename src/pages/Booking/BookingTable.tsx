@@ -168,13 +168,13 @@ export function BookingTable({ onAddBooking, onViewDetails }: BookingTableProps)
   const getPaymentStatusBadge = (status: string) => {
     if (status === "Paid") {
       return (
-        <span className="bg-gray-100 text-accent-foreground text-xs px-3 py-1 rounded-sm font-medium">
+        <span className="bg-gray-100 text-accent-foreground text-xs w-20 text-center px-3 py-1 rounded-full font-medium">
           {status}
         </span>
       );
     }
     return (
-      <span className="bg-gray-100 text-accent-foreground text-xs px-3 py-1 rounded-sm font-medium">
+      <span className="bg-gray-100 text-accent-foreground text-xs w-20 text-center px-3 py-1 rounded-full font-medium">
         {status}
       </span>
     );
@@ -287,7 +287,7 @@ export function BookingTable({ onAddBooking, onViewDetails }: BookingTableProps)
                             <span className="text-accent-foreground w-8">
                               Start
                             </span>
-                            <span className="bg-secondary text-white px-3 py-1 rounded text-[11px] font-medium min-w-[80px] text-center">
+                            <span className="bg-secondary text-white px-3 py-1 rounded-sm text-[11px] font-medium w-[95px] text-center">
                               {booking.startDate}
                             </span>
                           </div>
@@ -295,7 +295,7 @@ export function BookingTable({ onAddBooking, onViewDetails }: BookingTableProps)
                             <span className="text-accent-foreground w-8">
                               End
                             </span>
-                            <span className="bg-muted text-white px-3 py-1 rounded text-[11px] font-medium min-w-[80px] text-center">
+                            <span className="bg-muted text-white px-3  py-1 rounded-sm text-[11px] font-medium w-[95px] text-center">
                               {booking.endDate}
                             </span>
                           </div>
@@ -309,7 +309,7 @@ export function BookingTable({ onAddBooking, onViewDetails }: BookingTableProps)
                           <span className="text-sm font-medium text-slate-700">
                             {booking.carModel}
                           </span>
-                          <span className="bg-gray-100 text-accent-foreground text-xs px-2 py-0.5 rounded w-fit">
+                          <span className="bg-gray-100 text-accent-foreground text-xs px-2 py-0.5 rounded-full w-20 text-center">
                             {booking.licensePlate}
                           </span>
                         </div>

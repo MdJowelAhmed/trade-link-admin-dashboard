@@ -74,7 +74,7 @@ export function ViewCarDetailsModal({ open, onClose, car }: ViewCarDetailsModalP
           </div>
         </div>
 
-        <Separator />
+        {/* <Separator /> */}
 
         {/* Car Specifications */}
         <div>
@@ -182,14 +182,14 @@ export function ViewCarDetailsModal({ open, onClose, car }: ViewCarDetailsModalP
         {/* Car Owner Information */}
         {car.owner && (
           <>
-            <Separator />
+            {/* <Separator /> */}
             <div>
               <h3 className="text-lg font-semibold mb-4 text-gray-900">Car Owner Information</h3>
-              <Card className="border border-gray-200">
+              <Card className="border border-gray-200 ">
                 <CardContent className="p-6">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* Owner Name */}
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2">
                       <div className="h-12 w-12 rounded-lg bg-blue-100 flex items-center justify-center">
                         <User className="h-6 w-6 text-blue-600" />
                       </div>
@@ -200,7 +200,7 @@ export function ViewCarDetailsModal({ open, onClose, car }: ViewCarDetailsModalP
                     </div>
 
                     {/* Owner Email */}
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2">
                       <div className="h-12 w-12 rounded-lg bg-purple-100 flex items-center justify-center">
                         <Mail className="h-6 w-6 text-purple-600" />
                       </div>
@@ -211,9 +211,9 @@ export function ViewCarDetailsModal({ open, onClose, car }: ViewCarDetailsModalP
                     </div>
 
                     {/* Owner Phone */}
-                    <div className="flex items-center gap-3">
-                      <div className="h-12 w-12 rounded-lg bg-green-100 flex items-center justify-center">
-                        <Phone className="h-6 w-6 text-green-600" />
+                    <div className="flex items-center gap-2">
+                      <div className="h-10 w-10 rounded-lg bg-green-100 flex items-center justify-center">
+                        <Phone className="h-5 w-5 text-green-600" />
                       </div>
                       <div>
                         <p className="text-xs text-gray-500 mb-1">Phone</p>
@@ -230,18 +230,18 @@ export function ViewCarDetailsModal({ open, onClose, car }: ViewCarDetailsModalP
         {/* Insurance & Coverage */}
         {car.insuranceCoverage && (
           <>
-            <Separator />
+           
             <div>
               <h3 className="text-lg font-semibold mb-4 text-gray-900">Insurance & Coverage</h3>
               <Card className="border border-gray-200">
-                <CardContent className="p-6">
+                <div className="">
                   <TiptapEditor
                     content={car.insuranceCoverage}
                     onChange={() => {}}
                     editable={false}
                     className="h-[280px]"
                   />
-                </CardContent>
+                </div>
               </Card>
             </div>
           </>
@@ -250,18 +250,18 @@ export function ViewCarDetailsModal({ open, onClose, car }: ViewCarDetailsModalP
         {/* Terms & Conditions */}
         {car.termsConditions && (
           <>
-            <Separator />
+            {/* <Separator /> */}
             <div>
               <h3 className="text-lg font-semibold mb-4 text-gray-900">Terms & Conditions</h3>
               <Card className="border border-gray-200">
-                <CardContent className="p-6">
+                <div className="">
                   <TiptapEditor
                     content={car.termsConditions}
                     onChange={() => {}}
                     editable={false}
                     className="h-[280px]"
                   />
-                </CardContent>
+                </div>
               </Card>
             </div>
           </>
