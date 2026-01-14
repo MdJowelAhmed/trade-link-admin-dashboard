@@ -144,7 +144,9 @@ export function Sidebar() {
         <div className="flex items-center justify-between h-36 px-4 border-b">
           <div className="flex items-center gap-3">
             <div className="h-12 w-12 rounded-lg bg-primary flex items-center justify-center">
-              <span className="text-primary text-white font-bold text-lg">D</span>
+              <div className="text-primary text-white font-bold text-lg">
+                <img src="/assets/logo.png" alt="Motly" className="h-10 w-10" />
+              </div>
             </div>
             {!sidebarCollapsed && (
               <span className="font-display font-bold text-xl text-accent">Dashboard</span>
@@ -232,7 +234,7 @@ export function Sidebar() {
         <div className="p-4 border-t">
           {!sidebarCollapsed && (
             <p className="text-xs text-muted-foreground text-center">
-              © 2024 Dashboard v1.0
+              © 2026 Motly v1.0
             </p>
           )}
         </div>
