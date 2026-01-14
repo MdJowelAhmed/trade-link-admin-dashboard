@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { DoorOpen, Gauge, Users } from 'lucide-react'
+// import { DoorOpen, Gauge, Users } from 'lucide-react'
 import { CarActionButtons } from './CarActionButtons'
 import { cn } from '@/utils/cn'
 import type { Car } from '@/types'
