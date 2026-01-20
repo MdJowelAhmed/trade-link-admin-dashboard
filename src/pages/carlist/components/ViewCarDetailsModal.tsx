@@ -1,8 +1,6 @@
 import { Star, DoorOpen, Users, Luggage, Snowflake, Settings, Fuel, Gauge, Mail, Phone, User, Calendar, Euro } from 'lucide-react'
 import { ModalWrapper, TiptapEditor } from '@/components/common'
-import { Button } from '@/components/ui/button'
 // import { Separator } from '@/components/ui/separator'
-import { Card, CardContent } from '@/components/ui/card'
 import type { Car } from '@/types'
 import { cn } from '@/utils/cn'
 
