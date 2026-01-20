@@ -75,60 +75,60 @@ export function ViewCarDetailsModal({ open, onClose, car }: ViewCarDetailsModalP
         {(car.pricing || car.amount) && (
           <div>
             <h3 className="text-lg font-semibold mb-4 text-gray-900">Pricing Information</h3>
-            <Card className="border border-gray-200">
-              <CardContent className="p-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="border border-gray-200 rounded-lg p-4">
+              <div className="">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
                   {/* 1 Day */}
-                  <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div className=" p-4 bg-gray-50 rounded-lg flex flex-col items-center justify-center">
                     <div className="flex items-center gap-2">
-                      <Calendar className="h-5 w-5 text-gray-600" />
+                      {/* <Calendar className="h-5 w-5 text-gray-600" /> */}
                       <span className="text-sm font-medium text-gray-700">1 Day</span>
                     </div>
-                    <span className="text-lg font-bold text-gray-900">
+                    <span className="text-lg font-semibold text-gray-900">
                       €{car.pricing?.oneDay?.toFixed(2) || car.amount?.toFixed(2) || '0.00'}
                     </span>
                   </div>
 
                   {/* 3 Days */}
-                  <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div className=" p-3 bg-gray-50 rounded-lg flex flex-col items-center justify-center">
                     <div className="flex items-center gap-2">
-                      <Calendar className="h-5 w-5 text-gray-600" />
+                      {/* <Calendar className="h-5 w-5 text-gray-600" /> */}
                       <span className="text-sm font-medium text-gray-700">3 Days</span>
                     </div>
-                    <span className="text-lg font-bold text-gray-900">
+                    <span className="text-lg font-semibold text-gray-900">
                       €{car.pricing?.threeDays?.toFixed(2) || (car.amount ? (car.amount * 3).toFixed(2) : '0.00')}
                     </span>
                   </div>
 
                   {/* 7 Days */}
-                  <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div className=" p-3 bg-gray-50 rounded-lg flex flex-col items-center justify-center">
                     <div className="flex items-center gap-2">
-                      <Calendar className="h-5 w-5 text-gray-600" />
+                      {/* <Calendar className="h-5 w-5 text-gray-600" /> */}
                       <span className="text-sm font-medium text-gray-700">7 Days</span>
                     </div>
-                    <span className="text-lg font-bold text-gray-900">
+                    <span className="text-lg font-semibold text-gray-900">
                       €{car.pricing?.sevenDays?.toFixed(2) || (car.amount ? (car.amount * 7).toFixed(2) : '0.00')}
                     </span>
                   </div>
 
                   {/* 14 Days */}
-                  <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div className=" p-3 bg-gray-50 rounded-lg flex flex-col items-center justify-center">
                     <div className="flex items-center gap-2">
-                      <Calendar className="h-5 w-5 text-gray-600" />
+                      {/* <Calendar className="h-5 w-5 text-gray-600" /> */}
                       <span className="text-sm font-medium text-gray-700">14 Days</span>
                     </div>
-                    <span className="text-lg font-bold text-gray-900">
+                    <span className="text-lg font-semibold text-gray-900">
                       €{car.pricing?.fourteenDays?.toFixed(2) || (car.amount ? (car.amount * 14).toFixed(2) : '0.00')}
                     </span>
                   </div>
 
                   {/* 1 Month */}
-                  <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div className=" p-3 bg-gray-50 rounded-lg flex flex-col items-center justify-center">
                     <div className="flex items-center gap-2">
-                      <Calendar className="h-5 w-5 text-gray-600" />
+                      {/* <Calendar className="h-5 w-5 text-gray-600" /> */}
                       <span className="text-sm font-medium text-gray-700">1 Month</span>
                     </div>
-                    <span className="text-lg font-bold text-gray-900">
+                    <span className="text-lg font-semibold text-gray-900">
                       €{car.pricing?.oneMonth?.toFixed(2) || (car.amount ? (car.amount * 30).toFixed(2) : '0.00')}
                     </span>
                   </div>
@@ -136,7 +136,7 @@ export function ViewCarDetailsModal({ open, onClose, car }: ViewCarDetailsModalP
 
                 {/* Weekend Pricing */}
                 {car.weekend && car.weekend.selectedDays.length > 0 && (
-                  <div className="mt-6 pt-6 border-t border-gray-200">
+                  <div className="mt-6 ">
                     <div className="flex items-center gap-2 mb-3">
                       <Calendar className="h-5 w-5 text-blue-600" />
                       <h4 className="font-semibold text-gray-900">Weekend Pricing</h4>
@@ -160,8 +160,8 @@ export function ViewCarDetailsModal({ open, onClose, car }: ViewCarDetailsModalP
                     </div>
                   </div>
                 )}
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </div>
         )}
 
@@ -170,58 +170,58 @@ export function ViewCarDetailsModal({ open, onClose, car }: ViewCarDetailsModalP
           <h3 className="text-lg font-semibold mb-4 text-gray-900">Specifications</h3>
           <div className="grid grid-cols-5 gap-4">
             {/* Doors */}
-            <Card className="border border-gray-200">
-              <CardContent className="p-4 flex flex-col items-center gap-2">
+            <div className="border border-gray-200 rounded-lg ">
+              <div className="p-4 flex flex-col items-center gap-2">
                 <div className="h-12 w-12 rounded-lg bg-gray-100 flex items-center justify-center">
                   <DoorOpen className="h-6 w-6 text-gray-600" />
                 </div>
                 <p className="text-sm font-medium text-gray-700">{car.doors} Doors</p>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
 
             {/* Seats */}
-            <Card className="border border-gray-200">
-              <CardContent className="p-4 flex flex-col items-center gap-2">
+            <div className="border border-gray-200 rounded-lg ">
+              <div className="p-4 flex flex-col items-center gap-2">
                 <div className="h-12 w-12 rounded-lg bg-gray-100 flex items-center justify-center">
                   <Users className="h-6 w-6 text-gray-600" />
                 </div>
                 <p className="text-sm font-medium text-gray-700">{car.seats} Seats</p>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
 
             {/* Suitcases */}
-            <Card className="border border-gray-200">
-              <CardContent className="p-4 flex flex-col items-center gap-2">
+            <div className="border border-gray-200 rounded-lg ">
+              <div className="p-4 flex flex-col items-center gap-2">
                 <div className="h-12 w-12 rounded-lg bg-gray-100 flex items-center justify-center">
                   <Luggage className="h-6 w-6 text-gray-600" />
                 </div>
                 <p className="text-sm font-medium text-gray-700">
                   {car.suitcases || 'N/A'}
                 </p>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
 
             {/* Climate */}
-            <Card className="border border-gray-200">
-              <CardContent className="p-4 flex flex-col items-center gap-2">
+            <div className="border border-gray-200 rounded-lg ">
+              <div className="p-4 flex flex-col items-center gap-2">
                 <div className="h-12 w-12 rounded-lg bg-gray-100 flex items-center justify-center">
                   <Snowflake className="h-6 w-6 text-gray-600" />
                 </div>
                 <p className="text-sm font-medium text-gray-700">
                   {car.climate || 'N/A'}
                 </p>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
 
             {/* Transmission */}
-            <Card className="border border-gray-200">
-              <CardContent className="p-4 flex flex-col items-center gap-2">
+            <div className="border border-gray-200 rounded-lg ">
+              <div className="p-4 flex flex-col items-center gap-2">
                 <div className="h-12 w-12 rounded-lg bg-gray-100 flex items-center justify-center">
                   <Settings className="h-6 w-6 text-gray-600" />
                 </div>
                 <p className="text-sm font-medium text-gray-700">{car.transmission}</p>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </div>
         </div>
 
