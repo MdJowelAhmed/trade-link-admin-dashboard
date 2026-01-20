@@ -100,6 +100,19 @@ export interface CarOwner {
   phone: string
 }
 
+export interface PricingConfig {
+  oneDay: number
+  threeDays: number
+  sevenDays: number
+  fourteenDays: number
+  oneMonth: number
+}
+
+export interface WeekendConfig {
+  selectedDays: ('Sun' | 'Mon' | 'Tue' | 'Wed' | 'Thu' | 'Fri' | 'Sat')[]
+  weekendPrice: number
+}
+
 export interface Car {
   id: string
   name: string
@@ -116,8 +129,10 @@ export interface Car {
   kilometers?: 'Unlimited Mileage' | '200km (per day limit)' | '400km (per day limit)' | '500km (per day limit)' | string
   climate?: 'Automatic' | 'Manual'
   fuelType?: 'Petrol' | 'Diesel' | 'Electric' | 'Hybrid'
-  amount: number
-  priceDuration: string
+  amount: number // Legacy field - kept for backward compatibility
+  priceDuration: string // Legacy field
+  pricing?: PricingConfig // New pricing structure
+  weekend?: WeekendConfig // Weekend pricing
   carClass: CarClass
   insuranceCoverage?: string
   termsConditions?: string

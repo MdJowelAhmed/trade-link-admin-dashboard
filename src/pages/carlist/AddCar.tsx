@@ -21,8 +21,22 @@ import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { addCar, updateCar } from "@/redux/slices/carSlice";
 import { toast } from "@/utils/toast";
 import { carClassFilterOptions } from "@/pages/carlist/carData";
-import type { Car, CarClass } from "@/types";
+import { PricingConfiguration } from "./components/PricingConfiguration";
+import type { Car, CarClass, PricingConfig, WeekendConfig } from "@/types";
 import { cn } from "@/utils/cn";
+
+const pricingSchema = z.object({
+  oneDay: z.number().min(0.01, "1 Day price is required"),
+  threeDays: z.number().min(0.01, "3 Days price is required"),
+  sevenDays: z.number().min(0.01, "7 Days price is required"),
+  fourteenDays: z.number().min(0.01, "14 Days price is required"),
+  oneMonth: z.number().min(0.01, "1 Month price is required"),
+});
+
+const weekendSchema = z.object({
+  selectedDays: z.array(z.enum(["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"])).min(1, "Select at least one weekend day"),
+  weekendPrice: z.number().min(0.01, "Weekend price is required"),
+});
 
 const carSchema = z.object({
   name: z.string().min(1, "Car name is required"),
@@ -39,9 +53,10 @@ const carSchema = z.object({
   transmission: z.enum(["Automatic", "Manual"]),
   climate: z.enum(["Automatic", "Manual"]),
   fuelType: z.enum(["Petrol", "Diesel", "Electric", "Hybrid"]).optional(),
-  amount: z.number().min(0.01, "Price must be greater than 0"),
   insuranceCoverage: z.string().optional(),
   termsConditions: z.string().optional(),
+  pricing: pricingSchema,
+  weekend: weekendSchema,
 });
 
 type CarFormData = z.infer<typeof carSchema>;
@@ -111,6 +126,20 @@ export default function AddCar() {
   const [termsContent, setTermsContent] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [imageError, setImageError] = useState<string>("");
+  
+  // Pricing state
+  const [pricing, setPricing] = useState<PricingConfig>({
+    oneDay: 0,
+    threeDays: 0,
+    sevenDays: 0,
+    fourteenDays: 0,
+    oneMonth: 0,
+  });
+  
+  const [weekend, setWeekend] = useState<WeekendConfig>({
+    selectedDays: [],
+    weekendPrice: 0,
+  });
 
   const {
     register,
@@ -134,15 +163,38 @@ export default function AddCar() {
       transmission: "Automatic",
       climate: "Automatic",
       fuelType: "Petrol",
-      amount: 0,
       insuranceCoverage: "",
       termsConditions: "",
+      pricing: {
+        oneDay: 0,
+        threeDays: 0,
+        sevenDays: 0,
+        fourteenDays: 0,
+        oneMonth: 0,
+      },
+      weekend: {
+        selectedDays: [],
+        weekendPrice: 0,
+      },
     },
   });
 
   // Load car data when in edit mode
   useEffect(() => {
     if (isEditMode && car) {
+      const carPricing = car.pricing || {
+        oneDay: car.amount || 0,
+        threeDays: (car.amount || 0) * 3,
+        sevenDays: (car.amount || 0) * 7,
+        fourteenDays: (car.amount || 0) * 14,
+        oneMonth: (car.amount || 0) * 30,
+      };
+      
+      const carWeekend = car.weekend || {
+        selectedDays: [],
+        weekendPrice: car.amount || 0,
+      };
+
       reset({
         name: car.name,
         carNumber: car.carNumber || "",
@@ -156,10 +208,14 @@ export default function AddCar() {
         transmission: car.transmission,
         climate: (car.climate as "Automatic" | "Manual") || "Automatic",
         fuelType: car.fuelType || "Petrol",
-        amount: car.amount,
         insuranceCoverage: car.insuranceCoverage || "",
         termsConditions: car.termsConditions || "",
+        pricing: carPricing,
+        weekend: carWeekend,
       });
+      
+      setPricing(carPricing);
+      setWeekend(carWeekend);
       setInsuranceContent(car.insuranceCoverage || "");
       setTermsContent(car.termsConditions || "");
       if (car.images && car.images.length > 0) {
@@ -183,9 +239,30 @@ export default function AddCar() {
         transmission: "Automatic",
         climate: "Automatic",
         fuelType: "Petrol",
-        amount: 0,
         insuranceCoverage: "",
         termsConditions: "",
+        pricing: {
+          oneDay: 0,
+          threeDays: 0,
+          sevenDays: 0,
+          fourteenDays: 0,
+          oneMonth: 0,
+        },
+        weekend: {
+          selectedDays: [],
+          weekendPrice: 0,
+        },
+      });
+      setPricing({
+        oneDay: 0,
+        threeDays: 0,
+        sevenDays: 0,
+        fourteenDays: 0,
+        oneMonth: 0,
+      });
+      setWeekend({
+        selectedDays: [],
+        weekendPrice: 0,
       });
       setInsuranceContent("");
       setTermsContent("");
@@ -219,6 +296,30 @@ export default function AddCar() {
   };
 
   const onSubmit = async (data: CarFormData) => {
+    // Validate pricing
+    if (!pricing.oneDay || pricing.oneDay <= 0) {
+      toast({
+        title: "Validation Error",
+        description: "Please set all pricing durations",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Validate weekend if days are selected
+    if (weekend.selectedDays.length > 0 && (!weekend.weekendPrice || weekend.weekendPrice <= 0)) {
+      toast({
+        title: "Validation Error",
+        description: "Please set weekend price when weekend days are selected",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Update form values with pricing and weekend
+    setValue("pricing", pricing);
+    setValue("weekend", weekend);
+    
     // Validate images
     if (!isEditMode && imagePreviews.length === 0) {
       setImageError("At least one image is required");
@@ -251,8 +352,10 @@ export default function AddCar() {
       kilometers: data.kilometers,
       climate: data.climate,
       fuelType: data.fuelType,
-      amount: data.amount,
-      priceDuration: car?.priceDuration || "Per Day",
+      amount: pricing.oneDay, // Keep for backward compatibility
+      priceDuration: "Per Day", // Keep for backward compatibility
+      pricing: pricing,
+      weekend: weekend,
       carClass: data.carClass as CarClass,
       insuranceCoverage: insuranceContent,
       termsConditions: termsContent,
@@ -505,26 +608,6 @@ export default function AddCar() {
                 )}
               </div>
 
-              {/* Per Day Price */}
-              <div className="space-y-1.5">
-                <Label htmlFor="amount">
-                  Per Day Price <span className="text-destructive">*</span>
-                </Label>
-                <Input
-                  id="amount"
-                  type="number"
-                  step="0.01"
-                  placeholder="Enter Per Day Price"
-                  error={!!errors.amount}
-                  {...register("amount", { valueAsNumber: true })}
-                />
-                {errors.amount && (
-                  <p className="text-xs text-destructive">
-                    {errors.amount.message}
-                  </p>
-                )}
-              </div>
-
               {/* Location */}
               <div className="space-y-1.5">
                 <Label htmlFor="location">Location</Label>
@@ -638,6 +721,38 @@ export default function AddCar() {
                 }}
                 placeholder="Enter terms and conditions..."
                 className="h-[280px]"
+              />
+            </div>
+
+            {/* Pricing Configuration Section */}
+            <div className="space-y-4">
+              <Label className="text-lg font-semibold text-gray-800">
+                Pricing Configuration
+              </Label>
+              <PricingConfiguration
+                pricing={pricing}
+                weekend={weekend}
+                onPricingChange={(newPricing) => {
+                  setPricing(newPricing);
+                  setValue("pricing", newPricing);
+                }}
+                onWeekendChange={(newWeekend) => {
+                  setWeekend(newWeekend);
+                  setValue("weekend", newWeekend);
+                }}
+                errors={{
+                  pricing: {
+                    oneDay: errors.pricing?.oneDay?.message,
+                    threeDays: errors.pricing?.threeDays?.message,
+                    sevenDays: errors.pricing?.sevenDays?.message,
+                    fourteenDays: errors.pricing?.fourteenDays?.message,
+                    oneMonth: errors.pricing?.oneMonth?.message,
+                  },
+                  weekend: {
+                    selectedDays: errors.weekend?.selectedDays?.message,
+                    weekendPrice: errors.weekend?.weekendPrice?.message,
+                  },
+                }}
               />
             </div>
 
