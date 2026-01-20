@@ -18,18 +18,20 @@ export function CarTable({ cars, onEdit, onView, onDelete }: CarTableProps) {
         <thead>
           <tr className="bg-[#E2FBFB] text-slate-800">
             <th className="px-6 py-4 text-left text-sm font-bold">Car Name</th>
+            <th className="px-6 py-4 text-left text-sm font-bold">Car Number</th>
+            <th className="px-6 py-4 text-left text-sm font-bold">Location</th>
+            <th className="px-6 py-4 text-left text-sm font-bold">Class</th>
             <th className="px-6 py-4 text-left text-sm font-bold">Doors</th>
             <th className="px-6 py-4 text-left text-sm font-bold">Transmission</th>
-            <th className="px-6 py-4 text-left text-sm font-bold">Car Seats</th>
-            <th className="px-6 py-4 text-left text-sm font-bold">Amount</th>
-            <th className="px-6 py-4 text-right text-sm font-bold">status</th>
+            <th className="px-6 py-4 text-left text-sm font-bold">Seats</th>
+            <th className="px-6 py-4 text-right text-sm font-bold">Actions</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-100">
           {cars.length === 0 ? (
             <tr>
               <td
-                colSpan={6}
+                colSpan={8}
                 className="px-6 py-8 text-center text-gray-500"
               >
                 No cars found
@@ -65,46 +67,46 @@ export function CarTable({ cars, onEdit, onView, onDelete }: CarTableProps) {
                   </div>
                 </td>
 
+                {/* Car Number Column */}
+                <td className="px-6 py-2">
+                  <span className="text-sm text-slate-700">
+                    {car.carNumber || 'N/A'}
+                  </span>
+                </td>
+
+                {/* Location Column */}
+                <td className="px-6 py-2">
+                  <span className="text-sm text-slate-700">
+                    {car.location || 'N/A'}
+                  </span>
+                </td>
+
+                {/* Car Class Column */}
+                <td className="px-6 py-2">
+                  <span className="text-sm font-medium text-slate-700">
+                    {car.carClass}
+                  </span>
+                </td>
+
                 {/* Doors Column */}
                 <td className="px-6 py-2">
-                  <div className="flex items-center gap-2">
-                    {/* <DoorOpen className="h-5 w-5 text-gray-600" /> */}
-                    <span className="text-sm text-slate-700">
-                      {car.doors} Doors
-                    </span>
-                  </div>
+                  <span className="text-sm text-slate-700">
+                    {car.doors} Doors
+                  </span>
                 </td>
 
                 {/* Transmission Column */}
                 <td className="px-6 py-2">
-                  <div className="flex items-center gap-2">
-                    {/* <Gauge className="h-5 w-5 text-gray-600" /> */}
-                    <span className="text-sm text-slate-700">
-                      {car.transmission}
-                    </span>
-                  </div>
+                  <span className="text-sm text-slate-700">
+                    {car.transmission}
+                  </span>
                 </td>
 
-                {/* Car Seats Column */}
+                {/* Seats Column */}
                 <td className="px-6 py-2">
-                  <div className="flex items-center gap-2">
-                    {/* <Users className="h-5 w-5 text-gray-600" /> */}
-                    <span className="text-sm text-slate-700">
-                      {car.seats} Seats
-                    </span>
-                  </div>
-                </td>
-
-                {/* Amount Column */}
-                <td className="px-6 py-2">
-                  <div className="flex flex-col">
-                    <span className="text-lg font-semibold text-slate-800">
-                      €{car.amount.toFixed(2)}
-                    </span>
-                    <span className="text-xs text-gray-500 mt-1">
-                      {car.priceDuration}
-                    </span>
-                  </div>
+                  <span className="text-sm text-slate-700">
+                    {car.seats} Seats
+                  </span>
                 </td>
 
                 {/* Actions Column */}

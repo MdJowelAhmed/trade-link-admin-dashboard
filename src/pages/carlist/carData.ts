@@ -17,6 +17,17 @@ export const carListData: Car[] = [
     climate: 'Automatic',
     amount: 46.91,
     priceDuration: 'Price for 3 days',
+    pricing: {
+      oneDay: 46.91,
+      threeDays: 128.1,
+      sevenDays: 200.91,
+      fourteenDays: 500,
+      oneMonth: 900,
+    },
+    weekend: {
+      selectedDays: ['Fri', 'Sat', 'Sun'],
+      weekendPrice: 46.91,
+    },
     carClass: 'Upper Class',
     rating: 4.5,
     owner: {
@@ -45,6 +56,17 @@ export const carListData: Car[] = [
     climate: 'Manual',
     amount: 42.50,
     priceDuration: 'Price for 3 days',
+    pricing: {
+      oneDay: 42.50,
+      threeDays: 115.00,
+      sevenDays: 180.00,
+      fourteenDays: 450.00,
+      oneMonth: 800.00,
+    },
+    weekend: {
+      selectedDays: ['Fri', 'Sat'],
+      weekendPrice: 45.00,
+    },
     carClass: 'Compact Class',
     rating: 4.3,
     owner: {
