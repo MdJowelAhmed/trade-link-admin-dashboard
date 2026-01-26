@@ -12,6 +12,7 @@ import calendarReducer from './slices/calendarSlice'
 import transactionReducer from './slices/transactionSlice'
 import faqReducer from './slices/faqSlice'
 import customerReducer from './slices/customerSlice'
+import tradePersonReducer from './slices/tradePersonSlice'
 
 export const store = configureStore({
   reducer: {
@@ -28,6 +29,7 @@ export const store = configureStore({
     transactions: transactionReducer,
     faqs: faqReducer,
     customers: customerReducer,
+    tradePersons: tradePersonReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

@@ -17,6 +17,7 @@ import {
   HelpCircle,
   ListOrdered,
   LogOut,
+  Briefcase,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
@@ -87,6 +88,11 @@ const navItems: NavItem[] = [
     title: 'Customers',
     href: '/customers',
     icon: Users,
+  },
+  {
+    title: 'Trade Person',
+    href: '/trade-person',
+    icon: Briefcase,
   },
 ]
 

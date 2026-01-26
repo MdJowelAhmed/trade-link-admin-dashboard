@@ -491,3 +491,40 @@ export interface CustomerFormData {
   status: CustomerStatus
   avatar?: File | string
 }
+
+// ==================== TradePerson Types ====================
+export interface TradePerson {
+  id: string
+  businessName: string
+  ownerName: string
+  services: string[]
+  email: string
+  mobile: string
+  location: string
+  address: string
+  status: TradePersonStatus
+  avatar?: string
+  galleryImages?: string[]
+  createdAt: string
+  updatedAt: string
+}
+
+export type TradePersonStatus = 'approved' | 'pending' | 'rejected'
+
+export interface TradePersonFilters {
+  search: string
+  status: TradePersonStatus | 'all'
+}
+
+export interface TradePersonFormData {
+  businessName: string
+  ownerName: string
+  services: string[]
+  email: string
+  mobile: string
+  location: string
+  address: string
+  status: TradePersonStatus
+  avatar?: File | string
+  galleryImages?: File[] | string[]
+}

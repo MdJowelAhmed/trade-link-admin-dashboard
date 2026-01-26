@@ -95,8 +95,8 @@ export function CustomerTable({
                     className={cn(
                       'inline-flex items-center px-3 py-1 w-20 text-center rounded-sm text-xs font-medium',
                       customer.status === 'active'
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-red-100 text-red-800'
+                        ? 'bg-secondary text-white px-5 py-2'
+                        : 'bg-red-500 text-white px-5 py-2'
                     )}
                   >
                     {customer.status === 'active' ? 'Active' : 'Inactive'}

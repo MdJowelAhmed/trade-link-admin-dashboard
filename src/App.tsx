@@ -29,6 +29,7 @@ import AgencyManagement from './pages/agency-management/AgencyManagement'
 import Calender from './pages/calender/Calender'
 import TransactionsHistory from './pages/transictions-history/TransactionsHistory'
 import CustomersManagement from './pages/customers/CustomersManagement'
+import TradePersonManagement from './pages/trade-person/TradePerson'
 import FAQ from './pages/FAQ/FAQ'
 import NotFound from './pages/NotFound/NotFound'
 
@@ -79,6 +80,9 @@ function App() {
           
           {/* Customer Management */}
           <Route path="customers" element={<CustomersManagement />} />
+          
+          {/* Trade Person Management */}
+          <Route path="trade-person" element={<TradePersonManagement />} />
           
           {/* Agency Management */}
           <Route path="agency-management" element={<AgencyManagement />} />
