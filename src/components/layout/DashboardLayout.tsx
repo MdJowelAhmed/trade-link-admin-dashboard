@@ -17,7 +17,7 @@ export default function DashboardLayout() {
         )}
       >
         <Header />
-        <main className="m-6 lg:p-8  min-h-[calc(100vh-4rem)]">
+        <main className="m-6  min-h-[calc(100vh-4rem)]">
           <Outlet />
         </main>
       </div>
