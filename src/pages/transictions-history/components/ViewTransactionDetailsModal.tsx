@@ -3,14 +3,14 @@ import { ModalWrapper } from '@/components/common'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { Card, CardContent } from '@/components/ui/card'
-import type { Transaction } from '@/types'
+import type { Transaction, Refund } from '@/types'
 import { cn } from '@/utils/cn'
 import { formatDate, formatDateTime } from '@/utils/formatters'
 
 interface ViewTransactionDetailsModalProps {
   open: boolean
   onClose: () => void
-  transaction: Transaction | null
+  transaction: Transaction | Refund | null
 }
 
 export function ViewTransactionDetailsModal({
@@ -39,7 +39,7 @@ export function ViewTransactionDetailsModal({
     <ModalWrapper
       open={open}
       onClose={onClose}
-      title="Transaction Details"
+      title={'transactionId' in transaction ? "Transaction Details" : "Refund Details"}
       size="lg"
       className="max-w-2xl bg-white"
     >
@@ -50,7 +50,7 @@ export function ViewTransactionDetailsModal({
             <CreditCard className="h-8 w-8 text-blue-600" />
           </div>
           <h2 className="text-2xl font-bold text-gray-900 mb-2">
-            {transaction.transactionId}
+            {'transactionId' in transaction ? transaction.transactionId : transaction.refundId}
           </h2>
           <div
             className={cn(
@@ -83,9 +83,11 @@ export function ViewTransactionDetailsModal({
                     <FileText className="h-6 w-6 text-blue-600" />
                   </div>
                   <div className="flex-1">
-                    <p className="text-xs text-gray-500 mb-1">Transaction ID</p>
+                    <p className="text-xs text-gray-500 mb-1">
+                      {'transactionId' in transaction ? 'Transaction ID' : 'Refund ID'}
+                    </p>
                     <p className="font-medium text-gray-900">
-                      {transaction.transactionId}
+                      {'transactionId' in transaction ? transaction.transactionId : transaction.refundId}
                     </p>
                   </div>
                 </div>
@@ -137,6 +139,40 @@ export function ViewTransactionDetailsModal({
                     <p className="text-xs text-gray-500 mb-1">Payment Method</p>
                     <p className="font-medium text-gray-900">
                       {transaction.paymentMethod || 'N/A'}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Lead ID */}
+            <Card className="border border-gray-200">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-4">
+                  <div className="h-12 w-12 rounded-lg bg-cyan-100 flex items-center justify-center flex-shrink-0">
+                    <FileText className="h-6 w-6 text-cyan-600" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-xs text-gray-500 mb-1">Lead ID</p>
+                    <p className="font-medium text-gray-900">
+                      {transaction.leadId}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Service */}
+            <Card className="border border-gray-200">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-4">
+                  <div className="h-12 w-12 rounded-lg bg-teal-100 flex items-center justify-center flex-shrink-0">
+                    <FileText className="h-6 w-6 text-teal-600" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-xs text-gray-500 mb-1">Service</p>
+                    <p className="font-medium text-gray-900">
+                      {transaction.service}
                     </p>
                   </div>
                 </div>

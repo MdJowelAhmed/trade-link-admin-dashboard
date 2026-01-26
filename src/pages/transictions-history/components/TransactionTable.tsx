@@ -1,38 +1,40 @@
 import { motion } from 'framer-motion'
-import { Button } from '@/components/ui/button'
-import { Eye } from 'lucide-react'
+import { EyeOff, Lock } from 'lucide-react'
 import { cn } from '@/utils/cn'
-import type { Transaction } from '@/types'
+import type { Transaction, Refund } from '@/types'
 import { formatDate } from '@/utils/formatters'
 
 interface TransactionTableProps {
-  transactions: Transaction[]
-  onView: (transaction: Transaction) => void
+  transactions: (Transaction | Refund)[]
+  onView: (transaction: Transaction | Refund) => void
+  startIndex?: number
 }
 
 export function TransactionTable({
   transactions,
   onView,
+  startIndex = 0,
 }: TransactionTableProps) {
   return (
     <div className="w-full overflow-auto">
-      <table className="w-full min-w-[900px]">
+      <table className="w-full min-w-[1000px]">
         <thead>
-          <tr className="bg-[#CCF3F5] text-slate-800">
-            <th className="px-6 py-4 text-left text-sm font-bold">Transaction ID</th>
+          <tr className="bg-gray-100 text-slate-800">
+            <th className="px-6 py-4 text-left text-sm font-bold">SL</th>
+            <th className="px-6 py-4 text-left text-sm font-bold">Lead ID</th>
+            <th className="px-6 py-4 text-left text-sm font-bold">Name</th>
             <th className="px-6 py-4 text-left text-sm font-bold">Date</th>
-            <th className="px-6 py-4 text-left text-sm font-bold">User Name</th>
-            <th className="px-6 py-4 text-left text-sm font-bold">Email</th>
-            <th className="px-6 py-4 text-left text-sm font-bold">Amount</th>
+            <th className="px-6 py-4 text-left text-sm font-bold">Service</th>
+            <th className="px-6 py-4 text-left text-sm font-bold">Price</th>
             <th className="px-6 py-4 text-left text-sm font-bold">Status</th>
             <th className="px-6 py-4 text-right text-sm font-bold">Action</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-gray-100">
+        <tbody className="divide-y divide-gray-100 bg-white">
           {transactions.length === 0 ? (
             <tr>
               <td
-                colSpan={7}
+                colSpan={8}
                 className="px-6 py-8 text-center text-gray-500"
               >
                 No transactions found
@@ -47,41 +49,45 @@ export function TransactionTable({
                 transition={{ delay: 0.05 * index }}
                 className="hover:bg-gray-50 transition-colors"
               >
-                {/* Transaction ID Column */}
+                {/* SL Column */}
                 <td className="px-6 py-4">
-                  <span
-                    onClick={() => onView(transaction)}
-                    className="text-sm font-medium text-blue-600 underline cursor-pointer hover:text-blue-700"
-                  >
-                    {transaction.transactionId}
+                  <span className="text-sm font-medium text-slate-700">
+                    {String(startIndex + index + 1).padStart(2, '0')}
                   </span>
                 </td>
 
-                {/* Date Column */}
+                {/* Lead ID Column */}
                 <td className="px-6 py-4">
-                  <span className="text-sm text-slate-700">
-                    {formatDate(transaction.date, 'dd MMM yyyy')}
+                  <span className="text-sm font-medium text-slate-700">
+                    {transaction.leadId}
                   </span>
                 </td>
 
-                {/* User Name Column */}
+                {/* Name Column */}
                 <td className="px-6 py-4">
                   <span className="text-sm text-slate-700">
                     {transaction.userName}
                   </span>
                 </td>
 
-                {/* Email Column */}
+                {/* Date Column */}
                 <td className="px-6 py-4">
                   <span className="text-sm text-slate-700">
-                    {transaction.email}
+                    {formatDate(transaction.date, 'dd/MM/yyyy')}
                   </span>
                 </td>
 
-                {/* Amount Column */}
+                {/* Service Column */}
+                <td className="px-6 py-4">
+                  <span className="text-sm text-slate-700">
+                    {transaction.service}
+                  </span>
+                </td>
+
+                {/* Price Column */}
                 <td className="px-6 py-4">
                   <span className="text-sm font-semibold text-slate-800">
-                    {transaction.currency || '€'}{transaction.amount}
+                    {transaction.currency || '$'}{transaction.amount.toFixed(2)}
                   </span>
                 </td>
 
@@ -89,9 +95,9 @@ export function TransactionTable({
                 <td className="px-6 py-4">
                   <span
                     className={cn(
-                      'inline-flex items-center px-3 py-1 w-[90px] justify-center text-center rounded-sm text-xs font-medium',
+                      'inline-flex items-center px-3 py-1 rounded-full text-xs font-medium',
                       transaction.status === 'Completed'
-                        ? 'bg-green-100 text-green-800'
+                        ? 'bg-green-500 text-white'
                         : transaction.status === 'Pending'
                         ? 'bg-orange-100 text-orange-800'
                         : transaction.status === 'Failed'
@@ -99,22 +105,26 @@ export function TransactionTable({
                         : 'bg-gray-100 text-gray-800'
                     )}
                   >
-                    {transaction.status}
+                    {transaction.status === 'Completed' ? 'Complete' : transaction.status}
                   </span>
                 </td>
 
                 {/* Actions Column */}
                 <td className="px-6 py-4">
-                  <div className="flex justify-end">
-                    <Button
-                      variant="outline"
-                      size="sm"
+                  <div className="flex justify-end gap-3">
+                    <button
                       onClick={() => onView(transaction)}
-                      className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 border-blue-200"
+                      className="text-gray-400 hover:text-gray-600 transition-colors"
+                      aria-label="View"
                     >
-                      <Eye className="h-4 w-4 mr-2" />
-                      View Details
-                    </Button>
+                      <EyeOff className="h-4 w-4" />
+                    </button>
+                    <button
+                      className="text-gray-400 hover:text-gray-600 transition-colors"
+                      aria-label="Lock"
+                    >
+                      <Lock className="h-4 w-4" />
+                    </button>
                   </div>
                 </td>
               </motion.tr>

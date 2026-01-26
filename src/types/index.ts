@@ -446,9 +446,28 @@ export type TransactionStatus = 'Pending' | 'Completed' | 'Failed' | 'Cancelled'
 export interface Transaction {
   id: string
   transactionId: string
+  leadId: string
   date: string
   userName: string
   email: string
+  service: string
+  amount: number
+  currency?: string
+  status: TransactionStatus
+  paymentMethod?: string
+  description?: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface Refund {
+  id: string
+  refundId: string
+  leadId: string
+  date: string
+  userName: string
+  email: string
+  service: string
   amount: number
   currency?: string
   status: TransactionStatus

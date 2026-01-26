@@ -52,7 +52,7 @@ export function TradePersonTable({
     <div className="w-full overflow-auto">
       <table className="w-full min-w-[900px]">
         <thead>
-          <tr className="bg-[#FFF8F0] text-slate-700">
+          <tr className="bg-[#EBEBEB] text-slate-700">
             <th className="px-6 py-4 text-left text-sm font-semibold">SL</th>
             <th className="px-6 py-4 text-left text-sm font-semibold">Business Name</th>
             <th className="px-6 py-4 text-left text-sm font-semibold">Services</th>
