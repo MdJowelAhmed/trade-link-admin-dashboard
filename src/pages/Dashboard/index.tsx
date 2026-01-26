@@ -3,8 +3,8 @@ import { formatCurrency, formatCompactNumber } from '@/utils/formatters'
 import { AvailableCars, RentalCars, TotalBooking, TotalRevenue } from '@/components/common/svg/DashboardSVG'
 import { StatCard } from './StatCard'
 import { EarningsSummaryChart } from './EarningsSummaryChart'
-import { RentStatusChart } from './RentStatusChart'
-import { RecentActivityCard } from './RecentActivityCard'
+// import { RentStatusChart } from './RentStatusChart'
+// import { RecentActivityCard } from './RecentActivityCard'
 import { yearlyData } from './dashboardData'
 
 export default function Dashboard() {
@@ -53,24 +53,23 @@ export default function Dashboard() {
       </div>
 
       {/* Chart Section - Two Column Layout */}
-      <div className="grid gap-6 lg:grid-cols-12">
-       <div className='col-span-8'>
+      <div className="">
          <EarningsSummaryChart
           chartData={chartData}
           selectedYear={selectedYear}
           onYearChange={setSelectedYear} 
           
         />
-       </div>
-       <div className='col-span-4'>
+      
+       {/* <div className='col-span-4'>
         <RentStatusChart />
-       </div>
+       </div> */}
       </div>
 
       {/* Recent Activity */}
-      <div>
+      {/* <div>
         <RecentActivityCard />
-      </div>
+      </div> */}
     </div>
   )
 }

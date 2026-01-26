@@ -124,7 +124,7 @@ export function Sidebar() {
       {/* Mobile overlay */}
       <div
         className={cn(
-          'fixed inset-0 z-40 bg-black/50 backdrop-blur-sm lg:hidden transition-opacity',
+          'fixed inset-0 z-40   lg:hidden transition-opacity',
           sidebarCollapsed ? 'opacity-0 pointer-events-none' : 'opacity-100'
         )}
         onClick={() => dispatch(toggleSidebar())}
@@ -133,7 +133,7 @@ export function Sidebar() {
       {/* Sidebar */}
       <aside
         className={cn(
-          'fixed top-0 left-0 z-50 h-full bg-card shadow-xl transition-all duration-300',
+          'fixed top-0 left-0 z-50 h-full   transition-all duration-300',
           'flex flex-col',
           sidebarCollapsed ? 'w-[80px]' : 'w-[280px]',
           'lg:translate-x-0',
@@ -141,15 +141,18 @@ export function Sidebar() {
         )}
       >
         {/* Logo */}
-        <div className="flex items-center justify-between h-36 px-4 border-b">
+        <div className="flex items-center justify-between h-20 px-4 border-b mb-6 shadow-md bg-white rounded-lg">
           <div className="flex items-center gap-3">
-            <div className="h-12 w-12 rounded-lg bg-primary flex items-center justify-center">
-              <div className="text-primary text-white font-bold text-lg">
-                <img src="/assets/logo.png" alt="Motly" className="h-10 w-10" />
+            <div className="h-12 w-12 rounded-lg bg- flex items-center justify-center">
+              <div className=" font-bold text-lg">
+                <img src="/assets/logo.svg" alt="Motly" className="h-10 w-10" />
               </div>
             </div>
             {!sidebarCollapsed && (
-              <span className="font-display font-bold text-xl text-accent">Dashboard</span>
+             <div>
+               <p className="font-display font-bold text-xl text-accent">Trade Link</p>
+               <p className="font-display font-bold text-xl text-green-500">Network</p>
+             </div>
             )}
           </div>
           <Button
@@ -167,7 +170,7 @@ export function Sidebar() {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto scrollbar-thin p-3 space-y-1">
+        <nav className="flex-1 overflow-y-auto scrollbar-thin p-3 space-y-1 bg-white rounded-lg">
           {/* Main Navigation */}
           <div className="space-y-1">
             {!sidebarCollapsed && (

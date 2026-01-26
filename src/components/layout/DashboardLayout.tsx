@@ -8,7 +8,7 @@ export default function DashboardLayout() {
   const { sidebarCollapsed } = useAppSelector((state) => state.ui)
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className=" bg-[#F7F9FB]">
       <Sidebar />
       <div
         className={cn(
@@ -17,7 +17,7 @@ export default function DashboardLayout() {
         )}
       >
         <Header />
-        <main className="p-6 lg:p-8 bg-[#F0F8FF] min-h-[calc(100vh-4rem)]">
+        <main className="m-6 lg:p-8  min-h-[calc(100vh-4rem)]">
           <Outlet />
         </main>
       </div>

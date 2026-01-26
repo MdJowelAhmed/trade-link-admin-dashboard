@@ -66,7 +66,12 @@ const strKFormatter = (num: number) => {
     return num.toString()
 }
 
-const CustomTooltip = ({ active, payload }: any) => {
+interface CustomTooltipProps {
+    active?: boolean;
+    payload?: { value: number }[];
+}
+
+const CustomTooltip = ({ active, payload }: CustomTooltipProps) => {
     if (active && payload && payload.length) {
         return (
             <div className="bg-[#666C79] text-white px-3 py-1.5 rounded text-sm font-medium shadow-sm relative">
@@ -110,7 +115,7 @@ export function EarningsSummaryChart({ chartData, selectedYear, onYearChange }: 
                     </div>
                 </CardHeader>
                 <CardContent>
-                    <div className="h-[280px] w-full">
+                    <div className="h-[380px] w-full">
                         <ResponsiveContainer width="100%" height="100%">
                             <AreaChart
                                 data={chartData}
