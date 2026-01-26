@@ -462,3 +462,32 @@ export interface TransactionFilters {
   search: string
   status: TransactionStatus | 'all'
 }
+
+// ==================== Customer Types ====================
+export interface Customer {
+  id: string
+  userName: string
+  contact: string
+  email: string
+  location: string
+  status: CustomerStatus
+  avatar?: string
+  createdAt: string
+  updatedAt: string
+}
+
+export type CustomerStatus = 'active' | 'inactive'
+
+export interface CustomerFilters {
+  search: string
+  status: CustomerStatus | 'all'
+}
+
+export interface CustomerFormData {
+  userName: string
+  contact: string
+  email: string
+  location: string
+  status: CustomerStatus
+  avatar?: File | string
+}

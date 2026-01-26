@@ -11,6 +11,7 @@ import agencyReducer from './slices/agencySlice'
 import calendarReducer from './slices/calendarSlice'
 import transactionReducer from './slices/transactionSlice'
 import faqReducer from './slices/faqSlice'
+import customerReducer from './slices/customerSlice'
 
 export const store = configureStore({
   reducer: {
@@ -26,6 +27,7 @@ export const store = configureStore({
     calendar: calendarReducer,
     transactions: transactionReducer,
     faqs: faqReducer,
+    customers: customerReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

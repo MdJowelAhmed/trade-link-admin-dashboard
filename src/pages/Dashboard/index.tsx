@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react'
 import { formatCurrency, formatCompactNumber } from '@/utils/formatters'
-import { AvailableCars, RentalCars, TotalBooking, TotalRevenue } from '@/components/common/svg/DashboardSVG'
+import {  RentalCars, TotalBooking, TotalRevenue } from '@/components/common/svg/DashboardSVG'
 import { StatCard } from './StatCard'
 import { EarningsSummaryChart } from './EarningsSummaryChart'
 // import { RentStatusChart } from './RentStatusChart'
@@ -14,31 +14,31 @@ export default function Dashboard() {
 
   const stats = [
     {
-      title: 'Total Revenue',
+      title: 'Total Customers',
       value: formatCompactNumber(12543),
       change: 12.5,
       icon: TotalRevenue,
       description: 'vs last month',
     },
     {
-      title: 'Total Products',
+      title: 'Trade Persons',
       value: formatCompactNumber(3420),
       change: 8.2,
       icon: TotalBooking,
       description: 'vs last month',
     },
     {
-      title: 'Categories',
+      title: 'Total Earnings',
       value: '156',
       change: 3.1,
       icon: RentalCars,
       description: 'vs last month',
     },
     {
-      title: 'Total Revenue',
+      title: 'Total Leads',
       value: formatCurrency(845320),
-      change: -2.4,
-      icon: AvailableCars,
+      change: 6542,
+      icon: TotalRevenue,
       description: 'vs last month',
     },
   ]

@@ -16,6 +16,7 @@ import {
   CreditCard,
   HelpCircle,
   ListOrdered,
+  LogOut,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
@@ -80,6 +81,11 @@ const navItems: NavItem[] = [
   {
     title: 'Client Management',
     href: '/clients',
+    icon: Users,
+  },
+  {
+    title: 'Customers',
+    href: '/customers',
     icon: Users,
   },
 ]
@@ -234,11 +240,12 @@ export function Sidebar() {
         </nav>
 
         {/* Footer */}
-        <div className="p-4 border-t">
+        <div className="p-4 border-t bg-white rounded-lg">
           {!sidebarCollapsed && (
-            <p className="text-xs text-muted-foreground text-center">
-              © 2026 Motly v1.0
-            </p>
+           <Button variant="outline" className="w-full">
+            <LogOut className="h-4 w-4" />
+            <span>Logout</span>
+           </Button>
           )}
         </div>
       </aside>

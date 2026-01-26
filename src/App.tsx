@@ -28,6 +28,7 @@ import ClientManagement from './pages/ClientManagement/ClientManagement'
 import AgencyManagement from './pages/agency-management/AgencyManagement'
 import Calender from './pages/calender/Calender'
 import TransactionsHistory from './pages/transictions-history/TransactionsHistory'
+import CustomersManagement from './pages/customers/CustomersManagement'
 import FAQ from './pages/FAQ/FAQ'
 import NotFound from './pages/NotFound/NotFound'
 
@@ -75,6 +76,9 @@ function App() {
           
           {/* Client Management */}
           <Route path="clients" element={<ClientManagement />} />
+          
+          {/* Customer Management */}
+          <Route path="customers" element={<CustomersManagement />} />
           
           {/* Agency Management */}
           <Route path="agency-management" element={<AgencyManagement />} />

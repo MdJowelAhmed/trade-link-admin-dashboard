@@ -101,7 +101,7 @@ export function EarningsSummaryChart({ chartData, selectedYear, onYearChange }: 
                             </SelectTrigger>
                             <SelectContent>
                                 {years.map((year) => (
-                                    <SelectItem key={year} value={year}>
+                                    <SelectItem key={year} value={year.toString()}>
                                         Last {year}
                                     </SelectItem>
                                 ))}
@@ -115,7 +115,7 @@ export function EarningsSummaryChart({ chartData, selectedYear, onYearChange }: 
                     </div> */}
                 </CardHeader>
                 <CardContent>
-                    <div className="h-[480px] w-full">
+                    <div className="h-[520px] w-full">
                         <ResponsiveContainer width="100%" height="100%">
                             <AreaChart
                                 data={chartData}
