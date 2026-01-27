@@ -32,6 +32,7 @@ import CustomersManagement from './pages/customers/CustomersManagement'
 import TradePersonManagement from './pages/trade-person/TradePerson'
 import FAQ from './pages/FAQ/FAQ'
 import NotFound from './pages/NotFound/NotFound'
+import Leads from './pages/leads/Leads'
 
 function App() {
   const dispatch = useAppDispatch()
@@ -77,7 +78,9 @@ function App() {
           
           {/* Client Management */}
           <Route path="clients" element={<ClientManagement />} />
-          
+
+          {/* Leads Management */}
+          <Route path="leads" element={<Leads />} />
           {/* Customer Management */}
           <Route path="customers" element={<CustomersManagement />} />
           

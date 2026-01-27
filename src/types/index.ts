@@ -482,6 +482,29 @@ export interface TransactionFilters {
   status: TransactionStatus | 'all'
 }
 
+// ==================== Lead Types ====================
+export type LeadStatus = 'active' | 'expired'
+
+export interface Lead {
+  id: string
+  name: string
+  email: string
+  contact: string
+  requiredService: string
+  location: string
+  status: LeadStatus
+  avatar?: string
+  budget?: string
+  notes?: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface LeadFilters {
+  search: string
+  status: LeadStatus | 'all'
+}
+
 // ==================== Customer Types ====================
 export interface Customer {
   id: string

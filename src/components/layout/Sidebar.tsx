@@ -18,6 +18,7 @@ import {
   ListOrdered,
   LogOut,
   Briefcase,
+  List,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
@@ -78,6 +79,11 @@ const navItems: NavItem[] = [
     title: 'Transactions History',
     href: '/transactions-history',
     icon: CreditCard,
+  },
+  {
+    title: 'Leads',
+    href: '/leads',
+    icon: List,
   },
   {
     title: 'Client Management',

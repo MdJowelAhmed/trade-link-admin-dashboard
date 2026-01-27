@@ -44,6 +44,7 @@ export const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
   blocked: { bg: 'bg-destructive/10', text: 'text-destructive' },
   pending: { bg: 'bg-warning/10', text: 'text-warning' },
   inactive: { bg: 'bg-muted', text: 'text-muted-foreground' },
+  expired: { bg: 'bg-red-100', text: 'text-red-800' },
   draft: { bg: 'bg-muted', text: 'text-muted-foreground' },
   out_of_stock: { bg: 'bg-destructive/10', text: 'text-destructive' },
   Pending: { bg: 'bg-orange-100', text: 'text-orange-800' },
