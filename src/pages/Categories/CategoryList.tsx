@@ -127,7 +127,7 @@ export default function CategoryList() {
                   }}
                 >
                   <Plus className="h-4 w-4 mr-2" />
-                  {activeTab === 'categories' ? 'Add New' : 'Add New'}
+                  {activeTab === 'categories' ? 'Add New Category' : 'Add New Service'}
                 </Button>
               </div>
             </Tabs>

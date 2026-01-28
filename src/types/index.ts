@@ -595,3 +595,39 @@ export interface ServiceFormData {
   categoryId: string
   status: ServiceStatus
 }
+
+// ==================== Service Question Types ====================
+export type QuestionType = 'radio' | 'checkbox'
+
+export interface QuestionOption {
+  id: string
+  label: string
+  value?: string
+  price?: number
+}
+
+export interface ServiceQuestion {
+  id: string
+  serviceId: string
+  categoryId: string
+  question: string
+  type: QuestionType
+  isEnabled: boolean
+  isPricing: boolean
+  /** 1-based order within the service, cannot exceed total questions count */
+  orderNumber: number
+  options: QuestionOption[]
+  createdAt: string
+  updatedAt: string
+}
+
+export interface ServiceQuestionFormData {
+  serviceId: string
+  categoryId: string
+  question: string
+  type: QuestionType
+  isEnabled: boolean
+  isPricing: boolean
+  orderNumber: number
+  options: Omit<QuestionOption, 'id'>[]
+}

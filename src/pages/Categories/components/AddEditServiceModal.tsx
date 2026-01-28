@@ -118,6 +118,7 @@ export function AddEditServiceModal({ open, onClose, mode, service }: AddEditSer
           : 'Update the service information'
       }
       size="md"
+      className="bg-white"
     >
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         <FormInput

@@ -33,6 +33,7 @@ import TradePersonManagement from './pages/trade-person/TradePerson'
 import FAQ from './pages/FAQ/FAQ'
 import NotFound from './pages/NotFound/NotFound'
 import Leads from './pages/leads/Leads'
+import ServiceQuestion from './pages/service-question/ServiceQuestion'
 
 function App() {
   const dispatch = useAppDispatch()
@@ -83,6 +84,9 @@ function App() {
           <Route path="leads" element={<Leads />} />
           {/* Customer Management */}
           <Route path="customers" element={<CustomersManagement />} />
+          
+          {/* Service Question Management */}
+          <Route path="service-question" element={<ServiceQuestion />} />
           
           {/* Trade Person Management */}
           <Route path="trade-person" element={<TradePersonManagement />} />

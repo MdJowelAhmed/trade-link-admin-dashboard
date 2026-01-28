@@ -28,6 +28,23 @@ export function ImageUploader({
   )
   const [uploadError, setUploadError] = useState<string | null>(null)
 
+  // Sync preview with value prop changes (for edit mode)
+  React.useEffect(() => {
+    if (value) {
+      if (typeof value === 'string') {
+        setPreview(value)
+      } else if (value instanceof File) {
+        const reader = new FileReader()
+        reader.onload = () => {
+          setPreview(reader.result as string)
+        }
+        reader.readAsDataURL(value)
+      }
+    } else {
+      setPreview(null)
+    }
+  }, [value])
+
   const onDrop = useCallback(
     (acceptedFiles: File[], fileRejections: FileRejection[]) => {
       setUploadError(null)

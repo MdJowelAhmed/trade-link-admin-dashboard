@@ -56,7 +56,12 @@ export function AddEditCategoryModal({ open, onClose, mode, category }: AddEditC
           name: category.name,
           status: category.status,
         })
-        setImage(category.image ? category.image : null)
+        // Set image from category if it exists
+        if (category.image) {
+          setImage(category.image)
+        } else {
+          setImage(null)
+        }
       } else {
         reset({
           name: '',
@@ -73,12 +78,22 @@ export function AddEditCategoryModal({ open, onClose, mode, category }: AddEditC
     // Simulate API call
     await new Promise((resolve) => setTimeout(resolve, 1000))
 
+    // Handle image: if it's a string (existing URL), keep it; if it's a File, create object URL
+    let imageUrl: string | undefined
+    if (image) {
+      if (typeof image === 'string') {
+        imageUrl = image
+      } else if (image instanceof File) {
+        imageUrl = URL.createObjectURL(image)
+      }
+    }
+
     const categoryData: Category = {
       id: mode === 'edit' && category ? category.id : Date.now().toString(),
       name: data.name,
       slug: slugify(data.name),
       description: undefined,
-      image: typeof image === 'string' ? image : image ? URL.createObjectURL(image) : undefined,
+      image: imageUrl,
       status: data.status,
       productCount: mode === 'edit' && category ? category.productCount : 0,
       createdAt: mode === 'edit' && category ? category.createdAt : new Date().toISOString(),
@@ -110,7 +125,8 @@ export function AddEditCategoryModal({ open, onClose, mode, category }: AddEditC
       open={open}
       onClose={onClose}
       title={mode === 'add' ? 'Add Categories' : 'Edit Category'}
-      size="md"
+      size="md"  
+      className="bg-white"
     >
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         <div>

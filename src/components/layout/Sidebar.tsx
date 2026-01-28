@@ -62,6 +62,11 @@ const navItems: NavItem[] = [
     icon: FolderTree,
   },
   {
+    title: 'Service Question',
+    href: '/service-question',
+    icon: HelpCircle,
+  },
+  {
     title: 'Car List',
     href: '/cars',
     icon: Car,
