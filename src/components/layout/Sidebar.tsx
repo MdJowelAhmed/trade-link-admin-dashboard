@@ -19,6 +19,7 @@ import {
   LogOut,
   Briefcase,
   List,
+  FolderTree,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
@@ -55,11 +56,11 @@ const navItems: NavItem[] = [
   //   href: '/products',
   //   icon: Package,
   // },
-  // {
-  //   title: 'Categories',
-  //   href: '/categories',
-  //   icon: FolderTree,
-  // },
+  {
+    title: 'Categories',
+    href: '/categories',
+    icon: FolderTree,
+  },
   {
     title: 'Car List',
     href: '/cars',

@@ -570,3 +570,28 @@ export interface TradePersonFormData {
   avatar?: File | string
   galleryImages?: File[] | string[]
 }
+
+// ==================== Service Types ====================
+export interface Service {
+  id: string
+  name: string
+  categoryId: string
+  categoryName?: string
+  status: ServiceStatus
+  createdAt: string
+  updatedAt: string
+}
+
+export type ServiceStatus = 'active' | 'inactive'
+
+export interface ServiceFilters {
+  search: string
+  status: ServiceStatus | 'all'
+  categoryId: string | 'all'
+}
+
+export interface ServiceFormData {
+  name: string
+  categoryId: string
+  status: ServiceStatus
+}

@@ -2,6 +2,7 @@ import { motion } from 'framer-motion'
 import { cn } from '@/utils/cn'
 import type { Lead } from '@/types'
 import { LeadActionButtons } from './LeadActionButtons'
+import { Edit, } from 'lucide-react'
 
 interface LeadTableProps {
   leads: Lead[]
@@ -9,6 +10,9 @@ interface LeadTableProps {
 }
 
 export function LeadTable({ leads, onView }: LeadTableProps) {
+  const changeStatus = (lead: Lead) => {
+    console.log(lead)
+  }
   return (
     <div className="w-full overflow-auto">
       <table className="w-full min-w-[900px]">
@@ -102,8 +106,9 @@ export function LeadTable({ leads, onView }: LeadTableProps) {
                 </td>
 
                 {/* Actions Column */}
-                <td className="px-6 py-4">
+                <td className="px-6 py-4 flex items-center justify-end gap-2">
                   <LeadActionButtons lead={lead} onView={onView} />
+                  <button  onClick={() => changeStatus(lead)}><Edit className="w-4 h-4" /> </button>
                 </td>
               </motion.tr>
             ))

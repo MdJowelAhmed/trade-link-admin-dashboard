@@ -2,8 +2,10 @@ import  { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { ModalWrapper, FormInput, FormTextarea, ImageUploader } from '@/components/common'
+import { ModalWrapper, FormInput, ImageUploader } from '@/components/common'
 import { Button } from '@/components/ui/button'
+import { Switch } from '@/components/ui/switch'
+import { Label } from '@/components/ui/label'
 import { useAppDispatch } from '@/redux/hooks'
 import { addCategory, updateCategory } from '@/redux/slices/categorySlice'
 import { slugify } from '@/utils/formatters'
@@ -12,8 +14,6 @@ import { toast } from '@/utils/toast'
 
 const categorySchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
-  slug: z.string().min(2, 'Slug must be at least 2 characters'),
-  description: z.string().optional(),
   status: z.enum(['active', 'inactive']),
 })
 
@@ -28,7 +28,7 @@ interface AddEditCategoryModalProps {
 
 export function AddEditCategoryModal({ open, onClose, mode, category }: AddEditCategoryModalProps) {
   const dispatch = useAppDispatch()
-  const [image, setImage] = useState<File | string | null>(category?.image || null)
+  const [image, setImage] = useState<File | string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
  
@@ -44,8 +44,6 @@ export function AddEditCategoryModal({ open, onClose, mode, category }: AddEditC
     resolver: zodResolver(categorySchema),
     defaultValues: {
       name: '',
-      slug: '',
-      description: '',
       status: 'active',
     },
   })
@@ -56,30 +54,18 @@ export function AddEditCategoryModal({ open, onClose, mode, category }: AddEditC
       if (mode === 'edit' && category) {
         reset({
           name: category.name,
-          slug: category.slug,
-          description: category.description || '',
           status: category.status,
         })
-        setImage(category.image || null)
+        setImage(category.image ? category.image : null)
       } else {
         reset({
           name: '',
-          slug: '',
-          description: '',
           status: 'active',
         })
         setImage(null)
       }
     }
   }, [open, mode, category, reset])
-
-  // Auto-generate slug from name
-  const watchedName = watch('name')
-  useEffect(() => {
-    if (mode === 'add' && watchedName) {
-      setValue('slug', slugify(watchedName))
-    }
-  }, [watchedName, mode, setValue])
 
   const onSubmit = async (data: CategoryFormData) => {
     setIsSubmitting(true)
@@ -89,9 +75,11 @@ export function AddEditCategoryModal({ open, onClose, mode, category }: AddEditC
 
     const categoryData: Category = {
       id: mode === 'edit' && category ? category.id : Date.now().toString(),
-      ...data,
-      description: data.description || undefined,
+      name: data.name,
+      slug: slugify(data.name),
+      description: undefined,
       image: typeof image === 'string' ? image : image ? URL.createObjectURL(image) : undefined,
+      status: data.status,
       productCount: mode === 'edit' && category ? category.productCount : 0,
       createdAt: mode === 'edit' && category ? category.createdAt : new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -115,19 +103,24 @@ export function AddEditCategoryModal({ open, onClose, mode, category }: AddEditC
     onClose()
   }
 
+  const statusValue = watch('status') === 'active'
+
   return (
     <ModalWrapper
       open={open}
       onClose={onClose}
-      title={mode === 'add' ? 'Add New Category' : 'Edit Category'}
-      description={
-        mode === 'add'
-          ? 'Create a new category to organize your products'
-          : 'Update the category information'
-      }
-      size="xl"
+      title={mode === 'add' ? 'Add Categories' : 'Edit Category'}
+      size="md"
     >
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <div>
+          <Label className="text-sm font-medium mb-2 block">Add Category Image</Label>
+          <ImageUploader
+            value={image}
+            onChange={(file) => setImage(file || null)}
+          />
+        </div>
+
         <FormInput
           label="Category Name"
           placeholder="Enter category name"
@@ -136,47 +129,20 @@ export function AddEditCategoryModal({ open, onClose, mode, category }: AddEditC
           {...register('name')}
         />
 
-        <FormInput
-          label="Slug"
-          placeholder="category-slug"
-          error={errors.slug?.message}
-          helperText="URL-friendly version of the name"
-          required
-          {...register('slug')}
-        />
-
-        <FormTextarea
-          label="Description"
-          placeholder="Enter category description (optional)"
-          error={errors.description?.message}
-          rows={3}
-          {...register('description')}
-        />
-{/* 
-        <FormSelect
-          label="Status"
-          value={watch('status')}
-          options={statusOptions}
-          onChange={(value) => setValue('status', value as CategoryStatus)}
-          placeholder="Select status"
-          error={errors.status?.message}
-          required
-        /> */}
-
-        <div>
-          <label className="text-sm font-medium mb-2 block">Category Image</label>
-          <ImageUploader
-            value={image}
-            onChange={setImage}
+        <div className="flex items-center justify-between">
+          <Label htmlFor="category-status" className="text-sm font-medium">
+            Category Status
+          </Label>
+          <Switch
+            id="category-status"
+            checked={statusValue}
+            onCheckedChange={(checked) => setValue('status', checked ? 'active' : 'inactive')}
           />
         </div>
 
-        <div className="flex justify-end gap-3 pt-4">
-          <Button type="button" variant="outline" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button type="submit" isLoading={isSubmitting}>
-            {mode === 'add' ? 'Create Category' : 'Save Changes'}
+        <div className="flex justify-end pt-4">
+          <Button type="submit" isLoading={isSubmitting} className="min-w-[120px]">
+            Save
           </Button>
         </div>
       </form>
