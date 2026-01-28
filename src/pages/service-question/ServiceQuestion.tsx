@@ -387,9 +387,9 @@ const ServiceQuestion = () => {
                 <button
                   key={service.id}
                   onClick={() => handleServiceSelect(service.id)}
-                  className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                  className={`px-6 py-[10px] rounded-full font-medium transition-colors ${
                     selectedServiceId === service.id
-                      ? 'bg-blue-600 text-white'
+                      ? 'bg-primary text-white'
                       : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                   }`}
                 >

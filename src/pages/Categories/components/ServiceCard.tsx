@@ -2,6 +2,7 @@ import { Edit } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import type { Service } from '@/types'
+// import { Switch } from '@/components/ui/switch'
 
 interface ServiceCardProps {
   service: Service
@@ -18,7 +19,8 @@ export function ServiceCard({ service, onEdit }: ServiceCardProps) {
             {service.categoryName}
           </p>
         )}
-        <Button
+       <div className="flex items-center gap-2">
+       <Button
           variant="outline"
           size="sm"
           className="w-full"
@@ -27,6 +29,25 @@ export function ServiceCard({ service, onEdit }: ServiceCardProps) {
           <Edit className="h-4 w-4 mr-2" />
           Edit
         </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          className="w-full"
+          onClick={onEdit}
+        >
+          <Edit className="h-4 w-4 mr-2" />
+          Delete
+        </Button>
+       <Button
+       variant="outline"
+       size="sm"
+       className="w-full"
+      //  onClick={onEdit}
+       >
+        {/* <Switch className="h-4 w-4 mr-2" /> */}
+        {service.status === 'active' ? 'Turn Off' : 'Turn On'}
+       </Button>
+       </div>
       </div>
     </Card>
   )
