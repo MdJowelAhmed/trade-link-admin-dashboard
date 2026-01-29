@@ -412,7 +412,7 @@ const ServiceQuestion = () => {
                   {/* Question Header */}
                   <div className="flex items-start justify-between">
                     <div className="flex items-start gap-3 flex-1">
-                      <Checkbox
+                      {/* <Checkbox
                         checked={question.isEnabled}
                         onCheckedChange={(checked) => {
                           setQuestions(
@@ -421,7 +421,7 @@ const ServiceQuestion = () => {
                             )
                           )
                         }}
-                      />
+                      /> */}
                       <div className="flex-1 space-y-2">
                         {editingQuestionId === question.id ? (
                           <Input
@@ -433,7 +433,7 @@ const ServiceQuestion = () => {
                                 )
                               )
                             }}
-                            className="flex-1"
+                            className="flex-1 bg-card rounded-full"
                             placeholder="Enter question"
                           />
                         ) : (
@@ -441,8 +441,13 @@ const ServiceQuestion = () => {
                         )}
 
                         {/* Order number field */}
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <span>Order number:</span>
+                        <div className="flex flex-col  gap-2 text-sm text-muted-foreground">
+                         <div className="flex items-center gap-2">
+                         <span>Order number:</span>
+                          <span className="text-xs text-gray-400">
+                            (1 - {questions.length})
+                          </span>
+                         </div>
                           <Input
                             type="number"
                             value={question.orderNumber === 0 ? '' : question.orderNumber}
@@ -470,13 +475,12 @@ const ServiceQuestion = () => {
                                 )
                               )
                             }}
-                            className="w-20 h-8"
+                            className="w-1/2  bg-card rounded-full"
                             min={1}
                             max={questions.length}
+                            placeholder="Enter order number"
                           />
-                          <span className="text-xs text-gray-400">
-                            (1 - {questions.length})
-                          </span>
+                         
                         </div>
                       </div>
                     </div>
@@ -594,7 +598,7 @@ const ServiceQuestion = () => {
                             handleOptionChange(question.id!, option.id, 'label', e.target.value)
                           }
                           placeholder={question.isPricing ? 'Enter budget' : 'Type option'}
-                          className="flex-1"
+                          className="flex-1 bg-card rounded-full"
                           disabled={editingQuestionId !== question.id}
                         />
                         {question.isPricing && (
@@ -610,7 +614,7 @@ const ServiceQuestion = () => {
                               )
                             }
                             placeholder="Enter Price"
-                            className="w-32"
+                            className="w-32 bg-card rounded-full"
                             disabled={editingQuestionId !== question.id}
                           />
                         )}
@@ -648,19 +652,19 @@ const ServiceQuestion = () => {
               <CardContent className="pt-6">
                 <div className="space-y-4">
                   <div className="flex items-center gap-3">
-                    <Checkbox
+                    {/* <Checkbox
                       checked={newQuestion.isEnabled}
                       onCheckedChange={(checked) =>
                         setNewQuestion({ ...newQuestion, isEnabled: checked as boolean })
                       }
-                    />
+                    /> */}
                     <Input
                       value={newQuestion.question}
                       onChange={(e) =>
                         setNewQuestion({ ...newQuestion, question: e.target.value })
                       }
                       placeholder="Enter Question"
-                      className="flex-1"
+                      className="flex-1 bg-card rounded-full"
                     />
                     <Button
                       variant="ghost"
@@ -682,8 +686,13 @@ const ServiceQuestion = () => {
                   </div>
 
                   {/* New question order number */}
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <span>Order number:</span>
+                  <div className="flex  flex-col   gap-2 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-2">
+                      <span>Order number:</span>
+                      <span className="text-xs text-gray-400">
+                        (1 - {questions.length + 1})
+                      </span>
+                    </div>
                     <Input
                       type="number"
                       value={newQuestion.orderNumber === 0 ? '' : newQuestion.orderNumber}
@@ -702,16 +711,14 @@ const ServiceQuestion = () => {
 
                         setNewQuestion({ ...newQuestion, orderNumber: value })
                       }}
-                      className="w-20 h-8"
+                      className="w-1/2  bg-card rounded-full"
                       min={1}
                       max={questions.length + 1}
                     />
-                    <span className="text-xs text-gray-400">
-                      (1 - {questions.length + 1})
-                    </span>
+                   
                   </div>
 
-                  <div className="flex items-center gap-4">
+                  {/* <div className="flex items-center gap-4">
                     <span className="text-sm font-medium">Question Type:</span>
                     <div className="flex items-center gap-4">
                       <label className="flex items-center gap-2 cursor-pointer">
@@ -735,9 +742,9 @@ const ServiceQuestion = () => {
                         <span>Checkbox</span>
                       </label>
                     </div>
-                  </div>
+                  </div> */}
 
-                  <div className="flex items-center gap-2">
+                  {/* <div className="flex items-center gap-2">
                     <Checkbox
                       checked={newQuestion.isPricing}
                       onCheckedChange={(checked) => {
@@ -753,9 +760,9 @@ const ServiceQuestion = () => {
                       }}
                     />
                     <span className="text-sm">Pricing Question</span>
-                  </div>
+                  </div> */}
 
-                  <div className="space-y-3">
+                  <div className="space-y-3 grid grid-cols-2 gap-3">
                     {newQuestion.options.map((option) => (
                       <div key={option.id} className="flex items-center gap-3">
                         <Input
@@ -769,7 +776,7 @@ const ServiceQuestion = () => {
                             })
                           }}
                           placeholder={newQuestion.isPricing ? 'Enter budget' : 'Type option'}
-                          className="flex-1"
+                          className="flex-1 bg-card rounded-full"
                         />
                         {newQuestion.isPricing && (
                           <Input
@@ -786,7 +793,7 @@ const ServiceQuestion = () => {
                               })
                             }}
                             placeholder="Enter Price"
-                            className="w-32"
+                            className="w-32 bg-card rounded-full"
                           />
                         )}
                         {newQuestion.options.length > 1 && (
