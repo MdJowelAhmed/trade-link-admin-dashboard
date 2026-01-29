@@ -26,8 +26,8 @@ export function CustomerFilterDropdown({ value, onChange, className }: CustomerF
     <Select value={value} onValueChange={(val) => onChange(val as CustomerStatus | 'all')}>
       <SelectTrigger
         className={cn(
-          'w-40 bg-secondary hover:bg-secondary/80 text-white border-secondary',
-          'focus:ring-secondary focus:ring-offset-0',
+          'w-40 bg-card hover:bg-card/80 text-black border-card',
+          'focus:ring-card focus:ring-offset-0',
           className
         )}
       >

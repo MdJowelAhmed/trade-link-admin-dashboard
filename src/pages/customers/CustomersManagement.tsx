@@ -151,7 +151,7 @@ export default function CustomersManagement() {
               value={searchQuery}
               onChange={setSearchQuery}
               placeholder="Search here"
-              className="w-[300px]"
+              className="w-[300px]  "
             />
 
             {/* Filter Dropdown */}

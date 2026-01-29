@@ -18,7 +18,7 @@ export function CustomerTable({
     <div className="w-full overflow-auto">
       <table className="w-full min-w-[900px]">
         <thead>
-          <tr className="bg-[#E2FBFB] text-slate-800">
+          <tr className="bg-card text-slate-800">
             <th className="px-6 py-4 text-left text-sm font-bold">SL</th>
             <th className="px-6 py-4 text-left text-sm font-bold">User Name</th>
             <th className="px-6 py-4 text-left text-sm font-bold">Contact</th>
@@ -93,10 +93,10 @@ export function CustomerTable({
                 <td className="px-6 py-4">
                   <span
                     className={cn(
-                      'inline-flex items-center px-3 py-1 w-20 text-center rounded-sm text-xs font-medium',
+                      'inline-flex items-center px-6 py-1 w-24 justify-center text-center rounded-full text-xs font-medium',
                       customer.status === 'active'
-                        ? 'bg-secondary text-white px-5 py-2'
-                        : 'bg-red-500 text-white px-5 py-2'
+                        ? 'bg-secondary text-white px-6 py-2'
+                        : 'bg-secondary-foreground text-white px-6 py-2'
                     )}
                   >
                     {customer.status === 'active' ? 'Active' : 'Inactive'}

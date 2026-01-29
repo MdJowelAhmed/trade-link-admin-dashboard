@@ -96,7 +96,7 @@ export function EarningsSummaryChart({ chartData, selectedYear, onYearChange }: 
                     <div className="flex items-center justify-between">
                         <CardTitle>Earnings Summary</CardTitle>
                         <Select value={selectedYear} onValueChange={onYearChange} >
-                            <SelectTrigger className="w-[120px] bg-secondary text-white">
+                            <SelectTrigger className="w-[120px] bg-card text-black">
                                 <SelectValue placeholder="Year" />
                             </SelectTrigger>
                             <SelectContent>

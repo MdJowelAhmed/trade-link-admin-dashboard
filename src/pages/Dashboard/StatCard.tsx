@@ -22,7 +22,7 @@ export function StatCard({ title, value, change, icon: Icon, description, index 
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: index * 0.1 }}
         >
-            <Card className="overflow-hidden shadow-md hover:shadow-[#CEF8DA]">
+            <Card className="overflow-hidden shadow-md hover:shadow-[#CEF8DA] ">
                 <CardHeader className="flex flex-row items-center gap-3 pb-2">
                     <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
                         <Icon className="h-5 w-5 text-primary" />

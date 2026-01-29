@@ -6,14 +6,14 @@
   :root {
     --background: #FFFFFF;
     --foreground: #EBEBEB;
-    --card: 0 0% 100%;
+    --card: #EBEBEB;
     --card-foreground: 224 71% 4%;
     --popover: 0 0% 100%;
     --popover-foreground: 224 71% 4%;
     --primary: #1E3A5F;
     --primary-foreground:#3F51B5;
     --secondary: #3E6B5B;
-    --secondary-foreground: #0099DF;
+    --secondary-foreground: #FF383C;
     --muted: #638FC1;
     --muted-foreground:#364355;
     --accent: #262626;
