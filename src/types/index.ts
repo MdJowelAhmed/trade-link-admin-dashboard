@@ -577,6 +577,7 @@ export interface Service {
   name: string
   categoryId: string
   categoryName?: string
+  totalQuestions: number
   status: ServiceStatus
   createdAt: string
   updatedAt: string

@@ -20,6 +20,8 @@ import {
   Briefcase,
   List,
   FolderTree,
+  Info,
+  ShieldCheck,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
@@ -41,11 +43,11 @@ const navItems: NavItem[] = [
     href: '/dashboard',
     icon: LayoutDashboard,
   },
-  {
-    title: 'Booking-management',
-    href: '/booking-management',
-    icon: ListOrdered,
-  },
+  // {
+  //   title: 'Booking-management',
+  //   href: '/booking-management',
+  //   icon: ListOrdered,
+  // },
   // {
   //   title: 'Users',
   //   href: '/users',
@@ -57,46 +59,6 @@ const navItems: NavItem[] = [
   //   icon: Package,
   // },
   {
-    title: 'Categories',
-    href: '/categories',
-    icon: FolderTree,
-  },
-  {
-    title: 'Service Question',
-    href: '/service-question',
-    icon: HelpCircle,
-  },
-  {
-    title: 'Car List',
-    href: '/cars',
-    icon: Car,
-  },
-  {
-    title: 'Agency Management',
-    href: '/agency-management',
-    icon: Building,
-  },
-  {
-    title: 'Calender',
-    href: '/calender',
-    icon: Calendar,
-  },
-  {
-    title: 'Transactions History',
-    href: '/transactions-history',
-    icon: CreditCard,
-  },
-  {
-    title: 'Leads',
-    href: '/leads',
-    icon: List,
-  },
-  {
-    title: 'Client Management',
-    href: '/clients',
-    icon: Users,
-  },
-  {
     title: 'Customers',
     href: '/customers',
     icon: Users,
@@ -106,6 +68,48 @@ const navItems: NavItem[] = [
     href: '/trade-person',
     icon: Briefcase,
   },
+  {
+    title: 'Leads',
+    href: '/leads',
+    icon: List,
+  },
+  {
+    title: 'Categories',
+    href: '/categories',
+    icon: FolderTree,
+  },
+  {
+    title: 'Service Question',
+    href: '/service-question',
+    icon: HelpCircle,
+  },
+  // {
+  //   title: 'Car List',
+  //   href: '/cars',
+  //   icon: Car,
+  // },
+  // {
+  //   title: 'Agency Management',
+  //   href: '/agency-management',
+  //   icon: Building,
+  // },
+  // {
+  //   title: 'Calender',
+  //   href: '/calender',
+  //   icon: Calendar,
+  // },
+  {
+    title: 'Transactions History',
+    href: '/transactions-history',
+    icon: CreditCard,
+  },
+
+  // {
+  //   title: 'Client Management',
+  //   href: '/clients',
+  //   icon: Users,
+  // },
+
 ]
 
 const settingsItems: NavItem[] = [
@@ -127,13 +131,18 @@ const settingsItems: NavItem[] = [
   {
     title: 'Privacy',
     href: '/settings/privacy',
-    icon: Shield,
+    icon: ShieldCheck,
   },
   {
-    title: 'FAQ',
-    href: '/settings/faq',
-    icon: HelpCircle,
+    title: 'About Us',
+    href: '/settings/about-us',
+    icon: Info,
   },
+  // {
+  //   title: 'FAQ',
+  //   href: '/settings/faq',
+  //   icon: HelpCircle,
+  // },
 ]
 
 export function Sidebar() {

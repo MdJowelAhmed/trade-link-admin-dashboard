@@ -13,9 +13,9 @@ export function ServiceCard({ service, onEdit }: ServiceCardProps) {
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-shadow">
       <div className="p-4">
-        <h3 className="font-semibold text-lg mb-1 line-clamp-2">{service.name}</h3>
+        <h3 className="font-semibold text-lg mb-2 line-clamp-2">{service.name}</h3>
         {service.categoryName && (
-          <p className="text-sm text-muted-foreground mb-3 line-clamp-1">
+          <p className="text-sm text-muted-foreground mb-6 line-clamp-1">
             {service.categoryName}
           </p>
         )}

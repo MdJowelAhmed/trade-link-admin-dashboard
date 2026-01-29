@@ -34,6 +34,7 @@ import FAQ from './pages/FAQ/FAQ'
 import NotFound from './pages/NotFound/NotFound'
 import Leads from './pages/leads/Leads'
 import ServiceQuestion from './pages/service-question/ServiceQuestion'
+import AboutUs from './pages/Settings/about/AboutUs'
 
 function App() {
   const dispatch = useAppDispatch()
@@ -113,7 +114,8 @@ function App() {
             <Route path="password" element={<ChangePassword />} />
             <Route path="terms" element={<TermsSettings />} />
             <Route path="privacy" element={<PrivacySettings />} />
-            <Route path="faq" element={<FAQ />} />
+            <Route path="about-us" element={<AboutUs />} />
+            {/* <Route path="faq" element={<FAQ />} /> */}
           </Route>
         </Route>
 
