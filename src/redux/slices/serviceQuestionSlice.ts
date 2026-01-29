@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import type { ServiceQuestion, ServiceQuestionFormData } from '@/types'
+import type { ServiceQuestion,  } from '@/types'
 
 interface ServiceQuestionState {
   list: ServiceQuestion[]

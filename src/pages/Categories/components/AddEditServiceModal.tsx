@@ -69,10 +69,10 @@ export function AddEditServiceModal({ open, onClose, mode, service }: AddEditSer
     label: cat.name,
   }))
 
-  const statusOptions = [
-    { value: 'active', label: 'Active' },
-    { value: 'inactive', label: 'Inactive' },
-  ]
+  // const statusOptions = [
+  //   { value: 'active', label: 'Active' },
+  //   { value: 'inactive', label: 'Inactive' },
+  // ]
 
   const onSubmit = async (data: ServiceFormData) => {
     setIsSubmitting(true)
@@ -86,6 +86,7 @@ export function AddEditServiceModal({ open, onClose, mode, service }: AddEditSer
       ...data,
       categoryName: selectedCategory?.name,
       createdAt: mode === 'edit' && service ? service.createdAt : new Date().toISOString(),
+      totalQuestions: mode === 'edit' && service ? service.totalQuestions : 0,
       updatedAt: new Date().toISOString(),
     }
 

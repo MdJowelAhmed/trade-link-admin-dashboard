@@ -1,4 +1,4 @@
-import { Mail, Phone, MapPin, Briefcase, Building2 } from 'lucide-react'
+// import { Mail, Phone, MapPin, Briefcase, Building2 } from 'lucide-react'
 import { ModalWrapper } from '@/components/common'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'

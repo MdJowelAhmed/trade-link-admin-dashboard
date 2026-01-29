@@ -1,5 +1,4 @@
 import {
-  User,
   Mail,
   Phone,
   MapPin,

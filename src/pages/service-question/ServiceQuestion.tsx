@@ -544,7 +544,7 @@ const ServiceQuestion = () => {
                   </div>
 
                   {/* Question Type Selection */}
-                  {editingQuestionId === question.id && (
+                  {/* {editingQuestionId === question.id && (
                     <div className="flex items-center gap-4">
                       <span className="text-sm font-medium">Question Type:</span>
                       <div className="flex items-center gap-4">
@@ -582,10 +582,10 @@ const ServiceQuestion = () => {
                         </label>
                       </div>
                     </div>
-                  )}
+                  )} */}
 
                   {/* Options */}
-                  <div className="space-y-3">
+                  <div className="space-y-3 grid grid-cols-2 gap-3">
                     {question.options.map((option) => (
                       <div key={option.id} className="flex items-center gap-3">
                         <Input
