@@ -19,7 +19,7 @@ export function TransactionTable({
     <div className="w-full overflow-auto">
       <table className="w-full min-w-[1000px]">
         <thead>
-          <tr className="bg-gray-100 text-slate-800">
+          <tr className="bg-card text-slate-800">
             <th className="px-6 py-4 text-left text-sm font-bold">SL</th>
             <th className="px-6 py-4 text-left text-sm font-bold">Lead ID</th>
             <th className="px-6 py-4 text-left text-sm font-bold">Name</th>
@@ -95,13 +95,13 @@ export function TransactionTable({
                 <td className="px-6 py-4">
                   <span
                     className={cn(
-                      'inline-flex items-center px-3 py-1 rounded-full text-xs font-medium',
+                      'inline-flex items-center px-6 py-2 rounded-full text-sm w-28 justify-center font-medium',
                       transaction.status === 'Completed'
-                        ? 'bg-green-500 text-white'
+                        ? 'bg-secondary text-white'
                         : transaction.status === 'Pending'
-                        ? 'bg-orange-100 text-orange-800'
+                        ? 'bg-primary-foreground text-white'
                         : transaction.status === 'Failed'
-                        ? 'bg-red-100 text-red-800'
+                        ? 'bg-secondary-foreground text-white'
                         : 'bg-gray-100 text-gray-800'
                     )}
                   >

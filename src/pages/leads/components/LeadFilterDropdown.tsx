@@ -33,7 +33,7 @@ export function LeadFilterDropdown({
     >
       <SelectTrigger
         className={cn(
-          'w-40 bg-secondary hover:bg-secondary/80 text-white border-secondary',
+          'w-40 bg-card hover:bg-card/80 text-black border-card',
           'focus:ring-secondary focus:ring-offset-0',
           className
         )}

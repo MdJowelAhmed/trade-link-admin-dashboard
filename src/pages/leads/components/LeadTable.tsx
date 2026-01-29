@@ -17,7 +17,7 @@ export function LeadTable({ leads, onView }: LeadTableProps) {
     <div className="w-full overflow-auto">
       <table className="w-full min-w-[900px]">
         <thead>
-          <tr className="bg-[#E2FBFB] text-slate-800">
+          <tr className="bg-card text-slate-800">
             <th className="px-6 py-4 text-left text-sm font-bold">SL</th>
             <th className="px-6 py-4 text-left text-sm font-bold">Name</th>
             <th className="px-6 py-4 text-left text-sm font-bold">
@@ -95,10 +95,10 @@ export function LeadTable({ leads, onView }: LeadTableProps) {
                 <td className="px-6 py-4">
                   <span
                     className={cn(
-                      'inline-flex items-center px-3 py-1 w-20 text-center rounded-sm text-xs font-medium',
+                      'inline-flex items-center px-3 py-1 w-20 text-center rounded-full text-xs font-medium',
                       lead.status === 'active'
                         ? 'bg-secondary text-white px-5 py-2'
-                        : 'bg-red-500 text-white px-5 py-2'
+                        : 'bg-secondary-foreground text-white px-5 py-2'
                     )}
                   >
                     {lead.status === 'active' ? 'Active' : 'Expired'}

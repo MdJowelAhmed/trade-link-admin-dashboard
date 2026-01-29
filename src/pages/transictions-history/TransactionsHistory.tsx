@@ -110,9 +110,9 @@ export default function TransactionsHistory() {
               <button
                 onClick={() => handleTabChange("transaction")}
                 className={cn(
-                  "px-6 py-2 rounded-full text-sm font-medium transition-colors",
+                  "px-6 py-3 rounded-full text-sm font-medium transition-colors",
                   activeTab === "transaction"
-                    ? "bg-[#1E40AF] text-white"
+                    ? "bg-primary text-white"
                     : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                 )}
               >
@@ -121,10 +121,10 @@ export default function TransactionsHistory() {
               <button
                 onClick={() => handleTabChange("refund")}
                 className={cn(
-                  "px-6 py-2 rounded-full text-sm font-medium transition-colors",
+                  "px-6 py-3 rounded-full text-sm font-medium transition-colors",
                   activeTab === "refund"
-                    ? "bg-[#1E40AF] text-white"
-                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                    ? "bg-primary text-white"
+                    : "bg-card text-gray-700 hover:bg-gray-300"
                 )}
               >
                 Refund
@@ -138,7 +138,7 @@ export default function TransactionsHistory() {
                 setStatusFilter(value as TransactionStatus | "all");
                 setCurrentPage(1);
               }}>
-                <SelectTrigger className="w-32 bg-white border-gray-300">
+                <SelectTrigger className="w-32 bg-card border-gray-300">
                   <SelectValue placeholder="All" />
                 </SelectTrigger>
                 <SelectContent>

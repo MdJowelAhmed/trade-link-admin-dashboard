@@ -17,18 +17,18 @@ export function TradePersonTable({
   const getStatusBadge = (status: string) => {
     const statusConfig = {
       approved: {
-        bg: 'bg-[#4CAF50]',
-        text: 'text-white',
+        bg: 'bg-secondary',
+        text: 'text-white rounded-full py-2',
         label: 'Approved',
       },
       pending: {
         bg: 'bg-[#F5A623]',
-        text: 'text-white',
+        text: 'text-white rounded-full py-2',
         label: 'Pending',
       },
       rejected: {
-        bg: 'bg-[#F44336]',
-        text: 'text-white',
+        bg: 'bg-secondary-foreground',
+        text: 'text-white rounded-full py-2',
         label: 'Rejected',
       },
     }
@@ -52,7 +52,7 @@ export function TradePersonTable({
     <div className="w-full overflow-auto">
       <table className="w-full min-w-[900px]">
         <thead>
-          <tr className="bg-[#EBEBEB] text-slate-700">
+          <tr className="bg-card text-slate-700">
             <th className="px-6 py-4 text-left text-sm font-semibold">SL</th>
             <th className="px-6 py-4 text-left text-sm font-semibold">Business Name</th>
             <th className="px-6 py-4 text-left text-sm font-semibold">Services</th>
@@ -117,7 +117,7 @@ export function TradePersonTable({
                 </td>
 
                 {/* Status Column */}
-                <td className="px-6 py-4 text-center">
+                <td className="text-center">
                   {getStatusBadge(tradePerson.status)}
                 </td>
 

@@ -29,7 +29,7 @@ export function TradePersonFilterDropdown({ value, onChange, className }: TradeP
     <Select value={value} onValueChange={(val) => onChange(val as TradePersonStatus | 'all')}>
       <SelectTrigger
         className={cn(
-          'w-32 bg-white border border-gray-200 text-gray-700 rounded-full',
+          'w-32 bg-card border border-card text-black rounded-full',
           'focus:ring-0 focus:ring-offset-0 focus:border-gray-300',
           'hover:bg-gray-50 transition-colors',
           className
