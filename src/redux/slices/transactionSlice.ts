@@ -7,6 +7,8 @@ const mockTransactions: Transaction[] = [
   {
     id: '1',
     transactionId: 'QPOUVHFWBO',
+    leadId: '1234567890',
+    service: 'Car rental',
     date: '2026-08-26',
     userName: 'Alice Jhonson',
     email: 'alicejhon345@gmail.com',
@@ -21,6 +23,8 @@ const mockTransactions: Transaction[] = [
   {
     id: '2',
     transactionId: 'QPOUVHFWBO',
+    leadId: '1234567890',
+    service: 'Car rental',
     date: '2026-08-26',
     userName: 'Alice Jhonson',
     email: 'alicejhon345@gmail.com',
@@ -35,6 +39,8 @@ const mockTransactions: Transaction[] = [
   {
     id: '3',
     transactionId: 'QPOUVHFWBO',
+    leadId: '1234567890',
+    service: 'Car rental',
     date: '2026-08-26',
     userName: 'Alice Jhonson',
     email: 'alicejhon345@gmail.com',
@@ -49,6 +55,8 @@ const mockTransactions: Transaction[] = [
   {
     id: '4',
     transactionId: 'QPOUVHFWBO',
+    leadId: '1234567890',
+    service: 'Car rental',
     date: '2026-08-26',
     userName: 'Alice Jhonson',
     email: 'alicejhon345@gmail.com',
@@ -63,6 +71,8 @@ const mockTransactions: Transaction[] = [
   {
     id: '5',
     transactionId: 'QPOUVHFWBO',
+    leadId: '1234567890',
+    service: 'Car rental',
     date: '2026-08-26',
     userName: 'Alice Jhonson',
     email: 'alicejhon345@gmail.com',
@@ -77,6 +87,8 @@ const mockTransactions: Transaction[] = [
   {
     id: '6',
     transactionId: 'QPOUVHFWBO',
+    leadId: '1234567890',
+    service: 'Car rental',
     date: '2026-08-26',
     userName: 'Alice Jhonson',
     email: 'alicejhon345@gmail.com',
@@ -91,6 +103,8 @@ const mockTransactions: Transaction[] = [
   {
     id: '7',
     transactionId: 'QPOUVHFWBO',
+    leadId: '1234567890',
+    service: 'Car rental',
     date: '2026-08-26',
     userName: 'Alice Jhonson',
     email: 'alicejhon345@gmail.com',
@@ -105,6 +119,8 @@ const mockTransactions: Transaction[] = [
   {
     id: '8',
     transactionId: 'TXN123456',
+    leadId: '1234567890',
+    service: 'Car rental',
     date: '2026-08-25',
     userName: 'John Smith',
     email: 'john.smith@example.com',
@@ -119,6 +135,8 @@ const mockTransactions: Transaction[] = [
   {
     id: '9',
     transactionId: 'TXN789012',
+    leadId: '1234567890',
+    service: 'Car rental',
     date: '2026-08-24',
     userName: 'Emma Wilson',
     email: 'emma.wilson@example.com',
@@ -133,6 +151,8 @@ const mockTransactions: Transaction[] = [
   {
     id: '10',
     transactionId: 'TXN345678',
+    leadId: '1234567890',
+    service: 'Car rental',
     date: '2026-08-23',
     userName: 'Michael Brown',
     email: 'michael.brown@example.com',
@@ -147,6 +167,8 @@ const mockTransactions: Transaction[] = [
   {
     id: '11',
     transactionId: 'TXN901234',
+    leadId: '1234567890',
+    service: 'Car rental',
     date: '2026-08-22',
     userName: 'Sarah Davis',
     email: 'sarah.davis@example.com',
@@ -161,6 +183,8 @@ const mockTransactions: Transaction[] = [
   {
     id: '12',
     transactionId: 'TXN567890',
+    leadId: '1234567890',
+    service: 'Car rental',
     date: '2026-08-21',
     userName: 'David Lee',
     email: 'david.lee@example.com',
@@ -175,6 +199,8 @@ const mockTransactions: Transaction[] = [
   {
     id: '13',
     transactionId: 'TXN234567',
+    leadId: '1234567890',
+    service: 'Car rental',
     date: '2026-08-20',
     userName: 'Lisa Anderson',
     email: 'lisa.anderson@example.com',
@@ -189,7 +215,9 @@ const mockTransactions: Transaction[] = [
   {
     id: '14',
     transactionId: 'TXN890123',
-    date: '2026-08-19',
+    leadId: '1234567890',
+    service: 'Car rental',
+        date: '2026-08-19',
     userName: 'Robert Taylor',
     email: 'robert.taylor@example.com',
     amount: 550,
@@ -203,6 +231,8 @@ const mockTransactions: Transaction[] = [
   {
     id: '15',
     transactionId: 'TXN456789',
+    leadId: '1234567890',
+    service: 'Car rental',
     date: '2026-08-18',
     userName: 'Jennifer White',
     email: 'jennifer.white@example.com',

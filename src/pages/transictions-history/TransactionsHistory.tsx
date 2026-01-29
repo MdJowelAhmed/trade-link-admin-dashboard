@@ -38,9 +38,9 @@ export default function TransactionsHistory() {
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | Refund | null>(null);
 
   // Get data based on active tab
-  const allData = useMemo(() => {
-    return activeTab === "transaction" ? mockTransactions : mockRefunds;
-  }, [activeTab]);
+  const allData: (Transaction | Refund)[] = useMemo(() => {
+    return activeTab === "transaction" ? mockTransactions : mockRefunds
+  }, [activeTab])
 
   // Filter data
   const filteredData = useMemo(() => {
@@ -83,7 +83,7 @@ export default function TransactionsHistory() {
     setCurrentPage(page);
   };
 
-  const handleItemsPerPageChange = (limit: number) => {
+  const handleItemsPerPageChange = () => {
     // Reset to page 1 when changing items per page
     setCurrentPage(1);
   };
