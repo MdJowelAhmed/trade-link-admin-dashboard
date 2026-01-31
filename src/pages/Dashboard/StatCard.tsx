@@ -11,9 +11,10 @@ export interface StatCardProps {
     icon: React.ElementType
     description: string
     index: number
+    background: string
 }
 
-export function StatCard({ title, value, change, icon: Icon, description, index }: StatCardProps) {
+export function StatCard({ title, value, change, icon: Icon, description, index, background }: StatCardProps) {
     const isPositive = change >= 0
 
     return (
@@ -24,7 +25,9 @@ export function StatCard({ title, value, change, icon: Icon, description, index 
         >
             <Card className="overflow-hidden shadow-md hover:shadow-[#CEF8DA] ">
                 <CardHeader className="flex flex-row items-center gap-3 pb-2">
-                    <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <div className={`h-12 w-12 rounded-lg  flex items-center justify-center`}
+                     style={{ background }}
+                    >
                         <Icon className="h-5 w-5 text-primary" />
                     </div>
                     <CardTitle className="text-base font-bold text-accent">

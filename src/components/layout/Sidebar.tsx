@@ -289,10 +289,10 @@ function SidebarNavItem({ item, collapsed }: SidebarNavItemProps) {
       className={({ isActive }) =>
         cn(
           'flex items-center gap-3 px-3 py-2.5 rounded-sm transition-all duration-200',
-          'hover:bg-[#CEF8DA] hover:text-[#0C5822]',
+          'hover:bg-primary hover:text-[#fff]',
           collapsed && 'justify-center',
           isActive
-            ? 'bg-[#CEF8DA] text-[#0C5822] shadow-md'
+            ? 'bg-primary text-[#fff] shadow-md'
             : 'text-[#656565]'
         )
       }
@@ -302,7 +302,7 @@ function SidebarNavItem({ item, collapsed }: SidebarNavItemProps) {
           <Icon
             className={cn(
               'h-5 w-5 flex-shrink-0',
-              isActive && !collapsed ? 'text-[#0C5822]' : isActive && collapsed ? 'text-[#0C5822]' : 'text-[#656565]'
+              isActive && !collapsed ? 'text-[#fff]' : isActive && collapsed ? 'text-[#fff]' : 'text-[#656565]'
             )}
           />
           {!collapsed && <span className="font-medium">{item.title}</span>}

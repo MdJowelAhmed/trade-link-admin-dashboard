@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react'
 import { formatCurrency, formatCompactNumber } from '@/utils/formatters'
-import {  RentalCars, TotalBooking, TotalRevenue } from '@/components/common/svg/DashboardSVG'
+import { totalCustomers, TotalLeads, TotalRevenue, totalTradePerson } from '@/components/common/svg/DashboardSVG'
 import { StatCard } from './StatCard'
 import { EarningsSummaryChart } from './EarningsSummaryChart'
 // import { RentStatusChart } from './RentStatusChart'
@@ -17,30 +17,35 @@ export default function Dashboard() {
       title: 'Total Customers',
       value: formatCompactNumber(12543),
       change: 12.5,
-      icon: TotalRevenue,
+      icon: totalCustomers,
       description: 'vs last month',
+      background: "#1E3A5F",
     },
     {
       title: 'Trade Persons',
       value: formatCompactNumber(3420),
       change: 8.2,
-      icon: TotalBooking,
+      icon: totalTradePerson,
       description: 'vs last month',
-    },
-    {
-      title: 'Total Earnings',
-      value: '156',
-      change: 3.1,
-      icon: RentalCars,
-      description: 'vs last month',
+      background: "#3E6B5B",
     },
     {
       title: 'Total Leads',
-      value: formatCurrency(845320),
+      value: formatCompactNumber(84520),
       change: 6542,
+      icon: TotalLeads,
+      description: 'vs last month',
+      background: "#F4A261",
+    },
+    {
+      title: 'Total Earnings',
+      value: formatCurrency(1565),
+      change: 3.1,
       icon: TotalRevenue,
       description: 'vs last month',
+      background: "#E8A469",
     },
+
   ]
 
   return (
@@ -54,14 +59,14 @@ export default function Dashboard() {
 
       {/* Chart Section - Two Column Layout */}
       <div className="">
-         <EarningsSummaryChart
+        <EarningsSummaryChart
           chartData={chartData}
           selectedYear={selectedYear}
-          onYearChange={setSelectedYear} 
-          
+          onYearChange={setSelectedYear}
+
         />
-      
-       {/* <div className='col-span-4'>
+
+        {/* <div className='col-span-4'>
         <RentStatusChart />
        </div> */}
       </div>
