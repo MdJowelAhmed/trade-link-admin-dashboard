@@ -44,7 +44,7 @@ export function CustomerTable({
                 key={customer.id}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.05 * index }}
+                transition={{ delay: 0.10 * index }}
                 className="hover:bg-gray-50 transition-colors"
               >
                 {/* SL Column */}
