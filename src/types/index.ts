@@ -487,6 +487,7 @@ export type LeadStatus = 'active' | 'expired'
 
 export interface Lead {
   id: string
+  leadId: string
   name: string
   email: string
   contact: string

@@ -18,7 +18,8 @@ export function LeadTable({ leads, onView }: LeadTableProps) {
       <table className="w-full min-w-[900px]">
         <thead>
           <tr className="bg-card text-slate-800">
-            <th className="px-6 py-4 text-left text-sm font-bold">SL</th>
+            {/* <th className="px-6 py-4 text-left text-sm font-bold">SL</th> */}
+            <th className="px-6 py-4 text-left text-sm font-bold">Lead ID</th>
             <th className="px-6 py-4 text-left text-sm font-bold">Name</th>
             <th className="px-6 py-4 text-left text-sm font-bold">
               Required Services
@@ -49,9 +50,16 @@ export function LeadTable({ leads, onView }: LeadTableProps) {
                 className="hover:bg-gray-50 transition-colors"
               >
                 {/* SL Column */}
-                <td className="px-6 py-4">
+                {/* <td className="px-6 py-4">
                   <span className="text-sm font-medium text-slate-700">
                     {String(index + 1).padStart(2, '0')}
+                  </span>
+                </td> */}
+
+                {/* Lead ID Column */}
+                <td className="px-6 py-4">
+                  <span className="text-sm font-medium text-slate-700">
+                    {lead.leadId}
                   </span>
                 </td>
 

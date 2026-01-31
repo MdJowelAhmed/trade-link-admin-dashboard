@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -102,9 +102,9 @@ export default function TransactionsHistory() {
       className="space-y-6"
     >
       <Card className="bg-white border-0 shadow-sm">
-        <CardContent className="p-6">
-          {/* Header with Tabs and Filters */}
-          <div className="flex flex-row items-center justify-between mb-6">
+
+        <CardHeader>
+          <div className="flex flex-row items-center justify-between ">
             {/* Tabs */}
             <div className="flex gap-2">
               <button
@@ -162,16 +162,23 @@ export default function TransactionsHistory() {
               />
             </div>
           </div>
+        </CardHeader>
+
+        <CardContent className="p-0">
+          {/* Header with Tabs and Filters */}
+
 
           {/* Table */}
+
           <TransactionTable
             transactions={paginatedData}
             onView={handleView}
             startIndex={(currentPage - 1) * itemsPerPage}
           />
 
+
           {/* Pagination */}
-          <div className="mt-4 pt-4 border-t border-gray-100">
+          <div className="mt-4 pt-4 border-t border-gray-100 px-6">
             <Pagination
               currentPage={currentPage}
               totalPages={totalPages}

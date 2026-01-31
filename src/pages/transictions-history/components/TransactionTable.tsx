@@ -19,7 +19,7 @@ export function TransactionTable({
     <div className="w-full overflow-auto">
       <table className="w-full min-w-[1000px]">
         <thead>
-          <tr className="bg-card text-slate-800">
+          <tr className="bg-card ">
             <th className="px-6 py-4 text-left text-sm font-bold">SL</th>
             <th className="px-6 py-4 text-left text-sm font-bold">Lead ID</th>
             <th className="px-6 py-4 text-left text-sm font-bold">Name</th>

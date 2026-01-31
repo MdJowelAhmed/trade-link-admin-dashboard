@@ -41,11 +41,11 @@ export function ViewTransactionDetailsModal({
       onClose={onClose}
       title={'transactionId' in transaction ? "Transaction Details" : "Refund Details"}
       size="lg"
-      className="max-w-2xl bg-white"
+      className="max-w-3xl bg-white"
     >
       <div className="space-y-6">
         {/* Transaction Header */}
-        <div className="flex flex-col items-center text-center pb-6 border-b">
+        <div className="flex flex-col items-center text-center ">
           <div className="h-16 w-16 rounded-full bg-blue-100 flex items-center justify-center mb-4">
             <CreditCard className="h-8 w-8 text-blue-600" />
           </div>
@@ -58,10 +58,10 @@ export function ViewTransactionDetailsModal({
               transaction.status === 'Completed'
                 ? 'bg-green-100 text-green-800'
                 : transaction.status === 'Pending'
-                ? 'bg-orange-100 text-orange-800'
-                : transaction.status === 'Failed'
-                ? 'bg-red-100 text-red-800'
-                : 'bg-gray-100 text-gray-800'
+                  ? 'bg-orange-100 text-orange-800'
+                  : transaction.status === 'Failed'
+                    ? 'bg-red-100 text-red-800'
+                    : 'bg-gray-100 text-gray-800'
             )}
           >
             {getStatusIcon()}
@@ -74,10 +74,11 @@ export function ViewTransactionDetailsModal({
           <h3 className="text-lg font-semibold mb-4 text-gray-900">
             Transaction Information
           </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Transaction ID */}
-            <Card className="border border-gray-200">
-              <CardContent className="p-4">
+          <Card className="border border-gray-200">
+            <CardContent className="p-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                {/* Transaction ID */}
                 <div className="flex items-center gap-4">
                   <div className="h-12 w-12 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
                     <FileText className="h-6 w-6 text-blue-600" />
@@ -87,16 +88,14 @@ export function ViewTransactionDetailsModal({
                       {'transactionId' in transaction ? 'Transaction ID' : 'Refund ID'}
                     </p>
                     <p className="font-medium text-gray-900">
-                      {'transactionId' in transaction ? transaction.transactionId : transaction.refundId}
+                      {'transactionId' in transaction
+                        ? transaction.transactionId
+                        : transaction.refundId}
                     </p>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
 
-            {/* Amount */}
-            <Card className="border border-gray-200">
-              <CardContent className="p-4">
+                {/* Amount */}
                 <div className="flex items-center gap-4">
                   <div className="h-12 w-12 rounded-lg bg-green-100 flex items-center justify-center flex-shrink-0">
                     <DollarSign className="h-6 w-6 text-green-600" />
@@ -104,16 +103,13 @@ export function ViewTransactionDetailsModal({
                   <div className="flex-1">
                     <p className="text-xs text-gray-500 mb-1">Amount</p>
                     <p className="font-medium text-gray-900">
-                      {transaction.currency || '€'}{transaction.amount}
+                      {transaction.currency || '€'}
+                      {transaction.amount}
                     </p>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
 
-            {/* Date */}
-            <Card className="border border-gray-200">
-              <CardContent className="p-4">
+                {/* Date */}
                 <div className="flex items-center gap-4">
                   <div className="h-12 w-12 rounded-lg bg-purple-100 flex items-center justify-center flex-shrink-0">
                     <Calendar className="h-6 w-6 text-purple-600" />
@@ -125,12 +121,8 @@ export function ViewTransactionDetailsModal({
                     </p>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
 
-            {/* Payment Method */}
-            <Card className="border border-gray-200">
-              <CardContent className="p-4">
+                {/* Payment Method */}
                 <div className="flex items-center gap-4">
                   <div className="h-12 w-12 rounded-lg bg-orange-100 flex items-center justify-center flex-shrink-0">
                     <CreditCard className="h-6 w-6 text-orange-600" />
@@ -142,12 +134,8 @@ export function ViewTransactionDetailsModal({
                     </p>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
 
-            {/* Lead ID */}
-            <Card className="border border-gray-200">
-              <CardContent className="p-4">
+                {/* Lead ID */}
                 <div className="flex items-center gap-4">
                   <div className="h-12 w-12 rounded-lg bg-cyan-100 flex items-center justify-center flex-shrink-0">
                     <FileText className="h-6 w-6 text-cyan-600" />
@@ -159,12 +147,8 @@ export function ViewTransactionDetailsModal({
                     </p>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
 
-            {/* Service */}
-            <Card className="border border-gray-200">
-              <CardContent className="p-4">
+                {/* Service */}
                 <div className="flex items-center gap-4">
                   <div className="h-12 w-12 rounded-lg bg-teal-100 flex items-center justify-center flex-shrink-0">
                     <FileText className="h-6 w-6 text-teal-600" />
@@ -176,22 +160,25 @@ export function ViewTransactionDetailsModal({
                     </p>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-          </div>
+
+              </div>
+            </CardContent>
+          </Card>
+
         </div>
 
-        <Separator />
 
         {/* User Information */}
         <div>
           <h3 className="text-lg font-semibold mb-4 text-gray-900">
             User Information
           </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* User Name */}
-            <Card className="border border-gray-200">
-              <CardContent className="p-4">
+
+          <Card className="border border-gray-200">
+            <CardContent className="p-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                {/* User Name */}
                 <div className="flex items-center gap-4">
                   <div className="h-12 w-12 rounded-lg bg-pink-100 flex items-center justify-center flex-shrink-0">
                     <User className="h-6 w-6 text-pink-600" />
@@ -203,12 +190,8 @@ export function ViewTransactionDetailsModal({
                     </p>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
 
-            {/* Email */}
-            <Card className="border border-gray-200">
-              <CardContent className="p-4">
+                {/* Email */}
                 <div className="flex items-center gap-4">
                   <div className="h-12 w-12 rounded-lg bg-indigo-100 flex items-center justify-center flex-shrink-0">
                     <Mail className="h-6 w-6 text-indigo-600" />
@@ -220,15 +203,16 @@ export function ViewTransactionDetailsModal({
                     </p>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-          </div>
+
+              </div>
+            </CardContent>
+          </Card>
         </div>
+
 
         {/* Description */}
         {transaction.description && (
           <>
-            <Separator />
             <div>
               <h3 className="text-lg font-semibold mb-4 text-gray-900">
                 Description
@@ -246,57 +230,9 @@ export function ViewTransactionDetailsModal({
 
         <Separator />
 
-        {/* Timestamps */}
-        <div>
-          <h3 className="text-lg font-semibold mb-4 text-gray-900">
-            Timestamps
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Created At */}
-            <Card className="border border-gray-200">
-              <CardContent className="p-4">
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-lg bg-gray-100 flex items-center justify-center">
-                    <Calendar className="h-5 w-5 text-gray-600" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1">Created At</p>
-                    <p className="font-medium text-gray-900">
-                      {formatDateTime(transaction.createdAt)}
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+       
 
-            {/* Updated At */}
-            <Card className="border border-gray-200">
-              <CardContent className="p-4">
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-lg bg-gray-100 flex items-center justify-center">
-                    <Calendar className="h-5 w-5 text-gray-600" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1">Last Updated</p>
-                    <p className="font-medium text-gray-900">
-                      {formatDateTime(transaction.updatedAt)}
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-
-        {/* Close Button */}
-        <div className="flex justify-end pt-4 border-t">
-          <Button
-            onClick={onClose}
-            className="bg-green-600 hover:bg-green-700 text-white"
-          >
-            Close
-          </Button>
-        </div>
+      
       </div>
     </ModalWrapper>
   )
