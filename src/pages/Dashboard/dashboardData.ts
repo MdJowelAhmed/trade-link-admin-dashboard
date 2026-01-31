@@ -1,19 +1,37 @@
-// Generate mock data for different years
+// Fixed monthly earnings data (in thousands - will be multiplied by 1000)
+// You can easily modify these values here
+const fixedMonthlyEarnings: Record<string, number[]> = {
+    '2024': [24, 30, 20, 40, 35, 45, 50, 38, 42, 48, 75, 55], // Jan-Dec in k
+    '2023': [20, 25, 18, 35, 30, 40, 65, 33, 38, 42, 30, 50],
+    '2022': [18, 22, 16, 90, 28, 35, 55, 30, 35, 38, 28, 45],
+    '2021': [15, 20, 14, 25, 25, 30, 70, 28, 32, 49, 25, 40],
+    '2025': [26, 32, 22, 42, 38, 48, 90, 40, 45, 50, 38, 38],
+    '2026': [28, 48, 25, 45, 40, 50, 85, 43, 48, 40, 60, 27],
+}
+
+// Generate fixed data for different years
 export const generateYearData = (year: number) => {
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-    const baseRevenue = 50000 + (year - 2021) * 15000
+    const yearKey = year.toString()
+    const earnings = fixedMonthlyEarnings[yearKey] || fixedMonthlyEarnings['2026']
+    
+    // Base values for users and orders (you can also make these fixed if needed)
     const baseUsers = 500 + (year - 2021) * 200
     const baseOrders = 300 + (year - 2021) * 100
 
     return months.map((month, index) => {
-        const seasonMultiplier = index >= 10 || index <= 1 ? 1.3 : index >= 5 && index <= 7 ? 0.85 : 1
-        const randomVariation = () => 0.8 + Math.random() * 0.4
+        // Fixed revenue from the array (multiply by 1000 to convert k to actual value)
+        const revenue = earnings[index] * 1000
+        
+        // Users and orders can remain dynamic or you can make them fixed too
+        const users = Math.round(baseUsers * (0.9 + (index * 0.02)))
+        const orders = Math.round(baseOrders * (0.9 + (index * 0.02)))
 
         return {
             month,
-            revenue: Math.round(baseRevenue * seasonMultiplier * randomVariation() * (1 + index * 0.02)),
-            users: Math.round(baseUsers * randomVariation() * (1 + index * 0.05)),
-            orders: Math.round(baseOrders * seasonMultiplier * randomVariation() * (1 + index * 0.03)),
+            revenue,
+            users,
+            orders,
         }
     })
 }

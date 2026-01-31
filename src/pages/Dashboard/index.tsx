@@ -8,9 +8,12 @@ import { EarningsSummaryChart } from './EarningsSummaryChart'
 import { yearlyData } from './dashboardData'
 
 export default function Dashboard() {
-  const [selectedYear, setSelectedYear] = useState('2024')
+  const [selectedYear, setSelectedYear] = useState('2026')
 
-  const chartData = useMemo(() => yearlyData[selectedYear], [selectedYear])
+  const chartData = useMemo(() => {
+    const data = yearlyData[selectedYear] || []
+    return data
+  }, [selectedYear])
 
   const stats = [
     {
@@ -63,7 +66,16 @@ export default function Dashboard() {
           chartData={chartData}
           selectedYear={selectedYear}
           onYearChange={setSelectedYear}
-
+          tooltipFormatter={(value) => formatCurrency(value)}
+          valueFormatter={(value) => {
+            if (value >= 1000000) {
+              return `$${(value / 1000000).toFixed(1)}M`
+            }
+            if (value >= 1000) {
+              return `$${(value / 1000).toFixed(0)}k`
+            }
+            return `$${value}`
+          }}
         />
 
         {/* <div className='col-span-4'>

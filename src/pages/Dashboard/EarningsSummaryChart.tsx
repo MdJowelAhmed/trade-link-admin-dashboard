@@ -29,6 +29,21 @@ interface EarningsSummaryChartProps {
     chartData: ChartDataPoint[]
     selectedYear: string
     onYearChange: (year: string) => void
+    // Custom value formatter function
+    valueFormatter?: (value: number) => string
+    // Custom tooltip formatter function
+    tooltipFormatter?: (value: number) => string
+    // Custom data key to display (default: 'revenue')
+    dataKey?: 'revenue' | 'users' | 'orders'
+    // Custom chart title
+    chartTitle?: string
+    // Custom gradient colors
+    gradientColors?: {
+        start: string
+        end: string
+    }
+    // Custom stroke color
+    strokeColor?: string
 }
 
 
@@ -68,22 +83,45 @@ const strKFormatter = (num: number) => {
 
 interface CustomTooltipProps {
     active?: boolean;
-    payload?: { value: number }[];
+    payload?: Array<{
+        value: number;
+        payload?: ChartDataPoint;
+    }>;
+    label?: string;
+    formatter?: (value: number) => string;
 }
 
-const CustomTooltip = ({ active, payload }: CustomTooltipProps) => {
-    if (active && payload && payload.length) {
+const CustomTooltip = ({ active, payload, label, formatter }: CustomTooltipProps) => {
+    if (active && payload && payload.length && payload[0].payload) {
+        const dataPoint = payload[0].payload;
+        const formattedValue = formatter 
+            ? formatter(payload[0].value)
+            : strKFormatter(payload[0].value);
         return (
-            <div className="bg-primary text-white px-5 py-2 rounded text-sm font-medium shadow-sm relative">
-                <p>{strKFormatter(payload[0].value)}</p>
-                {/* <div className="absolute left-1/2 -bottom-1 -translate-x-1/2 w-2 h-2 bg-[#666C79] rotate-45"></div> */}
+            <div className="bg-primary text-white px-5 py-3 rounded-lg text-sm font-medium shadow-lg relative border border-white/20">
+                <p className="text-xs text-white/80 mb-1">Month: {label || dataPoint.month}</p>
+                <p className="text-base font-semibold">Earning: {formattedValue}</p>
+                {/* <div className="absolute left-1/2 -bottom-1 -translate-x-1/2 w-2 h-2 bg-primary rotate-45"></div> */}
             </div>
         )
     }
     return null
 }
 
-export function EarningsSummaryChart({ chartData, selectedYear, onYearChange }: EarningsSummaryChartProps) {
+export function EarningsSummaryChart({ 
+    chartData, 
+    selectedYear, 
+    onYearChange,
+    valueFormatter = strKFormatter,
+    tooltipFormatter,
+    dataKey = 'revenue',
+    chartTitle = 'Earnings Summary',
+    gradientColors = { start: '#1E3A5F', end: '#1E3A5F' },
+    strokeColor = '#1E3A5F'
+}: EarningsSummaryChartProps) {
+
+    // Get max value for the selected data key
+    const maxValue = Math.max(...chartData.map(d => d[dataKey]));
 
     return (
         <motion.div
@@ -94,7 +132,7 @@ export function EarningsSummaryChart({ chartData, selectedYear, onYearChange }: 
             <Card>
                 <CardHeader>
                     <div className="flex items-center justify-between">
-                        <CardTitle>Earnings Summary</CardTitle>
+                        <CardTitle>{chartTitle}</CardTitle>
                         <Select value={selectedYear} onValueChange={onYearChange} >
                             <SelectTrigger className="w-[120px] bg-card text-black">
                                 <SelectValue placeholder="Year" />
@@ -123,8 +161,8 @@ export function EarningsSummaryChart({ chartData, selectedYear, onYearChange }: 
                             >
                                 <defs>
                                     <linearGradient id="earningGradient" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="10%" stopColor="#1E3A5F" stopOpacity={0.8} />
-                                        <stop offset="95%" stopColor="#1E3A5F" stopOpacity={0} />
+                                        <stop offset="10%" stopColor={gradientColors.start} stopOpacity={0.8} />
+                                        <stop offset="95%" stopColor={gradientColors.end} stopOpacity={0} />
                                     </linearGradient>
                                 </defs>
                                 <CartesianGrid strokeDasharray="3 3" vertical={true} horizontal={false} stroke="#E5E7EB" />
@@ -139,20 +177,23 @@ export function EarningsSummaryChart({ chartData, selectedYear, onYearChange }: 
                                     axisLine={false}
                                     tickLine={false}
                                     tick={{ fill: '#9CA3AF', fontSize: 12 }}
-                                    tickFormatter={(value) => strKFormatter(value)}
+                                    tickFormatter={valueFormatter}
                                     allowDataOverflow={false}
                                     domain={[0, 'dataMax']}
-                                    ticks={generateTicks(Math.max(...chartData.map(d => d.revenue)))}
+                                    ticks={generateTicks(maxValue)}
                                 />
-                                <Tooltip content={<CustomTooltip />} />
+                                <Tooltip 
+                                    content={<CustomTooltip formatter={tooltipFormatter || valueFormatter} />}
+                                    cursor={{ stroke: strokeColor, strokeWidth: 1, strokeDasharray: '3 3' }}
+                                />
                                 <Area
                                     type="natural"
-                                    dataKey="revenue"
-                                    stroke="#1E3A5F"
+                                    dataKey={dataKey}
+                                    stroke={strokeColor}
                                     strokeWidth={1}
                                     fill="url(#earningGradient)"
                                     dot={false}
-                                    activeDot={{ r: 6, fill: '#1E3A5F', stroke: '#fff', strokeWidth: 1 }}
+                                    activeDot={{ r: 6, fill: strokeColor, stroke: '#fff', strokeWidth: 1 }}
                                 />
                             </AreaChart>
                         </ResponsiveContainer>
