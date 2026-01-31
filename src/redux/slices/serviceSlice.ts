@@ -37,8 +37,8 @@ const mockServices: Service[] = [
   {
     id: '4',
     name: 'Patios & Paving',
-    categoryId: '1',
-    categoryName: 'Outdoor & Landscaping',
+    categoryId: '2',
+    categoryName: 'Driveways & Surfacing',
     totalQuestions: 14,
     status: 'active',
     createdAt: '2024-01-13T13:00:00Z',
@@ -47,8 +47,8 @@ const mockServices: Service[] = [
   {
     id: '5',
     name: 'Fencing',
-    categoryId: '1',
-    categoryName: 'Outdoor & Landscaping',
+    categoryId: '2',
+    categoryName: 'Driveways & Surfacing',
     totalQuestions: 6,
     status: 'active',
     createdAt: '2024-01-14T14:00:00Z',
@@ -57,8 +57,8 @@ const mockServices: Service[] = [
   {
     id: '6',
     name: 'Turfing / Artificial Grass',
-    categoryId: '1',
-    categoryName: 'Outdoor & Landscaping',
+    categoryId: '3',
+    categoryName: 'Building & Structural',
     totalQuestions: 10,
     status: 'active',
     createdAt: '2024-01-15T15:00:00Z',
@@ -67,7 +67,7 @@ const mockServices: Service[] = [
   {
     id: '7',
     name: 'Plumbing Repair',
-    categoryId: '5',
+    categoryId: '4',
     categoryName: 'Electrical, Plumbing & Heating',
     totalQuestions: 12,
     status: 'active',
@@ -77,13 +77,34 @@ const mockServices: Service[] = [
   {
     id: '8',
     name: 'Electrical Installation',
-    categoryId: '5',
+    categoryId: '4',
     categoryName: 'Electrical, Plumbing & Heating',
     totalQuestions: 14,
     status: 'active',
     createdAt: '2024-01-17T17:00:00Z',
     updatedAt: '2024-01-27T21:45:00Z',
   },
+  {
+    id: '9',
+    name: 'Roofing & Exterior Shell',
+    categoryId: '6',
+    categoryName: 'Roofing & Exterior Shell',
+    totalQuestions: 14,
+    status: 'active',
+    createdAt: '2024-01-17T17:00:00Z',
+    updatedAt: '2024-01-27T21:45:00Z',
+  },
+  {
+    id: '10',
+    name: 'Electrical Installation',
+    categoryId: '7',
+    categoryName: 'Windows, Doors & Security',
+    totalQuestions: 14,
+    status: 'active',
+    createdAt: '2024-01-17T17:00:00Z',
+    updatedAt: '2024-01-27T21:45:00Z',
+  },
+
 ]
 
 interface ServiceState {
