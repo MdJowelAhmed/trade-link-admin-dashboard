@@ -1,16 +1,29 @@
 import { Edit } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import { motion } from 'framer-motion'
 import type { Category } from '@/types'
 
 interface CategoryCardProps {
   category: Category
   onEdit: () => void
+  index?: number
 }
 
-export function CategoryCard({ category, onEdit }: CategoryCardProps) {
+export function CategoryCard({ category, onEdit, index = 0 }: CategoryCardProps) {
   return (
-    <Card className="overflow-hidden hover:shadow-lg transition-shadow">
+    <motion.div
+      initial={{ opacity: 0, y: 20, scale: 0.95 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{
+        duration: 0.50,
+        delay: index * 0.15,
+        ease: [0.25, 0.1, 0.25, 1],
+      }}
+      whileHover={{ y: -4, scale: 1.02 }}
+      whileTap={{ scale: 0.98 }}
+    >
+      <Card className="overflow-hidden hover:shadow-lg transition-shadow">
       <div className="relative aspect-video w-full overflow-hidden bg-muted">
         {category.image ? (
           <img
@@ -49,5 +62,6 @@ export function CategoryCard({ category, onEdit }: CategoryCardProps) {
         </Button>
       </div>
     </Card>
+    </motion.div>
   )
 }

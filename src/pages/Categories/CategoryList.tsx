@@ -161,11 +161,12 @@ export default function CategoryList() {
               ) : paginatedCategories.length > 0 ? (
                 <>
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                    {paginatedCategories.map((category) => (
+                    {paginatedCategories.map((category, index) => (
                       <CategoryCard
                         key={category.id}
                         category={category}
                         onEdit={() => handleEditCategory(category)}
+                        index={index}
                       />
                     ))}
                   </div>
@@ -196,11 +197,12 @@ export default function CategoryList() {
               ) : paginatedServices.length > 0 ? (
                 <>
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4">
-                    {paginatedServices.map((service) => (
+                    {paginatedServices.map((service, index) => (
                       <ServiceCard
                         key={service.id}
                         service={service}
                         onEdit={() => handleEditService(service)}
+                        index={index}
                       />
                     ))}
                   </div>
