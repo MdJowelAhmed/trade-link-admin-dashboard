@@ -1,11 +1,10 @@
 import { CreditCard, Calendar, User, Mail, DollarSign, FileText, CheckCircle, XCircle, Clock, AlertCircle } from 'lucide-react'
 import { ModalWrapper } from '@/components/common'
-import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { Card, CardContent } from '@/components/ui/card'
 import type { Transaction, Refund } from '@/types'
 import { cn } from '@/utils/cn'
-import { formatDate, formatDateTime } from '@/utils/formatters'
+import { formatDate } from '@/utils/formatters'
 
 interface ViewTransactionDetailsModalProps {
   open: boolean
