@@ -1,4 +1,5 @@
 import { configureStore } from '@reduxjs/toolkit'
+import { baseApi } from './baseApi'
 import authReducer from './slices/authSlice'
 import userReducer from './slices/userSlice'
 import productReducer from './slices/productSlice'
@@ -34,11 +35,12 @@ export const store = configureStore({
     leads: leadReducer,
     services: serviceReducer,
     serviceQuestions: serviceQuestionReducer,
+    [baseApi.reducerPath]: baseApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: false,
-    }),
+    }).concat(baseApi.middleware),
 })
 
 export type RootState = ReturnType<typeof store.getState>

@@ -14,6 +14,7 @@ import {
   loginSuccess,
   loginFailure,
 } from "@/redux/slices/authSlice";
+import { useLoginMutation } from "@/redux/api/authApi";
 import { cn } from "@/utils/cn";
 import { motion } from "framer-motion";
 
@@ -31,6 +32,7 @@ export default function Login() {
   const dispatch = useAppDispatch();
   const { isLoading, error } = useAppSelector((state) => state.auth);
   const [showPassword, setShowPassword] = useState(false);
+  const [login] = useLoginMutation();
 
   const from = location.state?.from?.pathname || "/dashboard";
 
@@ -51,30 +53,27 @@ export default function Login() {
     dispatch(loginStart());
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      const response = await login({
+        email: data.email,
+        password: data.password,
+      }).unwrap();
 
-      // Mock successful login - In production, replace with actual API call
-      if (data.email === "admin@example.com" && data.password === "password") {
+      if (response?.success && response?.data?.accessToken) {
         dispatch(
           loginSuccess({
-            user: {
-              id: "1",
-              email: data.email,
-              firstName: "Admin",
-              lastName: "User",
-              avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Admin",
-              role: "admin",
-            },
-            token: "mock-jwt-token-" + Date.now(),
+            token: response.data.accessToken,
           })
         );
         navigate(from, { replace: true });
       } else {
-        dispatch(loginFailure("Invalid email or password"));
+        dispatch(loginFailure(response?.message || "Invalid email or password"));
       }
-    } catch {
-      dispatch(loginFailure("An error occurred. Please try again."));
+    } catch (error) {
+      const message =
+        error?.data?.message ||
+        error?.message ||
+        "An error occurred. Please try again.";
+      dispatch(loginFailure(message));
     }
   };
 
