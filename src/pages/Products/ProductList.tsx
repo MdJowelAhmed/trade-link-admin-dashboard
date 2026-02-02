@@ -15,6 +15,7 @@ import { DeleteProductModal } from './DeleteProductModal'
 import { ProductDetailsModal } from './ProductDetailsModal'
 import { useAppDispatch, useAppSelector } from '@/redux/hooks'
 import { setFilters, setPage, setLimit, setSelectedProduct } from '@/redux/slices/productSlice'
+import { useGetCategoriesQuery } from '@/redux/api/categoriesApi'
 import { useUrlParams } from '@/hooks/useUrlState'
 import { PRODUCT_STATUSES } from '@/utils/constants'
 import { formatCurrency, formatDate } from '@/utils/formatters'
@@ -26,11 +27,14 @@ export default function ProductList() {
   const { filteredList, isLoading, selectedProduct } = useAppSelector(
     (state) => state.products
   )
-  const { list: categories } = useAppSelector((state) => state.categories)
+
+  // Use RTK Query for categories (backend handles data)
+  const { data: categoriesResponse } = useGetCategoriesQuery()
+  const categories = categoriesResponse?.data?.data ?? []
 
   // URL-based state management
   const { getParam, getNumberParam, setParam, setParams } = useUrlParams()
-  
+
   const search = getParam('search', '')
   const status = getParam('status', 'all')
   const categoryId = getParam('category', 'all')
@@ -58,7 +62,7 @@ export default function ProductList() {
   const categoryOptions = useMemo(
     () => [
       { value: 'all', label: 'All Categories' },
-      ...categories.map((cat) => ({ value: cat.id, label: cat.name })),
+      ...categories.map((cat) => ({ value: cat._id, label: cat.name })),
     ],
     [categories]
   )
@@ -131,8 +135,8 @@ export default function ProductList() {
                 stock === 0
                   ? 'text-destructive font-medium'
                   : stock < 20
-                  ? 'text-warning font-medium'
-                  : 'text-muted-foreground'
+                    ? 'text-warning font-medium'
+                    : 'text-muted-foreground'
               }
             >
               {stock} units

@@ -1,7 +1,5 @@
-import  { useState } from 'react'
 import { ConfirmDialog } from '@/components/common'
-import { useAppDispatch } from '@/redux/hooks'
-import { deleteCategory } from '@/redux/slices/categorySlice'
+import { useDeleteCategoryMutation } from '@/redux/api/categoriesApi'
 import type { Category } from '@/types'
 import { toast } from '@/utils/toast'
 
@@ -12,25 +10,29 @@ interface DeleteCategoryModalProps {
 }
 
 export function DeleteCategoryModal({ open, onClose, category }: DeleteCategoryModalProps) {
-  const dispatch = useAppDispatch()
-  const [isDeleting, setIsDeleting] = useState(false)
+  // RTK Query mutation - auto-refetch via invalidatesTags
+  const [deleteCategory, { isLoading: isDeleting }] = useDeleteCategoryMutation()
 
   const handleDelete = async () => {
-    setIsDeleting(true)
-    
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    try {
+      await deleteCategory(category.id).unwrap()
 
-    dispatch(deleteCategory(category.id))
-    
-    toast({
-      title: 'Category Deleted',
-      description: `${category.name} has been deleted successfully.`,
-      variant: 'destructive',
-    })
-    
-    setIsDeleting(false)
-    onClose()
+      toast({
+        title: 'Category Deleted',
+        description: `${category.name} has been deleted successfully.`,
+        variant: 'destructive',
+      })
+
+      // No Redux dispatch needed - invalidatesTags triggers auto-refetch
+      onClose()
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to delete category'
+      toast({
+        title: 'Error',
+        description: errorMessage,
+        variant: 'destructive',
+      })
+    }
   }
 
   return (
@@ -46,15 +48,3 @@ export function DeleteCategoryModal({ open, onClose, category }: DeleteCategoryM
     />
   )
 }
-
-
-
-
-
-
-
-
-
-
-
-

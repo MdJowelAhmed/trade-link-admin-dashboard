@@ -4,8 +4,9 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { ModalWrapper, FormInput, FormSelect } from '@/components/common'
 import { Button } from '@/components/ui/button'
-import { useAppDispatch, useAppSelector } from '@/redux/hooks'
+import { useAppDispatch } from '@/redux/hooks'
 import { addService, updateService } from '@/redux/slices/serviceSlice'
+import { useGetCategoriesQuery } from '@/redux/api/categoriesApi'
 import type { Service } from '@/types'
 import { toast } from '@/utils/toast'
 
@@ -26,7 +27,11 @@ interface AddEditServiceModalProps {
 
 export function AddEditServiceModal({ open, onClose, mode, service }: AddEditServiceModalProps) {
   const dispatch = useAppDispatch()
-  const { list: categories } = useAppSelector((state) => state.categories)
+
+  // Use RTK Query for categories (backend handles data)
+  const { data: categoriesResponse } = useGetCategoriesQuery()
+  const categories = categoriesResponse?.data?.data ?? []
+
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const {
@@ -65,7 +70,7 @@ export function AddEditServiceModal({ open, onClose, mode, service }: AddEditSer
   }, [open, mode, service, reset])
 
   const categoryOptions = categories.map((cat) => ({
-    value: cat.id,
+    value: cat._id,
     label: cat.name,
   }))
 
@@ -76,11 +81,11 @@ export function AddEditServiceModal({ open, onClose, mode, service }: AddEditSer
 
   const onSubmit = async (data: ServiceFormData) => {
     setIsSubmitting(true)
-    
+
     // Simulate API call
     await new Promise((resolve) => setTimeout(resolve, 1000))
 
-    const selectedCategory = categories.find((c) => c.id === data.categoryId)
+    const selectedCategory = categories.find((c) => c._id === data.categoryId)
     const serviceData: Service = {
       id: mode === 'edit' && service ? service.id : Date.now().toString(),
       ...data,

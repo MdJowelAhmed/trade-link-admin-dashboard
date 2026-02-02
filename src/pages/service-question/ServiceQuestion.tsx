@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { FormSelect } from '@/components/common'
 import { useAppDispatch, useAppSelector } from '@/redux/hooks'
 import { addServiceQuestion, updateServiceQuestion, deleteServiceQuestion } from '@/redux/slices/serviceQuestionSlice'
+import { useGetCategoriesQuery } from '@/redux/api/categoriesApi'
 import type { ServiceQuestion, QuestionType } from '@/types'
 import { toast } from '@/utils/toast'
 
@@ -29,7 +30,11 @@ interface QuestionForm {
 
 const ServiceQuestion = () => {
   const dispatch = useAppDispatch()
-  const { list: categories } = useAppSelector((state) => state.categories)
+
+  // Use RTK Query for categories (backend handles data)
+  const { data: categoriesResponse } = useGetCategoriesQuery()
+  const categories = categoriesResponse?.data?.data ?? []
+
   const { list: services } = useAppSelector((state) => state.services)
   const { list: serviceQuestions } = useAppSelector((state) => state.serviceQuestions)
 
@@ -65,7 +70,7 @@ const ServiceQuestion = () => {
   }, [serviceQuestionsList])
 
   const categoryOptions = categories.map((cat) => ({
-    value: cat.id,
+    value: cat._id,
     label: cat.name,
   }))
 
@@ -333,11 +338,11 @@ const ServiceQuestion = () => {
       questions.map((q) =>
         q.id === questionId
           ? {
-              ...q,
-              options: q.options.map((opt) =>
-                opt.id === optionId ? { ...opt, [field]: value } : opt
-              ),
-            }
+            ...q,
+            options: q.options.map((opt) =>
+              opt.id === optionId ? { ...opt, [field]: value } : opt
+            ),
+          }
           : q
       )
     )
@@ -387,11 +392,10 @@ const ServiceQuestion = () => {
                 <button
                   key={service.id}
                   onClick={() => handleServiceSelect(service.id)}
-                  className={`px-6 py-[10px] rounded-full font-medium transition-colors ${
-                    selectedServiceId === service.id
+                  className={`px-6 py-[10px] rounded-full font-medium transition-colors ${selectedServiceId === service.id
                       ? 'bg-primary text-white'
                       : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                  }`}
+                    }`}
                 >
                   {service.name}
                 </button>
@@ -442,12 +446,12 @@ const ServiceQuestion = () => {
 
                         {/* Order number field */}
                         <div className="flex flex-col  gap-2 text-sm text-muted-foreground">
-                         <div className="flex items-center gap-2">
-                         <span>Order number:</span>
-                          <span className="text-xs text-gray-400">
-                            (1 - {questions.length})
-                          </span>
-                         </div>
+                          <div className="flex items-center gap-2">
+                            <span>Order number:</span>
+                            <span className="text-xs text-gray-400">
+                              (1 - {questions.length})
+                            </span>
+                          </div>
                           <Input
                             type="number"
                             value={question.orderNumber === 0 ? '' : question.orderNumber}
@@ -480,7 +484,7 @@ const ServiceQuestion = () => {
                             max={questions.length}
                             placeholder="Enter order number"
                           />
-                         
+
                         </div>
                       </div>
                     </div>
@@ -509,14 +513,14 @@ const ServiceQuestion = () => {
                                   questions.map((q) =>
                                     q.id === question.id
                                       ? {
-                                          id: original.id,
-                                          question: original.question,
-                                          type: original.type,
-                                          isEnabled: original.isEnabled,
-                                          isPricing: original.isPricing,
-                                          orderNumber: original.orderNumber ?? q.orderNumber,
-                                          options: original.options as QuestionOption[],
-                                        }
+                                        id: original.id,
+                                        question: original.question,
+                                        type: original.type,
+                                        isEnabled: original.isEnabled,
+                                        isPricing: original.isPricing,
+                                        orderNumber: original.orderNumber ?? q.orderNumber,
+                                        options: original.options as QuestionOption[],
+                                      }
                                       : q
                                   )
                                 )
@@ -715,7 +719,7 @@ const ServiceQuestion = () => {
                       min={1}
                       max={questions.length + 1}
                     />
-                   
+
                   </div>
 
                   {/* <div className="flex items-center gap-4">

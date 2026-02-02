@@ -1,4 +1,4 @@
-import  { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -6,8 +6,7 @@ import { ModalWrapper, FormInput, ImageUploader } from '@/components/common'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
-import { useAppDispatch } from '@/redux/hooks'
-import { addCategory, updateCategory } from '@/redux/slices/categorySlice'
+import { useAddCategoryMutation, useUpdateCategoryMutation } from '@/redux/api/categoriesApi'
 import { slugify } from '@/utils/formatters'
 import type { Category } from '@/types'
 import { toast } from '@/utils/toast'
@@ -27,11 +26,13 @@ interface AddEditCategoryModalProps {
 }
 
 export function AddEditCategoryModal({ open, onClose, mode, category }: AddEditCategoryModalProps) {
-  const dispatch = useAppDispatch()
   const [image, setImage] = useState<File | string | null>(null)
-  const [isSubmitting, setIsSubmitting] = useState(false)
 
- 
+  // RTK Query mutations - auto-refetch via invalidatesTags
+  const [addCategory, { isLoading: isAdding }] = useAddCategoryMutation()
+  const [updateCategory, { isLoading: isUpdating }] = useUpdateCategoryMutation()
+
+  const isSubmitting = isAdding || isUpdating
 
   const {
     register,
@@ -73,49 +74,46 @@ export function AddEditCategoryModal({ open, onClose, mode, category }: AddEditC
   }, [open, mode, category, reset])
 
   const onSubmit = async (data: CategoryFormData) => {
-    setIsSubmitting(true)
-    
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    try {
+      // Prepare FormData for file upload
+      const formData = new FormData()
+      formData.append('name', data.name)
+      formData.append('slug', slugify(data.name))
+      formData.append('isActive', data.status === 'active' ? 'true' : 'false')
 
-    // Handle image: if it's a string (existing URL), keep it; if it's a File, create object URL
-    let imageUrl: string | undefined
-    if (image) {
-      if (typeof image === 'string') {
-        imageUrl = image
-      } else if (image instanceof File) {
-        imageUrl = URL.createObjectURL(image)
+      if (image) {
+        if (image instanceof File) {
+          formData.append('image', image)
+        } else if (typeof image === 'string') {
+          // If it's a URL string, send it as-is
+          formData.append('imageUrl', image)
+        }
       }
-    }
 
-    const categoryData: Category = {
-      id: mode === 'edit' && category ? category.id : Date.now().toString(),
-      name: data.name,
-      slug: slugify(data.name),
-      description: undefined,
-      image: imageUrl,
-      status: data.status,
-      productCount: mode === 'edit' && category ? category.productCount : 0,
-      createdAt: mode === 'edit' && category ? category.createdAt : new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    }
+      if (mode === 'edit' && category) {
+        await updateCategory({ id: category.id, data: formData }).unwrap()
+        toast({
+          title: 'Category Updated',
+          description: `${data.name} has been updated successfully.`,
+        })
+      } else {
+        await addCategory(formData).unwrap()
+        toast({
+          title: 'Category Created',
+          description: `${data.name} has been created successfully.`,
+        })
+      }
 
-    if (mode === 'edit') {
-      dispatch(updateCategory(categoryData))
+      // No Redux dispatch needed - invalidatesTags triggers auto-refetch
+      onClose()
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Something went wrong'
       toast({
-        title: 'Category Updated',
-        description: `${data.name} has been updated successfully.`,
-      })
-    } else {
-      dispatch(addCategory(categoryData))
-      toast({
-        title: 'Category Created',
-        description: `${data.name} has been created successfully.`,
+        title: 'Error',
+        description: errorMessage,
+        variant: 'destructive',
       })
     }
-
-    setIsSubmitting(false)
-    onClose()
   }
 
   const statusValue = watch('status') === 'active'
@@ -125,7 +123,7 @@ export function AddEditCategoryModal({ open, onClose, mode, category }: AddEditC
       open={open}
       onClose={onClose}
       title={mode === 'add' ? 'Add Categories' : 'Edit Category'}
-      size="md"  
+      size="md"
       className="bg-white"
     >
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -165,15 +163,3 @@ export function AddEditCategoryModal({ open, onClose, mode, category }: AddEditC
     </ModalWrapper>
   )
 }
-
-
-
-
-
-
-
-
-
-
-
-

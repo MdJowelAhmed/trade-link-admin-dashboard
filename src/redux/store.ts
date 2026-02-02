@@ -3,7 +3,7 @@ import { baseApi } from './baseApi'
 import authReducer from './slices/authSlice'
 import userReducer from './slices/userSlice'
 import productReducer from './slices/productSlice'
-import categoryReducer from './slices/categorySlice'
+import categoryUIReducer from './slices/categorySlice'
 import uiReducer from './slices/uiSlice'
 import carReducer from './slices/carSlice'
 import clientReducer from './slices/clientSlice'
@@ -22,7 +22,7 @@ export const store = configureStore({
     auth: authReducer,
     users: userReducer,
     products: productReducer,
-    categories: categoryReducer,
+    categoryUI: categoryUIReducer,
     ui: uiReducer,
     cars: carReducer,
     clients: clientReducer,

@@ -14,30 +14,68 @@ import { AddEditCategoryModal } from './AddEditCategoryModal'
 import { AddEditServiceModal } from './components/AddEditServiceModal'
 import { DeleteCategoryModal } from './DeleteCategoryModal'
 import { useAppDispatch, useAppSelector } from '@/redux/hooks'
-import { setFilters, setPage, setLimit, setSelectedCategory } from '@/redux/slices/categorySlice'
+import { setFilters, setPage, setLimit, setSelectedCategoryId } from '@/redux/slices/categorySlice'
 import { setFilters as setServiceFilters, setPage as setServicePage, setLimit as setServiceLimit, setSelectedService } from '@/redux/slices/serviceSlice'
+import { useGetCategoriesQuery } from '@/redux/api/categoriesApi'
 import { useUrlParams } from '@/hooks/useUrlState'
 import { CATEGORY_STATUSES } from '@/utils/constants'
-import type { Category, Service } from '@/types'
+import type { Service } from '@/types'
 import { motion } from 'framer-motion'
+
+// Backend category type (from API response)
+interface BackendCategory {
+  _id: string
+  name: string
+  slug: string
+  description?: string
+  image?: string
+  isActive: boolean
+  serviceCount: number
+  createdAt: string
+  updatedAt: string
+}
 
 export default function CategoryList() {
   const dispatch = useAppDispatch()
-  const { filteredList, isLoading, selectedCategory } = useAppSelector(
-    (state) => state.categories
-  )
+
+  // Service state from Redux (keeping existing pattern for services)
   const { filteredList: filteredServices, selectedService } = useAppSelector(
     (state) => state.services
   )
 
   // URL-based state management
   const { getParam, getNumberParam, setParam, setParams } = useUrlParams()
-  
+
   const search = getParam('search', '')
   const status = getParam('status', 'all')
   const page = getNumberParam('page', 1)
   const limit = getNumberParam('limit', 12)
   const activeTab = getParam('tab', 'categories')
+
+  // RTK Query - server data comes from here (backend handles filtering/pagination)
+  const {
+    data: categoriesResponse,
+    isLoading,
+    isFetching,
+  } = useGetCategoriesQuery({
+    searchTerm: search || undefined,
+    status: status !== 'all' ? status : undefined,
+    page,
+    limit,
+  })
+
+  // Extract categories and meta from response
+  const categories = categoriesResponse?.data ?? []
+  const meta = categoriesResponse?.data?.meta
+
+  // UI state from Redux
+  const { selectedCategoryId } = useAppSelector((state) => state.categoryUI)
+
+  // Derive selected category from server data
+  const selectedCategory = useMemo(
+    () => categories.find((c: BackendCategory) => c._id === selectedCategoryId) ?? null,
+    [categories, selectedCategoryId]
+  )
 
   const [showAddCategoryModal, setShowAddCategoryModal] = useState(false)
   const [showEditCategoryModal, setShowEditCategoryModal] = useState(false)
@@ -45,10 +83,10 @@ export default function CategoryList() {
   const [showAddServiceModal, setShowAddServiceModal] = useState(false)
   const [showEditServiceModal, setShowEditServiceModal] = useState(false)
 
-  // Sync URL params with Redux
+  // Sync URL params with Redux UI state
   useEffect(() => {
     if (activeTab === 'categories') {
-      dispatch(setFilters({ search, status: status as Category['status'] | 'all' }))
+      dispatch(setFilters({ search, status: status as 'active' | 'inactive' | 'all' }))
       dispatch(setPage(page))
       dispatch(setLimit(limit))
     } else {
@@ -58,13 +96,7 @@ export default function CategoryList() {
     }
   }, [search, status, page, limit, activeTab, dispatch])
 
-  // Calculate paginated data
-  const paginatedCategories = useMemo(() => {
-    const start = (page - 1) * limit
-    const end = start + limit
-    return filteredList.slice(start, end)
-  }, [filteredList, page, limit])
-
+  // Calculate paginated services (services still use old pattern)
   const paginatedServices = useMemo(() => {
     const start = (page - 1) * limit
     const end = start + limit
@@ -91,15 +123,33 @@ export default function CategoryList() {
     setParams({ tab: value, page: 1, search: '', status: 'all' })
   }
 
-  const handleEditCategory = (category: Category) => {
-    dispatch(setSelectedCategory(category))
+  const handleEditCategory = (category: BackendCategory) => {
+    dispatch(setSelectedCategoryId(category._id))
     setShowEditCategoryModal(true)
   }
+
+
 
   const handleEditService = (service: Service) => {
     dispatch(setSelectedService(service))
     setShowEditServiceModal(true)
   }
+
+  // Map backend category to component format
+  const mapCategoryForCard = (category: BackendCategory) => ({
+    id: category._id,
+    name: category.name,
+    slug: category.slug,
+    description: category.description,
+    image: category.image,
+    status: category.isActive ? 'active' as const : 'inactive' as const,
+    productCount: category.serviceCount,
+    createdAt: category.createdAt,
+    updatedAt: category.updatedAt,
+  })
+
+  // Map selected category for modals
+  const selectedCategoryForModal = selectedCategory ? mapCategoryForCard(selectedCategory) : null
 
   return (
     <motion.div
@@ -152,29 +202,29 @@ export default function CategoryList() {
             </div>
 
             <TabsContent value="categories" className="mt-0">
-              {isLoading ? (
+              {isLoading || isFetching ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                   {[...Array(8)].map((_, i) => (
                     <div key={i} className="h-64 bg-muted animate-pulse rounded-lg" />
                   ))}
                 </div>
-              ) : paginatedCategories.length > 0 ? (
+              ) : categories.length > 0 ? (
                 <>
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                    {paginatedCategories.map((category, index) => (
+                    {categories.map((category: BackendCategory, index: number) => (
                       <CategoryCard
-                        key={category.id}
-                        category={category}
+                        key={category._id}
+                        category={mapCategoryForCard(category)}
                         onEdit={() => handleEditCategory(category)}
                         index={index}
                       />
                     ))}
                   </div>
                   <Pagination
-                    currentPage={page}
-                    totalPages={Math.ceil(filteredList.length / limit)}
-                    totalItems={filteredList.length}
-                    itemsPerPage={limit}
+                    currentPage={meta?.page ?? page}
+                    totalPages={meta?.totalPage ?? 1}
+                    totalItems={meta?.total ?? categories.length}
+                    itemsPerPage={meta?.limit ?? limit}
                     onPageChange={handlePageChange}
                     onItemsPerPageChange={handleLimitChange}
                     className="mt-6"
@@ -234,27 +284,27 @@ export default function CategoryList() {
       />
 
       {/* Edit Category Modal */}
-      {selectedCategory && (
+      {selectedCategoryForModal && (
         <AddEditCategoryModal
           open={showEditCategoryModal}
           onClose={() => {
             setShowEditCategoryModal(false)
-            dispatch(setSelectedCategory(null))
+            dispatch(setSelectedCategoryId(null))
           }}
           mode="edit"
-          category={selectedCategory}
+          category={selectedCategoryForModal}
         />
       )}
 
       {/* Delete Category Modal */}
-      {selectedCategory && (
+      {selectedCategoryForModal && (
         <DeleteCategoryModal
           open={showDeleteModal}
           onClose={() => {
             setShowDeleteModal(false)
-            dispatch(setSelectedCategory(null))
+            dispatch(setSelectedCategoryId(null))
           }}
-          category={selectedCategory}
+          category={selectedCategoryForModal}
         />
       )}
 
