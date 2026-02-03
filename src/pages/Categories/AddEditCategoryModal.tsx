@@ -7,9 +7,9 @@ import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import { useAddCategoryMutation, useUpdateCategoryMutation } from '@/redux/api/categoriesApi'
-import { slugify } from '@/utils/formatters'
 import type { Category } from '@/types'
 import { toast } from '@/utils/toast'
+import { imageUrl } from '@/utils/imageUrl'
 
 const categorySchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -27,6 +27,7 @@ interface AddEditCategoryModalProps {
 
 export function AddEditCategoryModal({ open, onClose, mode, category }: AddEditCategoryModalProps) {
   const [image, setImage] = useState<File | string | null>(null)
+  const [originalImage, setOriginalImage] = useState<string | null>(null)
 
   // RTK Query mutations - auto-refetch via invalidatesTags
   const [addCategory, { isLoading: isAdding }] = useAddCategoryMutation()
@@ -58,17 +59,16 @@ export function AddEditCategoryModal({ open, onClose, mode, category }: AddEditC
           status: category.status,
         })
         // Set image from category if it exists
-        if (category.image) {
-          setImage(category.image)
-        } else {
-          setImage(null)
-        }
+        const categoryImage = category.image || null
+        setImage(categoryImage)
+        setOriginalImage(categoryImage)
       } else {
         reset({
           name: '',
           status: 'active',
         })
         setImage(null)
+        setOriginalImage(null)
       }
     }
   }, [open, mode, category, reset])
@@ -78,25 +78,34 @@ export function AddEditCategoryModal({ open, onClose, mode, category }: AddEditC
       // Prepare FormData for file upload
       const formData = new FormData()
       formData.append('name', data.name)
-      formData.append('slug', slugify(data.name))
       formData.append('isActive', data.status === 'active' ? 'true' : 'false')
 
-      if (image) {
-        if (image instanceof File) {
-          formData.append('image', image)
-        } else if (typeof image === 'string') {
-          // If it's a URL string, send it as-is
-          formData.append('imageUrl', image)
-        }
-      }
-
+      // Handle image upload
       if (mode === 'edit' && category) {
-        await updateCategory({ id: category.id, data: formData }).unwrap()
+        // Edit mode: only send image if it changed
+        if (image instanceof File) {
+          // New file selected
+          formData.append('image', image)
+        } else if (image !== originalImage) {
+          // Image was changed (removed or replaced with different URL)
+          if (typeof image === 'string' && image.trim() !== '') {
+            formData.append('imageUrl', image)
+          }
+          // If image is null and original wasn't, backend should remove the image
+        }
+        // If image hasn't changed, don't send any image data
+
+        console.log(formData)
+        await updateCategory({ id: category.id, formData }).unwrap()
         toast({
           title: 'Category Updated',
           description: `${data.name} has been updated successfully.`,
         })
       } else {
+        // Add mode: always send image if provided
+        if (image instanceof File) {
+          formData.append('image', image)
+        }
         await addCategory(formData).unwrap()
         toast({
           title: 'Category Created',
@@ -130,7 +139,7 @@ export function AddEditCategoryModal({ open, onClose, mode, category }: AddEditC
         <div>
           <Label className="text-sm font-medium mb-2 block">Add Category Image</Label>
           <ImageUploader
-            value={image}
+            value={ image ? imageUrl(image as string) : null}
             onChange={(file) => setImage(file || null)}
           />
         </div>

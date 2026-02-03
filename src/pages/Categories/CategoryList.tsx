@@ -168,14 +168,39 @@ export default function CategoryList() {
       className="space-y-6"
     >
       <Card>
-        <CardHeader>
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <TabsList className="bg-gray-100">
-                  <TabsTrigger value="categories">Categories</TabsTrigger>
-                  <TabsTrigger value="services">Services</TabsTrigger>
-                </TabsList>
+       
+        <CardContent className='p-6'>
+          <Tabs value={activeTab} onValueChange={handleTabChange}>
+            {/* Filters */}
+            <div className="flex justify-between items-center">
+              {/* <SearchInput
+                value={search}
+                onChange={handleSearch}
+                placeholder="Search here"
+                className="sm:w-80"
+              /> */}
+
+
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+                <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <TabsList className="bg-gray-100">
+                      <TabsTrigger value="categories">Categories</TabsTrigger>
+                      <TabsTrigger value="services">Services</TabsTrigger>
+                    </TabsList>
+
+                  </div>
+                </Tabs>
+              </div>
+
+              <div className='flex flex-col sm:flex-row gap-4 mb-6 justify-end'>
+                <FilterDropdown
+                  value={status}
+                  options={CATEGORY_STATUSES}
+                  onChange={handleStatusFilter}
+                  placeholder="All Status"
+                />
+
                 <Button
                   onClick={() => {
                     if (activeTab === 'categories') {
@@ -189,25 +214,6 @@ export default function CategoryList() {
                   {activeTab === 'categories' ? 'Add New Category' : 'Add New Service'}
                 </Button>
               </div>
-            </Tabs>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <Tabs value={activeTab} onValueChange={handleTabChange}>
-            {/* Filters */}
-            <div className="flex flex-col sm:flex-row gap-4 mb-6">
-              <SearchInput
-                value={search}
-                onChange={handleSearch}
-                placeholder="Search here"
-                className="sm:w-80"
-              />
-              <FilterDropdown
-                value={status}
-                options={CATEGORY_STATUSES}
-                onChange={handleStatusFilter}
-                placeholder="All Status"
-              />
             </div>
 
             <TabsContent value="categories" className="mt-0">

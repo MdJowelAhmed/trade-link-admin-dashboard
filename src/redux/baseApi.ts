@@ -10,6 +10,8 @@ export const baseApi = createApi({
             if (token) {
                 headers.set('authorization', `Bearer ${token}`)
             }
+            // Don't set Content-Type for FormData - browser will set it with boundary
+            // RTK Query will handle this automatically
             return headers
         },
     }),
