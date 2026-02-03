@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { motion } from 'framer-motion'
 import type { Category } from '@/types'
+import { imageUrl } from '@/utils/imageUrl'
 
 interface CategoryCardProps {
   category: Category
@@ -27,7 +28,7 @@ export function CategoryCard({ category, onEdit, index = 0 }: CategoryCardProps)
       <div className="relative aspect-video w-full overflow-hidden bg-muted">
         {category.image ? (
           <img
-            src={category.image}
+            src={imageUrl(category.image)}
             alt={category.name}
             className="h-full w-full object-cover"
           />
