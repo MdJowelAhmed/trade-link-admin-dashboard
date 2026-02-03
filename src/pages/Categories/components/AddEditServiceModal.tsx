@@ -30,7 +30,7 @@ export function AddEditServiceModal({ open, onClose, mode, service }: AddEditSer
 
   // Use RTK Query for categories (backend handles data)
   const { data: categoriesResponse } = useGetCategoriesQuery()
-  const categories = categoriesResponse?.data?.data ?? []
+  const categories = Array.isArray(categoriesResponse?.data) ? categoriesResponse.data : []
 
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -69,7 +69,7 @@ export function AddEditServiceModal({ open, onClose, mode, service }: AddEditSer
     }
   }, [open, mode, service, reset])
 
-  const categoryOptions = categories.map((cat) => ({
+  const categoryOptions = categories.map((cat: { _id: string; name: string }) => ({
     value: cat._id,
     label: cat.name,
   }))
@@ -85,7 +85,7 @@ export function AddEditServiceModal({ open, onClose, mode, service }: AddEditSer
     // Simulate API call
     await new Promise((resolve) => setTimeout(resolve, 1000))
 
-    const selectedCategory = categories.find((c) => c._id === data.categoryId)
+    const selectedCategory = categories.find((c: { _id: string }) => c._id === data.categoryId)
     const serviceData: Service = {
       id: mode === 'edit' && service ? service.id : Date.now().toString(),
       ...data,

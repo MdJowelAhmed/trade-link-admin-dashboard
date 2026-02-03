@@ -30,7 +30,7 @@ export default function ProductList() {
 
   // Use RTK Query for categories (backend handles data)
   const { data: categoriesResponse } = useGetCategoriesQuery()
-  const categories = categoriesResponse?.data?.data ?? []
+  const categories = Array.isArray(categoriesResponse?.data) ? categoriesResponse.data : []
 
   // URL-based state management
   const { getParam, getNumberParam, setParam, setParams } = useUrlParams()
@@ -62,7 +62,7 @@ export default function ProductList() {
   const categoryOptions = useMemo(
     () => [
       { value: 'all', label: 'All Categories' },
-      ...categories.map((cat) => ({ value: cat._id, label: cat.name })),
+      ...categories.map((cat: { _id: string; name: string }) => ({ value: cat._id, label: cat.name })),
     ],
     [categories]
   )

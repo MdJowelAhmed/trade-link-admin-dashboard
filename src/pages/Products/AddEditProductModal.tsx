@@ -36,13 +36,13 @@ export function AddEditProductModal({ open, onClose, mode, product }: AddEditPro
 
   // Use RTK Query for categories (backend handles data)
   const { data: categoriesResponse } = useGetCategoriesQuery()
-  const categories = categoriesResponse?.data?.data ?? []
+  const categories = Array.isArray(categoriesResponse?.data) ? categoriesResponse.data : []
 
   const [image, setImage] = useState<File | string | null>(product?.image || null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const categoryOptions = useMemo(
-    () => categories.map((cat) => ({ value: cat._id, label: cat.name })),
+    () => categories.map((cat: { _id: string; name: string }) => ({ value: cat._id, label: cat.name })),
     [categories]
   )
 
@@ -100,7 +100,7 @@ export function AddEditProductModal({ open, onClose, mode, product }: AddEditPro
   const watchedCategoryId = watch('categoryId')
 
   // Update category name for display when categoryId changes
-  const selectedCategory = categories.find((c) => c._id === watchedCategoryId)
+  const selectedCategory = categories.find((c: { _id: string }) => c._id === watchedCategoryId)
 
   const onSubmit = async (data: ProductFormData) => {
     setIsSubmitting(true)

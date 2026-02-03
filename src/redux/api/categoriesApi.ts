@@ -12,24 +12,22 @@ interface GetCategoriesParams {
 interface CategoryResponse {
     success: boolean
     message: string
-    data: {
-        data: Array<{
-            _id: string
-            name: string
-            slug: string
-            description?: string
-            image?: string
-            isActive: boolean
-            serviceCount: number
-            createdAt: string
-            updatedAt: string
-        }>
-        meta: {
-            page: number
-            limit: number
-            total: number
-            totalPage: number
-        }
+    data: Array<{
+        _id: string
+        name: string
+        slug: string
+        description?: string
+        image?: string
+        isActive: boolean
+        serviceCount: number
+        createdAt: string
+        updatedAt: string
+    }>
+    meta: {
+        page: number
+        limit: number
+        total: number
+        totalPage: number
     }
 }
 

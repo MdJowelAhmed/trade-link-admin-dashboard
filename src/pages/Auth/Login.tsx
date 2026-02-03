@@ -68,11 +68,17 @@ export default function Login() {
       } else {
         dispatch(loginFailure(response?.message || "Invalid email or password"));
       }
-    } catch (error) {
-      const message =
-        error?.data?.message ||
-        error?.message ||
-        "An error occurred. Please try again.";
+    } catch (error: unknown) {
+      let message = "An error occurred. Please try again.";
+      if (error && typeof error === 'object') {
+        if ('data' in error && error.data && typeof error.data === 'object' && 'message' in error.data) {
+          message = String(error.data.message);
+        } else if ('message' in error) {
+          message = String(error.message);
+        }
+      } else if (error instanceof Error) {
+        message = error.message;
+      }
       dispatch(loginFailure(message));
     }
   };

@@ -65,15 +65,24 @@ export default function CategoryList() {
   })
 
   // Extract categories and meta from response
-  const categories = categoriesResponse?.data ?? []
-  const meta = categoriesResponse?.data?.meta
+  const categories = useMemo(
+    () => (Array.isArray(categoriesResponse?.data) ? categoriesResponse.data : []),
+    [categoriesResponse?.data]
+  )
+  const meta = categoriesResponse?.meta
 
   // UI state from Redux
   const { selectedCategoryId } = useAppSelector((state) => state.categoryUI)
 
   // Derive selected category from server data
   const selectedCategory = useMemo(
-    () => categories.find((c: BackendCategory) => c._id === selectedCategoryId) ?? null,
+    () => {
+      // Defensive: categories may not always be an array
+      if (Array.isArray(categories) && categories.length > 0) {
+        return categories.find((c: BackendCategory) => c._id === selectedCategoryId) ?? null
+      }
+      return null
+    },
     [categories, selectedCategoryId]
   )
 

@@ -33,7 +33,7 @@ const ServiceQuestion = () => {
 
   // Use RTK Query for categories (backend handles data)
   const { data: categoriesResponse } = useGetCategoriesQuery()
-  const categories = categoriesResponse?.data?.data ?? []
+  const categories = Array.isArray(categoriesResponse?.data) ? categoriesResponse.data : []
 
   const { list: services } = useAppSelector((state) => state.services)
   const { list: serviceQuestions } = useAppSelector((state) => state.serviceQuestions)
@@ -69,7 +69,7 @@ const ServiceQuestion = () => {
     return serviceQuestionsList.some((q) => q.isPricing)
   }, [serviceQuestionsList])
 
-  const categoryOptions = categories.map((cat) => ({
+  const categoryOptions = categories.map((cat: { _id: string; name: string }) => ({
     value: cat._id,
     label: cat.name,
   }))
