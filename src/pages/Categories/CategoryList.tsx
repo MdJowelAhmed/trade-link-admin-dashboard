@@ -1,26 +1,29 @@
 import { useMemo, useState, useEffect } from 'react'
 import { Plus } from 'lucide-react'
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import {
   SearchInput,
   FilterDropdown,
   Pagination,
+  GridSkeleton,
 } from '@/components/common'
 import { CategoryCard } from './components/CategoryCard'
 import { ServiceCard } from './components/ServiceCard'
 import { AddEditCategoryModal } from './AddEditCategoryModal'
 import { AddEditServiceModal } from './components/AddEditServiceModal'
 import { DeleteCategoryModal } from './DeleteCategoryModal'
+import { ConfirmDialog } from '@/components/common'
 import { useAppDispatch, useAppSelector } from '@/redux/hooks'
 import { setFilters, setPage, setLimit, setSelectedCategoryId } from '@/redux/slices/categorySlice'
-import { setFilters as setServiceFilters, setPage as setServicePage, setLimit as setServiceLimit, setSelectedService } from '@/redux/slices/serviceSlice'
 import { useGetCategoriesQuery } from '@/redux/api/categoriesApi'
+import { useGetServicesQuery, useDeleteServiceMutation, useUpdateServiceStatusMutation } from '@/redux/api/serviceApi'
 import { useUrlParams } from '@/hooks/useUrlState'
 import { CATEGORY_STATUSES } from '@/utils/constants'
 import type { Service } from '@/types'
 import { motion } from 'framer-motion'
+import { toast } from '@/utils/toast'
 
 // Backend category type (from API response)
 interface BackendCategory {
@@ -38,11 +41,6 @@ interface BackendCategory {
 export default function CategoryList() {
   const dispatch = useAppDispatch()
 
-  // Service state from Redux (keeping existing pattern for services)
-  const { filteredList: filteredServices, selectedService } = useAppSelector(
-    (state) => state.services
-  )
-
   // URL-based state management
   const { getParam, getNumberParam, setParam, setParams } = useUrlParams()
 
@@ -52,11 +50,11 @@ export default function CategoryList() {
   const limit = getNumberParam('limit', 12)
   const activeTab = getParam('tab', 'categories')
 
-  // RTK Query - server data comes from here (backend handles filtering/pagination)
+  // RTK Query - Categories (backend handles filtering/pagination)
   const {
     data: categoriesResponse,
-    isLoading,
-    isFetching,
+    isLoading: categoriesLoading,
+    isFetching: categoriesFetching,
   } = useGetCategoriesQuery({
     searchTerm: search || undefined,
     status: status !== 'all' ? status : undefined,
@@ -64,20 +62,62 @@ export default function CategoryList() {
     limit,
   })
 
+  // RTK Query - Services (backend handles filtering/pagination)
+  const {
+    data: servicesResponse,
+    isLoading: servicesLoading,
+    isFetching: servicesFetching,
+  } = useGetServicesQuery(
+    activeTab === 'services'
+      ? {
+          searchTerm: search || undefined,
+          status: status !== 'all' ? status : undefined,
+          page,
+          limit,
+        }
+      : undefined,
+    { skip: activeTab !== 'services' }
+  )
+
   // Extract categories and meta from response
   const categories = useMemo(
     () => (Array.isArray(categoriesResponse?.data) ? categoriesResponse.data : []),
     [categoriesResponse?.data]
   )
-  const meta = categoriesResponse?.meta
+  const categoriesMeta = categoriesResponse?.meta
+
+  // Extract services and pagination from response
+  const backendServices = useMemo(
+    () => (Array.isArray(servicesResponse?.data) ? servicesResponse.data : []),
+    [servicesResponse?.data]
+  )
+  const servicesMeta = servicesResponse?.pagination
+
+  // Map backend services to frontend Service type
+  const services = useMemo(
+    () =>
+      backendServices.map((backendService) => ({
+        id: backendService._id,
+        name: backendService.name,
+        categoryId: backendService.categoryId._id,
+        categoryName: backendService.categoryId.name,
+        status: (backendService.isActive ? 'active' : 'inactive') as Service['status'],
+        totalQuestions: 0, // Not provided by API, defaulting to 0
+        createdAt: backendService.createdAt,
+        updatedAt: backendService.updatedAt,
+      })),
+    [backendServices]
+  )
 
   // UI state from Redux
   const { selectedCategoryId } = useAppSelector((state) => state.categoryUI)
+  
+  // Local state for selected service (for edit modal)
+  const [selectedService, setSelectedService] = useState<Service | null>(null)
 
   // Derive selected category from server data
   const selectedCategory = useMemo(
     () => {
-      // Defensive: categories may not always be an array
       if (Array.isArray(categories) && categories.length > 0) {
         return categories.find((c: BackendCategory) => c._id === selectedCategoryId) ?? null
       }
@@ -91,26 +131,21 @@ export default function CategoryList() {
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [showAddServiceModal, setShowAddServiceModal] = useState(false)
   const [showEditServiceModal, setShowEditServiceModal] = useState(false)
+  const [showDeleteServiceModal, setShowDeleteServiceModal] = useState(false)
+  const [serviceToDelete, setServiceToDelete] = useState<Service | null>(null)
 
-  // Sync URL params with Redux UI state
+  // RTK Query mutations for services
+  const [deleteService, { isLoading: isDeletingService }] = useDeleteServiceMutation()
+  const [updateServiceStatus] = useUpdateServiceStatusMutation()
+
+  // Sync URL params with Redux UI state (only for categories now)
   useEffect(() => {
     if (activeTab === 'categories') {
       dispatch(setFilters({ search, status: status as 'active' | 'inactive' | 'all' }))
       dispatch(setPage(page))
       dispatch(setLimit(limit))
-    } else {
-      dispatch(setServiceFilters({ search, status: status as Service['status'] | 'all', categoryId: 'all' }))
-      dispatch(setServicePage(page))
-      dispatch(setServiceLimit(limit))
     }
   }, [search, status, page, limit, activeTab, dispatch])
-
-  // Calculate paginated services (services still use old pattern)
-  const paginatedServices = useMemo(() => {
-    const start = (page - 1) * limit
-    const end = start + limit
-    return filteredServices.slice(start, end)
-  }, [filteredServices, page, limit])
 
   const handleSearch = (value: string) => {
     setParams({ search: value, page: 1 })
@@ -140,8 +175,69 @@ export default function CategoryList() {
 
 
   const handleEditService = (service: Service) => {
-    dispatch(setSelectedService(service))
-    setShowEditServiceModal(true)
+    // Find the backend service to get full data
+    const backendService = backendServices.find((s) => s._id === service.id)
+    if (backendService) {
+      const mappedService: Service = {
+        id: backendService._id,
+        name: backendService.name,
+        categoryId: backendService.categoryId._id,
+        categoryName: backendService.categoryId.name,
+        status: (backendService.isActive ? 'active' : 'inactive') as Service['status'],
+        totalQuestions: 0,
+        createdAt: backendService.createdAt,
+        updatedAt: backendService.updatedAt,
+      }
+      setSelectedService(mappedService)
+      setShowEditServiceModal(true)
+    }
+  }
+
+  const handleDeleteService = (service: Service) => {
+    setServiceToDelete(service)
+    setShowDeleteServiceModal(true)
+  }
+
+  const handleConfirmDeleteService = async () => {
+    if (serviceToDelete) {
+      try {
+        await deleteService(serviceToDelete.id).unwrap()
+        toast({
+          title: 'Service Deleted',
+          description: `${serviceToDelete.name} has been deleted successfully.`,
+        })
+        setShowDeleteServiceModal(false)
+        setServiceToDelete(null)
+      } catch (error: unknown) {
+        const errorMessage = error && typeof error === 'object' && 'data' in error
+          ? (error as { data?: { message?: string } }).data?.message
+          : undefined
+        toast({
+          title: 'Error',
+          description: errorMessage || 'Failed to delete service.',
+          variant: 'destructive',
+        })
+      }
+    }
+  }
+
+  const handleToggleServiceStatus = async (service: Service) => {
+    try {
+      await updateServiceStatus(service.id).unwrap()
+      toast({
+        title: 'Status Updated',
+        description: `${service.name} status has been updated successfully.`,
+      })
+    } catch (error: unknown) {
+      const errorMessage = error && typeof error === 'object' && 'data' in error
+        ? (error as { data?: { message?: string } }).data?.message
+        : undefined
+      toast({
+        title: 'Error',
+        description: errorMessage || 'Failed to update service status.',
+        variant: 'destructive',
+      })
+    }
   }
 
   // Map backend category to component format
@@ -224,12 +320,8 @@ export default function CategoryList() {
             </div>
 
             <TabsContent value="categories" className="mt-0">
-              {isLoading || isFetching ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                  {[...Array(8)].map((_, i) => (
-                    <div key={i} className="h-64 bg-muted animate-pulse rounded-lg" />
-                  ))}
-                </div>
+              {categoriesLoading || categoriesFetching ? (
+                <GridSkeleton count={8} itemClassName="h-64" />
               ) : categories.length > 0 ? (
                 <>
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -243,10 +335,10 @@ export default function CategoryList() {
                     ))}
                   </div>
                   <Pagination
-                    currentPage={meta?.page ?? page}
-                    totalPages={meta?.totalPage ?? 1}
-                    totalItems={meta?.total ?? categories.length}
-                    itemsPerPage={meta?.limit ?? limit}
+                    currentPage={categoriesMeta?.page ?? page}
+                    totalPages={categoriesMeta?.totalPage ?? 1}
+                    totalItems={categoriesMeta?.total ?? categories.length}
+                    itemsPerPage={categoriesMeta?.limit ?? limit}
                     onPageChange={handlePageChange}
                     onItemsPerPageChange={handleLimitChange}
                     className="mt-6"
@@ -260,29 +352,27 @@ export default function CategoryList() {
             </TabsContent>
 
             <TabsContent value="services" className="mt-0">
-              {isLoading ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                  {[...Array(8)].map((_, i) => (
-                    <div key={i} className="h-32 bg-muted animate-pulse rounded-lg" />
-                  ))}
-                </div>
-              ) : paginatedServices.length > 0 ? (
+              {servicesLoading || servicesFetching ? (
+                <GridSkeleton count={8} className="grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4" itemClassName="h-32" />
+              ) : services.length > 0 ? (
                 <>
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4">
-                    {paginatedServices.map((service, index) => (
+                    {services.map((service, index) => (
                       <ServiceCard
                         key={service.id}
                         service={service}
                         onEdit={() => handleEditService(service)}
+                        onDelete={() => handleDeleteService(service)}
+                        onToggleStatus={() => handleToggleServiceStatus(service)}
                         index={index}
                       />
                     ))}
                   </div>
                   <Pagination
-                    currentPage={page}
-                    totalPages={Math.ceil(filteredServices.length / limit)}
-                    totalItems={filteredServices.length}
-                    itemsPerPage={limit}
+                    currentPage={servicesMeta?.page ?? page}
+                    totalPages={servicesMeta?.totalPage ?? 1}
+                    totalItems={servicesMeta?.total ?? services.length}
+                    itemsPerPage={servicesMeta?.limit ?? limit}
                     onPageChange={handlePageChange}
                     onItemsPerPageChange={handleLimitChange}
                     className="mt-6"
@@ -343,10 +433,28 @@ export default function CategoryList() {
           open={showEditServiceModal}
           onClose={() => {
             setShowEditServiceModal(false)
-            dispatch(setSelectedService(null))
+            setSelectedService(null)
           }}
           mode="edit"
           service={selectedService}
+        />
+      )}
+
+      {/* Delete Service Confirmation Dialog */}
+      {serviceToDelete && (
+        <ConfirmDialog
+          open={showDeleteServiceModal}
+          onClose={() => {
+            setShowDeleteServiceModal(false)
+            setServiceToDelete(null)
+          }}
+          onConfirm={handleConfirmDeleteService}
+          title="Delete Service"
+          description={`Are you sure you want to delete "${serviceToDelete.name}"? This action cannot be undone.`}
+          confirmText="Delete"
+          cancelText="Cancel"
+          variant="danger"
+          isLoading={isDeletingService}
         />
       )}
     </motion.div>

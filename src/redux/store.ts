@@ -14,7 +14,6 @@ import faqReducer from './slices/faqSlice'
 import customerReducer from './slices/customerSlice'
 import tradePersonReducer from './slices/tradePersonSlice'
 import leadReducer from './slices/leadSlice'
-import serviceReducer from './slices/serviceSlice'
 import serviceQuestionReducer from './slices/serviceQuestionSlice'
 
 export const store = configureStore({
@@ -33,7 +32,6 @@ export const store = configureStore({
     customers: customerReducer,
     tradePersons: tradePersonReducer,
     leads: leadReducer,
-    services: serviceReducer,
     serviceQuestions: serviceQuestionReducer,
     [baseApi.reducerPath]: baseApi.reducer,
   },

@@ -8,4 +8,5 @@ export { ImageUploader } from './ImageUploader'
 export { StatusBadge } from './StatusBadge'
 export { TiptapEditor } from './TiptapEditor'
 export * from './Form'
+export * from './Loading'
 

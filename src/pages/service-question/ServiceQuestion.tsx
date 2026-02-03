@@ -8,6 +8,7 @@ import { FormSelect } from '@/components/common'
 import { useAppDispatch, useAppSelector } from '@/redux/hooks'
 import { addServiceQuestion, updateServiceQuestion, deleteServiceQuestion } from '@/redux/slices/serviceQuestionSlice'
 import { useGetCategoriesQuery } from '@/redux/api/categoriesApi'
+import { useGetServicesQuery } from '@/redux/api/serviceApi'
 import type { ServiceQuestion, QuestionType } from '@/types'
 import { toast } from '@/utils/toast'
 
@@ -35,7 +36,25 @@ const ServiceQuestion = () => {
   const { data: categoriesResponse } = useGetCategoriesQuery()
   const categories = Array.isArray(categoriesResponse?.data) ? categoriesResponse.data : []
 
-  const { list: services } = useAppSelector((state) => state.services)
+  // Use RTK Query for services (backend handles data)
+  const { data: servicesResponse } = useGetServicesQuery({
+    status: 'active', // Only get active services
+  })
+  
+  // Map backend services to frontend Service type
+  const services = useMemo(() => {
+    if (!Array.isArray(servicesResponse?.data)) return []
+    return servicesResponse.data.map((backendService) => ({
+      id: backendService._id,
+      name: backendService.name,
+      categoryId: backendService.categoryId._id,
+      categoryName: backendService.categoryId.name,
+      status: (backendService.isActive ? 'active' : 'inactive') as 'active' | 'inactive',
+      totalQuestions: 0,
+      createdAt: backendService.createdAt,
+      updatedAt: backendService.updatedAt,
+    }))
+  }, [servicesResponse?.data])
   const { list: serviceQuestions } = useAppSelector((state) => state.serviceQuestions)
 
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>('')

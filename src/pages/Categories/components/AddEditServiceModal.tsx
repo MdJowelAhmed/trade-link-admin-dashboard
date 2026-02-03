@@ -4,9 +4,8 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { ModalWrapper, FormInput, FormSelect } from '@/components/common'
 import { Button } from '@/components/ui/button'
-import { useAppDispatch } from '@/redux/hooks'
-import { addService, updateService } from '@/redux/slices/serviceSlice'
 import { useGetCategoriesQuery } from '@/redux/api/categoriesApi'
+import { useAddServiceMutation, useUpdateServiceMutation } from '@/redux/api/serviceApi'
 import type { Service } from '@/types'
 import { toast } from '@/utils/toast'
 
@@ -26,13 +25,15 @@ interface AddEditServiceModalProps {
 }
 
 export function AddEditServiceModal({ open, onClose, mode, service }: AddEditServiceModalProps) {
-  const dispatch = useAppDispatch()
-
   // Use RTK Query for categories (backend handles data)
   const { data: categoriesResponse } = useGetCategoriesQuery()
   const categories = Array.isArray(categoriesResponse?.data) ? categoriesResponse.data : []
 
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  // RTK Query mutations
+  const [addService, { isLoading: isAdding }] = useAddServiceMutation()
+  const [updateService, { isLoading: isUpdating }] = useUpdateServiceMutation()
+
+  const isSubmitting = isAdding || isUpdating
 
   const {
     register,
@@ -80,37 +81,41 @@ export function AddEditServiceModal({ open, onClose, mode, service }: AddEditSer
   // ]
 
   const onSubmit = async (data: ServiceFormData) => {
-    setIsSubmitting(true)
+    try {
+      const servicePayload = {
+        name: data.name,
+        categoryId: data.categoryId,
+        isActive: data.status === 'active',
+      }
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+      if (mode === 'edit' && service) {
+        await updateService({
+          id: service.id,
+          formData: servicePayload,
+        }).unwrap()
+        toast({
+          title: 'Service Updated',
+          description: `${data.name} has been updated successfully.`,
+        })
+      } else {
+        await addService(servicePayload).unwrap()
+        toast({
+          title: 'Service Created',
+          description: `${data.name} has been created successfully.`,
+        })
+      }
 
-    const selectedCategory = categories.find((c: { _id: string }) => c._id === data.categoryId)
-    const serviceData: Service = {
-      id: mode === 'edit' && service ? service.id : Date.now().toString(),
-      ...data,
-      categoryName: selectedCategory?.name,
-      createdAt: mode === 'edit' && service ? service.createdAt : new Date().toISOString(),
-      totalQuestions: mode === 'edit' && service ? service.totalQuestions : 0,
-      updatedAt: new Date().toISOString(),
-    }
-
-    if (mode === 'edit') {
-      dispatch(updateService(serviceData))
+      onClose()
+    } catch (error: unknown) {
+      const errorMessage = error && typeof error === 'object' && 'data' in error
+        ? (error as { data?: { message?: string } }).data?.message
+        : undefined
       toast({
-        title: 'Service Updated',
-        description: `${data.name} has been updated successfully.`,
-      })
-    } else {
-      dispatch(addService(serviceData))
-      toast({
-        title: 'Service Created',
-        description: `${data.name} has been created successfully.`,
+        title: 'Error',
+        description: errorMessage || `Failed to ${mode === 'edit' ? 'update' : 'create'} service.`,
+        variant: 'destructive',
       })
     }
-
-    setIsSubmitting(false)
-    onClose()
   }
 
   return (

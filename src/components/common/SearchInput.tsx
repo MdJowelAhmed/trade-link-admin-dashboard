@@ -1,4 +1,4 @@
-import  { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { Search, X } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -16,23 +16,36 @@ export function SearchInput({
   value,
   onChange,
   placeholder = 'Search...',
-  debounceMs = 300,
+  debounceMs = 500,
   className,
 }: SearchInputProps) {
   const [localValue, setLocalValue] = useState(value)
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
 
+  // Sync local value when prop value changes (e.g., from external reset)
   useEffect(() => {
     setLocalValue(value)
   }, [value])
 
+  // Debounced onChange
   useEffect(() => {
-    const timer = setTimeout(() => {
-      if (localValue !== value) {
-        onChange(localValue)
-      }
-    }, debounceMs)
+    // Clear existing timeout
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current)
+    }
 
-    return () => clearTimeout(timer)
+    // Only debounce if local value is different from prop value
+    if (localValue !== value) {
+      timeoutRef.current = setTimeout(() => {
+        onChange(localValue)
+      }, debounceMs)
+    }
+
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
+      }
+    }
   }, [localValue, debounceMs, onChange, value])
 
   const handleClear = () => {

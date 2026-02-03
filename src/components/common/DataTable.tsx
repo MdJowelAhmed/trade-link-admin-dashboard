@@ -2,6 +2,7 @@ import React from 'react'
 import { cn } from '@/utils/cn'
 import type { TableColumn, SortConfig } from '@/types'
 import { motion, AnimatePresence } from 'framer-motion'
+import { TableRowSkeleton } from './Loading'
 
 interface DataTableProps<T> {
   columns: TableColumn<T>[]
@@ -69,20 +70,7 @@ export function DataTable<T>({
           <tbody>
             <AnimatePresence mode="wait">
               {isLoading ? (
-                Array.from({ length: 5 }).map((_, index) => (
-                  <tr key={`skeleton-${index}`} className="border-b">
-                    {columns.map((_, colIndex) => (
-                      <td key={colIndex} className="px-4 py-3">
-                        <div className="h-5 bg-muted animate-pulse rounded" />
-                      </td>
-                    ))}
-                    {actions && (
-                      <td className="px-4 py-3">
-                        <div className="h-5 bg-muted animate-pulse rounded w-20 ml-auto" />
-                      </td>
-                    )}
-                  </tr>
-                ))
+                <TableRowSkeleton columns={columns.length + (actions ? 1 : 0)} rows={5} />
               ) : data.length === 0 ? (
                 <tr>
                   <td
