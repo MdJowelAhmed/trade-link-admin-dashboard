@@ -168,17 +168,12 @@ export default function CategoryList() {
       className="space-y-6"
     >
       <Card>
-       
+
         <CardContent className='p-6'>
           <Tabs value={activeTab} onValueChange={handleTabChange}>
             {/* Filters */}
             <div className="flex justify-between items-center">
-              {/* <SearchInput
-                value={search}
-                onChange={handleSearch}
-                placeholder="Search here"
-                className="sm:w-80"
-              /> */}
+
 
 
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
@@ -194,6 +189,18 @@ export default function CategoryList() {
               </div>
 
               <div className='flex flex-col sm:flex-row gap-4 mb-6 justify-end'>
+
+                {
+                  activeTab === 'services' && (
+                    <SearchInput
+                      value={search}
+                      onChange={handleSearch}
+                      placeholder="Search here"
+                      className="sm:w-80"
+                    />
+                  )
+                }
+
                 <FilterDropdown
                   value={status}
                   options={CATEGORY_STATUSES}
