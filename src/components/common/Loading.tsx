@@ -141,7 +141,7 @@ export function GridSkeleton({ count = 8, className, itemClassName }: GridSkelet
       {Array.from({ length: count }).map((_, index) => (
         <div
           key={index}
-          className={cn('h-64 bg-muted animate-pulse rounded-lg', itemClassName)}
+          className={cn('h-72 bg-primary animate-pulse rounded-lg', itemClassName)}
         />
       ))}
     </div>
