@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { SearchInput } from '@/components/common/SearchInput'
 import { Pagination } from '@/components/common/Pagination'
 import { ConfirmDialog } from '@/components/common/ConfirmDialog'
+import { InlineLoader } from '@/components/common/Loading'
 import { useAppDispatch, useAppSelector } from '@/redux/hooks'
 import { useUrlNumber, useUrlString } from '@/hooks/useUrlState'
 import { toast } from '@/utils/toast'
@@ -17,9 +18,51 @@ import {
   setLimit,
   setPage,
 } from '@/redux/slices/leadSlice'
+import { useGetLeadsQuery, useUpdateLeadStatusMutation } from '@/redux/api/leadsApi'
 import { LeadFilterDropdown } from './components/LeadFilterDropdown'
 import { LeadTable } from './components/LeadTable'
 import { ViewLeadDetailsModal } from './components/ViewLeadDetailsModal'
+
+// Map backend lead status to UI LeadStatus
+const mapBackendStatusToLeadStatus = (status: string): LeadStatus => {
+  // Treat OPEN as active, everything else as expired for now
+  return status === 'OPEN' ? 'active' : 'expired'
+}
+
+// Safely build budget/notes from answered questions
+const buildLeadBudgetAndNotes = (
+  answeredQuestions:
+    | Array<{
+        questionText?: string
+        answerText?: string
+      }>
+    | undefined
+): { budget?: string; notes?: string } => {
+  if (!answeredQuestions || answeredQuestions.length === 0) {
+    return {}
+  }
+
+  // Try to find a budget-like answer
+  const budgetAnswer = answeredQuestions.find((q) => {
+    const qt = q.questionText?.toLowerCase() ?? ''
+    return qt.includes('budget') && q.answerText && q.answerText.trim().length > 0
+  })
+
+  const budget = budgetAnswer?.answerText?.trim()
+
+  const notesParts = answeredQuestions
+    .map((q) => {
+      const qt = q.questionText?.trim()
+      const at = q.answerText?.trim()
+      if (!qt || !at) return null
+      return `${qt}: ${at}`
+    })
+    .filter(Boolean) as string[]
+
+  const notes = notesParts.length > 0 ? notesParts.join(' / ') : undefined
+
+  return { budget, notes }
+}
 
 export default function Leads() {
   const dispatch = useAppDispatch()
@@ -44,6 +87,64 @@ export default function Leads() {
 
   // Redux state
   const { filteredList, pagination } = useAppSelector((state) => state.leads)
+
+  // Backend data (currently we fetch all leads and handle filtering/pagination on the client)
+  const {
+    data: leadsResponse,
+    isLoading: isLeadsLoading,
+    isFetching: isLeadsFetching,
+    isError: isLeadsError,
+    error: leadsError,
+  } = useGetLeadsQuery()
+
+  const [updateLeadStatus, { isLoading: isStatusUpdating }] =
+    useUpdateLeadStatusMutation()
+
+  // Sync backend leads into Redux store
+  useEffect(() => {
+    if (leadsResponse?.data && Array.isArray(leadsResponse.data)) {
+      const mappedLeads: Lead[] = leadsResponse.data.map((item) => {
+        const { budget, notes } = buildLeadBudgetAndNotes(item.answeredQuestions)
+
+        return {
+          id: item._id,
+          leadId: item.jobNumber,
+          name: item.creator?.name ?? 'Unknown',
+          email: item.creator?.email ?? '',
+          // Backend does not currently expose a phone field – keep contact empty for now
+          contact: '',
+          requiredService: item.service?.name ?? '',
+          // Use country code as a basic location until we have more detailed data
+          location: item.country || '',
+          status: mapBackendStatusToLeadStatus(item.status),
+          avatar: undefined,
+          budget,
+          notes,
+          createdAt: item.createdAt,
+          updatedAt: item.updatedAt,
+        }
+      })
+
+      dispatch({ type: 'leads/setLeads', payload: mappedLeads })
+    }
+  }, [leadsResponse, dispatch])
+
+  // Basic error feedback
+  useEffect(() => {
+    if (isLeadsError) {
+      const errorMessage =
+        leadsError && typeof leadsError === 'object' && 'data' in leadsError
+          ? // @ts-expect-error – RTK Query error shape
+            (leadsError.data?.message as string | undefined)
+          : undefined
+
+      toast({
+        title: 'Error',
+        description: errorMessage || 'Failed to load leads. Please try again.',
+        variant: 'destructive',
+      })
+    }
+  }, [isLeadsError, leadsError])
 
   // Sync URL state with Redux filters
   useEffect(() => {
@@ -95,6 +196,11 @@ export default function Leads() {
       if (type === 'toggle') {
         const nextStatus: LeadStatus =
           lead.status === 'active' ? 'expired' : 'active'
+
+        // First hit the backend to toggle status
+        await updateLeadStatus(lead.id).unwrap()
+
+        // Then update local Redux state for instant UI feedback
         dispatch(setLeadStatus({ id: lead.id, status: nextStatus }))
         toast({
           title: 'Success',
@@ -157,6 +263,9 @@ export default function Leads() {
             Leads
           </CardTitle>
           <div className="flex items-center gap-3">
+            {(isLeadsLoading || isLeadsFetching || isStatusUpdating) && (
+              <InlineLoader message="Loading..." size="sm" />
+            )}
             {/* Search Input */}
             <SearchInput
               value={searchQuery}

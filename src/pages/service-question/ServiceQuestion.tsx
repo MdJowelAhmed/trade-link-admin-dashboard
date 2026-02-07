@@ -1,45 +1,89 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { Plus, Pencil, Trash2, X } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-// import { Checkbox } from '@/components/ui/checkbox'
 import { FormSelect } from '@/components/common'
-import { useAppDispatch, useAppSelector } from '@/redux/hooks'
-import { addServiceQuestion, updateServiceQuestion, deleteServiceQuestion } from '@/redux/slices/serviceQuestionSlice'
 import { useGetCategoriesQuery } from '@/redux/api/categoriesApi'
 import { useGetServicesQuery } from '@/redux/api/serviceApi'
+import {
+  useGetServiceQuestionsQuery,
+  useAddServiceQuestionMutation,
+  useUpdateServiceQuestionMutation,
+  useDeleteServiceQuestionMutation,
+  type BackendServiceQuestion,
+} from '@/redux/api/serviceQuestionApi'
 import type { ServiceQuestion, QuestionType } from '@/types'
 import { toast } from '@/utils/toast'
 
 interface QuestionOption {
   id: string
   label: string
-  value?: string
-  price?: number
+  value?: number // For budget questions
 }
 
 interface QuestionForm {
   id?: string
   question: string
-  type: QuestionType
-  isEnabled: boolean
-  isPricing: boolean
-  orderNumber: number
+  isBudgetQuestion: boolean
+  order: number
   options: QuestionOption[]
 }
 
+// Helper function to transform backend question to frontend format
+const transformBackendToFrontend = (backendQuestion: BackendServiceQuestion, categoryId?: string): ServiceQuestion => {
+  return {
+    id: backendQuestion._id,
+    serviceId: backendQuestion.serviceId,
+    categoryId: categoryId || '',
+    question: backendQuestion.questionText,
+    type: (backendQuestion.type || 'SELECT') as QuestionType,
+    isBudgetQuestion: backendQuestion.isBudgetQuestion || false,
+    order: backendQuestion.order,
+    options: backendQuestion.options.map((opt) => ({
+      id: opt._id,
+      label: opt.label,
+      value: opt.value,
+    })),
+    createdAt: backendQuestion.createdAt,
+    updatedAt: backendQuestion.updatedAt,
+  }
+}
+
 const ServiceQuestion = () => {
-  const dispatch = useAppDispatch()
+  // State declarations first
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string>('')
+  const [selectedServiceId, setSelectedServiceId] = useState<string>('')
+  const [questions, setQuestions] = useState<QuestionForm[]>([])
+  const [editingQuestionId, setEditingQuestionId] = useState<string | null>(null)
+  const [showAddQuestionForm, setShowAddQuestionForm] = useState(false)
+  const [newQuestion, setNewQuestion] = useState<QuestionForm>({
+    question: '',
+    isBudgetQuestion: false,
+    order: 1,
+    options: [{ id: Date.now().toString(), label: '' }],
+  })
+  // Budget question form (always shown when adding questions)
+  const [newBudgetQuestion, setNewBudgetQuestion] = useState<QuestionForm>({
+    question: 'Approximate Budget',
+    isBudgetQuestion: true,
+    order: 1,
+    options: [
+      { id: Date.now().toString() + '-1', label: 'Under $500', value: 500 },
+      { id: Date.now().toString() + '-2', label: '$500 - $1000', value: 1000 },
+      { id: Date.now().toString() + '-3', label: 'Above $1000', value: 2000 },
+    ],
+  })
 
   // Use RTK Query for categories (backend handles data)
   const { data: categoriesResponse } = useGetCategoriesQuery()
   const categories = Array.isArray(categoriesResponse?.data) ? categoriesResponse.data : []
 
-  // Use RTK Query for services (backend handles data)
-  const { data: servicesResponse } = useGetServicesQuery({
-    status: 'active', // Only get active services
-  })
+  // Use RTK Query for services (filter by category when selected)
+  const { data: servicesResponse, isLoading: isLoadingServices } = useGetServicesQuery(
+    selectedCategoryId
+   
+  )
   
   // Map backend services to frontend Service type
   const services = useMemo(() => {
@@ -55,38 +99,55 @@ const ServiceQuestion = () => {
       updatedAt: backendService.updatedAt,
     }))
   }, [servicesResponse?.data])
-  const { list: serviceQuestions } = useAppSelector((state) => state.serviceQuestions)
 
-  const [selectedCategoryId, setSelectedCategoryId] = useState<string>('')
-  const [selectedServiceId, setSelectedServiceId] = useState<string>('')
-  const [questions, setQuestions] = useState<QuestionForm[]>([])
-  const [editingQuestionId, setEditingQuestionId] = useState<string | null>(null)
-  const [showAddQuestionForm, setShowAddQuestionForm] = useState(false)
-  const [newQuestion, setNewQuestion] = useState<QuestionForm>({
-    question: '',
-    type: 'radio',
-    isEnabled: true,
-    isPricing: false,
-    orderNumber: 1,
-    options: [{ id: Date.now().toString(), label: '' }],
-  })
+  // RTK Query hooks for service questions
+  const { data: questionsResponse, isLoading: isLoadingQuestions } = useGetServiceQuestionsQuery(
+    selectedServiceId,
+    { skip: !selectedServiceId }
+  )
+  const [addServiceQuestion, { isLoading: isAdding }] = useAddServiceQuestionMutation()
+  const [updateServiceQuestion, { isLoading: isUpdating }] = useUpdateServiceQuestionMutation()
+  const [deleteServiceQuestion, { isLoading: isDeleting }] = useDeleteServiceQuestionMutation()
 
-  // Get services for selected category
+  // Transform backend questions to frontend format
+  const serviceQuestionsList = useMemo(() => {
+    if (!questionsResponse?.data || !Array.isArray(questionsResponse.data)) return []
+    return questionsResponse.data.map((q) => transformBackendToFrontend(q, selectedCategoryId))
+  }, [questionsResponse?.data, selectedCategoryId])
+
+  // Get services for selected category (already filtered by API, but double-check)
   const categoryServices = useMemo(() => {
     if (!selectedCategoryId) return []
+    // Services are already filtered by API, but ensure they match
     return services.filter((s) => s.categoryId === selectedCategoryId && s.status === 'active')
   }, [selectedCategoryId, services])
 
-  // Get questions for selected service
-  const serviceQuestionsList = useMemo(() => {
-    if (!selectedServiceId) return []
-    return serviceQuestions.filter((q) => q.serviceId === selectedServiceId)
-  }, [selectedServiceId, serviceQuestions])
+  // Check if budget question exists (both in backend and local state)
+  const hasBudgetQuestion = useMemo(() => {
+    return serviceQuestionsList.some((q) => q.isBudgetQuestion) || 
+           questions.some((q) => q.isBudgetQuestion)
+  }, [serviceQuestionsList, questions])
 
-  // Check if pricing question exists
-  const hasPricingQuestion = useMemo(() => {
-    return serviceQuestionsList.some((q) => q.isPricing)
-  }, [serviceQuestionsList])
+  // Load questions when service is selected or questions response changes
+  useEffect(() => {
+    if (selectedServiceId && serviceQuestionsList.length > 0) {
+      const transformedQuestions: QuestionForm[] = serviceQuestionsList.map((q) => ({
+        id: q.id,
+        question: q.question,
+        isBudgetQuestion: q.isBudgetQuestion,
+        order: q.order,
+        options: q.options.map((opt) => ({
+          id: opt.id,
+          label: opt.label,
+          value: opt.value,
+        })),
+      }))
+      setQuestions(transformedQuestions)
+    } else if (selectedServiceId && serviceQuestionsList.length === 0 && !isLoadingQuestions) {
+      // No questions exist yet - just set empty array, don't auto-create
+      setQuestions([])
+    }
+  }, [selectedServiceId, serviceQuestionsList, isLoadingQuestions, addServiceQuestion])
 
   const categoryOptions = categories.map((cat: { _id: string; name: string }) => ({
     value: cat._id,
@@ -103,184 +164,94 @@ const ServiceQuestion = () => {
     setSelectedServiceId(serviceId)
     setEditingQuestionId(null)
     setShowAddQuestionForm(false)
-
-    // Load existing questions for this service from store
-    const existingQuestionsFromStore = serviceQuestions.filter(
-      (q) => q.serviceId === serviceId
-    )
-
-    // If no questions exist yet for this service, create one normal + one pricing question by default
-    if (existingQuestionsFromStore.length === 0 && selectedCategoryId) {
-      const timestamp = Date.now()
-
-      const baseOptions: QuestionOption[] = [
-        { id: `${timestamp}-opt-1`, label: '' },
-      ]
-
-      const defaultQuestion: ServiceQuestion = {
-        id: `${timestamp}-q-1`,
-        serviceId,
-        categoryId: selectedCategoryId,
-        question: 'What best describes the work?',
-        type: 'radio',
-        isEnabled: true,
-        isPricing: false,
-        orderNumber: 1,
-        options: baseOptions.map((opt) => ({
-          ...opt,
-          value: opt.label,
-        })),
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      }
-
-      const pricingOptions: QuestionOption[] = [
-        { id: `${timestamp}-opt-2`, label: '' },
-      ]
-
-      const pricingQuestion: ServiceQuestion = {
-        id: `${timestamp}-q-2`,
-        serviceId,
-        categoryId: selectedCategoryId,
-        question: 'Approximate Budget',
-        type: 'radio',
-        isEnabled: true,
-        isPricing: true,
-        orderNumber: 2,
-        options: pricingOptions.map((opt) => ({
-          ...opt,
-          value: opt.label,
-          price: undefined,
-        })),
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      }
-
-      // Persist defaults in store
-      dispatch(addServiceQuestion(defaultQuestion))
-      dispatch(addServiceQuestion(pricingQuestion))
-
-      // And load into local state for editing
-      const initialQuestions: QuestionForm[] = [
-        {
-          id: defaultQuestion.id,
-          question: defaultQuestion.question,
-          type: defaultQuestion.type,
-          isEnabled: defaultQuestion.isEnabled,
-          isPricing: defaultQuestion.isPricing,
-          orderNumber: defaultQuestion.orderNumber,
-          options: baseOptions,
-        },
-        {
-          id: pricingQuestion.id,
-          question: pricingQuestion.question,
-          type: pricingQuestion.type,
-          isEnabled: pricingQuestion.isEnabled,
-          isPricing: pricingQuestion.isPricing,
-          orderNumber: pricingQuestion.orderNumber,
-          options: pricingOptions,
-        },
-      ]
-
-      setQuestions(initialQuestions)
-      return
-    }
-
-    // Otherwise just map existing questions into local editable state
-    const existingQuestions = existingQuestionsFromStore.map((q, index) => ({
-      id: q.id,
-      question: q.question,
-      type: q.type,
-      isEnabled: q.isEnabled,
-      isPricing: q.isPricing,
-      orderNumber: q.orderNumber ?? index + 1,
-      options: q.options,
-    }))
-
-    setQuestions(existingQuestions)
+    // Reset default question creation tracking when switching services
+    // (will be set again in useEffect if needed)
+    // Questions will be loaded via useEffect when questionsResponse changes
   }
 
-  const handleAddQuestion = () => {
+  const handleAddQuestion = async () => {
     if (!selectedServiceId) {
       toast({ title: 'Error', description: 'Please select a service first', variant: 'destructive' })
       return
     }
 
-    if (newQuestion.isPricing && hasPricingQuestion) {
-      toast({ title: 'Error', description: 'Pricing question already exists. Only one pricing question is allowed.', variant: 'destructive' })
-      return
-    }
+    const questionsToAdd: QuestionForm[] = []
+    const currentMaxOrder = questions.length > 0 ? Math.max(...questions.map(q => q.order)) : 0
 
-    if (!newQuestion.question.trim()) {
-      toast({ title: 'Error', description: 'Please enter a question', variant: 'destructive' })
-      return
-    }
+    // Add normal question if filled
+    if (newQuestion.question.trim()) {
+      if (newQuestion.options.length === 0 || newQuestion.options.some((opt) => !opt.label.trim())) {
+        toast({ title: 'Error', description: 'Please add at least one valid option for normal question', variant: 'destructive' })
+        return
+      }
 
-    const totalAfterAdd = questions.length + 1
-    if (
-      !Number.isInteger(newQuestion.orderNumber) ||
-      newQuestion.orderNumber < 1 ||
-      newQuestion.orderNumber > totalAfterAdd
-    ) {
-      toast({
-        title: 'Error',
-        description: `Order number must be between 1 and ${totalAfterAdd}`,
-        variant: 'destructive',
+      questionsToAdd.push({
+        question: newQuestion.question,
+        isBudgetQuestion: false,
+        order: newQuestion.order || currentMaxOrder + 1,
+        options: newQuestion.options.map((opt) => ({
+          id: opt.id,
+          label: opt.label,
+          value: undefined,
+        })),
       })
-      return
     }
 
-    if (newQuestion.options.length === 0 || newQuestion.options.some((opt) => !opt.label.trim())) {
-      toast({ title: 'Error', description: 'Please add at least one valid option', variant: 'destructive' })
-      return
+    // Add budget question only if it doesn't exist (even if empty - user can fill later)
+    if (!hasBudgetQuestion) {
+      const budgetOrder = questionsToAdd.length > 0 
+        ? Math.max(...questionsToAdd.map(q => q.order), currentMaxOrder) + 1
+        : currentMaxOrder + 1
+
+      questionsToAdd.push({
+        question: newBudgetQuestion.question || 'Approximate Budget',
+        isBudgetQuestion: true,
+        order: budgetOrder,
+        options: newBudgetQuestion.options.map((opt) => ({
+          id: opt.id,
+          label: opt.label || '',
+          value: opt.value,
+        })),
+      })
     }
 
-    const questionData: ServiceQuestion = {
-      id: Date.now().toString(),
-      serviceId: selectedServiceId,
-      categoryId: selectedCategoryId,
-      question: newQuestion.question,
-      type: newQuestion.type,
-      isEnabled: newQuestion.isEnabled,
-      isPricing: newQuestion.isPricing,
-      orderNumber: newQuestion.orderNumber,
-      options: newQuestion.options.map((opt) => ({
-        id: opt.id,
-        label: opt.label,
-        value: opt.value || opt.label,
-        price: opt.price,
-      })),
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    }
-
-    dispatch(addServiceQuestion(questionData))
-
-    // Insert into local array based on orderNumber so order is respected
-    const updatedQuestions = [...questions, { ...newQuestion, id: questionData.id }]
-      .sort((a, b) => a.orderNumber - b.orderNumber)
+    // Add all questions to local state
+    const updatedQuestions = [...questions, ...questionsToAdd]
+      .sort((a, b) => a.order - b.order)
 
     setQuestions(updatedQuestions)
+    
+    // Reset forms
     setNewQuestion({
       question: '',
-      type: 'radio',
-      isEnabled: true,
-      isPricing: false,
-      // next default order = current total questions + 1 (after add)
-      orderNumber: totalAfterAdd + 1,
+      isBudgetQuestion: false,
+      order: updatedQuestions.length + 1,
       options: [{ id: Date.now().toString(), label: '' }],
     })
+    setNewBudgetQuestion({
+      question: 'Approximate Budget',
+      isBudgetQuestion: true,
+      order: 1,
+      options: [
+        { id: Date.now().toString() + '-1', label: 'Under $500', value: 500 },
+        { id: Date.now().toString() + '-2', label: '$500 - $1000', value: 1000 },
+        { id: Date.now().toString() + '-3', label: 'Above $1000', value: 2000 },
+      ],
+    })
     setShowAddQuestionForm(false)
-    toast({ title: 'Success', description: 'Question added successfully' })
+    toast({ title: 'Success', description: 'Questions added to list. Click Save to save all questions.' })
   }
 
-  const handleUpdateQuestion = (questionId: string) => {
+  const handleUpdateQuestion = async (questionId: string) => {
     const question = questions.find((q) => q.id === questionId)
     if (!question) return
 
-    if (question.isPricing && hasPricingQuestion && question.id !== questionId) {
-      toast({ title: 'Error', description: 'Pricing question already exists', variant: 'destructive' })
-      return
+    if (question.isBudgetQuestion && hasBudgetQuestion) {
+      const otherBudgetQuestion = serviceQuestionsList.find((q) => q.isBudgetQuestion && q.id !== questionId)
+      if (otherBudgetQuestion) {
+        toast({ title: 'Error', description: 'Budget question already exists', variant: 'destructive' })
+        return
+      }
     }
 
     if (!question.question.trim()) {
@@ -290,9 +261,9 @@ const ServiceQuestion = () => {
 
     const totalQuestions = questions.length
     if (
-      !Number.isInteger(question.orderNumber) ||
-      question.orderNumber < 1 ||
-      question.orderNumber > totalQuestions
+      !Number.isInteger(question.order) ||
+      question.order < 1 ||
+      question.order > totalQuestions
     ) {
       toast({
         title: 'Error',
@@ -302,34 +273,54 @@ const ServiceQuestion = () => {
       return
     }
 
-    const updatedQuestion: ServiceQuestion = {
-      id: questionId,
-      serviceId: selectedServiceId,
-      categoryId: selectedCategoryId,
-      question: question.question,
-      type: question.type,
-      isEnabled: question.isEnabled,
-      isPricing: question.isPricing,
-      orderNumber: question.orderNumber,
-      options: question.options.map((opt) => ({
-        id: opt.id,
-        label: opt.label,
-        value: opt.value || opt.label,
-        price: opt.price,
-      })),
-      createdAt: serviceQuestions.find((q) => q.id === questionId)?.createdAt || new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+    // Validate budget question options have values
+    if (question.isBudgetQuestion && question.options.some((opt) => opt.value === undefined || opt.value === null)) {
+      toast({ title: 'Error', description: 'Budget question options must have values', variant: 'destructive' })
+      return
     }
 
-    dispatch(updateServiceQuestion(updatedQuestion))
-    setEditingQuestionId(null)
-    toast({ title: 'Success', description: 'Question updated successfully' })
+    try {
+      await updateServiceQuestion({
+        id: questionId,
+        serviceQuestion: {
+          questionText: question.question,
+          options: question.options.map((opt) => ({
+            label: opt.label,
+            value: question.isBudgetQuestion ? opt.value : undefined,
+          })),
+          order: question.order,
+          isBudgetQuestion: question.isBudgetQuestion,
+        },
+      }).unwrap()
+      setEditingQuestionId(null)
+      toast({ title: 'Success', description: 'Question updated successfully' })
+    } catch (error: unknown) {
+      const errorMessage = error && typeof error === 'object' && 'data' in error 
+        ? (error as { data?: { message?: string } }).data?.message 
+        : 'Failed to update question'
+      toast({ 
+        title: 'Error', 
+        description: errorMessage || 'Failed to update question', 
+        variant: 'destructive' 
+      })
+    }
   }
 
-  const handleDeleteQuestion = (questionId: string) => {
-    dispatch(deleteServiceQuestion(questionId))
-    setQuestions(questions.filter((q) => q.id !== questionId))
-    toast({ title: 'Success', description: 'Question deleted successfully' })
+  const handleDeleteQuestion = async (questionId: string) => {
+    try {
+      await deleteServiceQuestion(questionId).unwrap()
+      setQuestions(questions.filter((q) => q.id !== questionId))
+      toast({ title: 'Success', description: 'Question deleted successfully' })
+    } catch (error: unknown) {
+      const errorMessage = error && typeof error === 'object' && 'data' in error 
+        ? (error as { data?: { message?: string } }).data?.message 
+        : 'Failed to delete question'
+      toast({ 
+        title: 'Error', 
+        description: errorMessage || 'Failed to delete question', 
+        variant: 'destructive' 
+      })
+    }
   }
 
   const handleAddOption = (questionId: string) => {
@@ -352,7 +343,7 @@ const ServiceQuestion = () => {
     )
   }
 
-  const handleOptionChange = (questionId: string, optionId: string, field: 'label' | 'value' | 'price', value: string | number) => {
+  const handleOptionChange = (questionId: string, optionId: string, field: 'label' | 'value', value: string | number) => {
     setQuestions(
       questions.map((q) =>
         q.id === questionId
@@ -367,23 +358,89 @@ const ServiceQuestion = () => {
     )
   }
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!selectedServiceId) {
       toast({ title: 'Error', description: 'Please select a service first', variant: 'destructive' })
       return
     }
 
-    // Save all questions (already validated when updating)
-    questions
+    // Validate all questions before saving
+    for (const q of questions) {
+      if (!q.question.trim()) {
+        toast({ title: 'Error', description: 'Please enter all questions', variant: 'destructive' })
+        return
+      }
+      if (q.options.length === 0 || q.options.some((opt) => !opt.label.trim())) {
+        toast({ title: 'Error', description: 'Please add at least one valid option for all questions', variant: 'destructive' })
+        return
+      }
+      if (q.isBudgetQuestion && q.options.some((opt) => opt.value === undefined || opt.value === null)) {
+        toast({ title: 'Error', description: 'Budget question options must have values', variant: 'destructive' })
+        return
+      }
+    }
+
+    // Save all questions - POST for new, PATCH for existing
+    const sortedQuestions = questions
       .slice()
-      .sort((a, b) => a.orderNumber - b.orderNumber)
-      .forEach((q) => {
+      .sort((a, b) => a.order - b.order)
+
+    console.log('📝 Saving questions:', sortedQuestions.length)
+    console.log('📋 Questions data:', sortedQuestions)
+
+    try {
+      const savePromises = sortedQuestions.map(async (q, index) => {
+        const questionData = {
+          serviceId: selectedServiceId,
+          questionText: q.question,
+          options: q.options.map((opt) => ({
+            label: opt.label,
+            value: q.isBudgetQuestion ? opt.value : undefined,
+          })),
+          order: q.order,
+          isBudgetQuestion: q.isBudgetQuestion,
+          type: 'SELECT' as const,
+        }
+
+        console.log(`🔄 Processing question ${index + 1}/${sortedQuestions.length}:`, {
+          hasId: !!q.id,
+          questionText: q.question,
+          isBudgetQuestion: q.isBudgetQuestion,
+          optionsCount: q.options.length,
+        })
+
         if (q.id) {
-          handleUpdateQuestion(q.id)
+          // Existing question - use PATCH
+          console.log(`📝 PATCH request for question ID: ${q.id}`)
+          const result = await updateServiceQuestion({
+            id: q.id,
+            serviceQuestion: questionData,
+          }).unwrap()
+          console.log(`✅ PATCH success for question ID: ${q.id}`, result)
+          return result
+        } else {
+          // New question - use POST
+          console.log(`➕ POST request for new question:`, questionData)
+          const result = await addServiceQuestion(questionData).unwrap()
+          console.log(`✅ POST success for new question:`, result)
+          return result
         }
       })
 
-    toast({ title: 'Success', description: 'All questions saved successfully' })
+      const results = await Promise.all(savePromises)
+      console.log('🎉 All questions saved successfully:', results)
+      toast({ title: 'Success', description: `All ${sortedQuestions.length} questions saved successfully` })
+    } catch (error: unknown) {
+      console.error('❌ Error saving questions:', error)
+      const errorMessage = error && typeof error === 'object' && 'data' in error 
+        ? (error as { data?: { message?: string } }).data?.message 
+        : 'Failed to save questions'
+      toast({ 
+        title: 'Error', 
+        description: errorMessage || 'Failed to save questions', 
+        variant: 'destructive' 
+      })
+    }
   }
 
   return (
@@ -403,23 +460,31 @@ const ServiceQuestion = () => {
       </Card>
 
       {/* Service Tags */}
-      {selectedCategoryId && categoryServices.length > 0 && (
+      {selectedCategoryId && (
         <Card>
           <CardContent className="pt-6">
-            <div className="flex flex-wrap gap-3">
-              {categoryServices.map((service) => (
-                <button
-                  key={service.id}
-                  onClick={() => handleServiceSelect(service.id)}
-                  className={`px-6 py-[10px] rounded-full font-medium transition-colors ${selectedServiceId === service.id
-                      ? 'bg-primary text-white'
-                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                    }`}
-                >
-                  {service.name}
-                </button>
-              ))}
-            </div>
+            {isLoadingServices ? (
+              <div className="text-center py-4 text-muted-foreground">Loading services...</div>
+            ) : categoryServices.length > 0 ? (
+              <div className="flex flex-wrap gap-3">
+                {categoryServices.map((service) => (
+                  <button
+                    key={service.id}
+                    onClick={() => handleServiceSelect(service.id)}
+                    className={`px-6 py-[10px] rounded-full font-medium transition-colors ${selectedServiceId === service.id
+                        ? 'bg-primary text-white'
+                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                      }`}
+                  >
+                    {service.name}
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-4 text-muted-foreground">
+                No active services found for this category
+              </div>
+            )}
           </CardContent>
         </Card>
       )}
@@ -473,7 +538,7 @@ const ServiceQuestion = () => {
                           </div>
                           <Input
                             type="number"
-                            value={question.orderNumber === 0 ? '' : question.orderNumber}
+                            value={question.order === 0 ? '' : question.order}
                             onChange={(e) => {
                               const raw = e.target.value
                               const total = questions.length
@@ -482,7 +547,7 @@ const ServiceQuestion = () => {
                                 // Allow clearing to empty (stored as 0 temporarily)
                                 setQuestions(
                                   questions.map((q) =>
-                                    q.id === question.id ? { ...q, orderNumber: 0 } : q
+                                    q.id === question.id ? { ...q, order: 0 } : q
                                   )
                                 )
                                 return
@@ -494,7 +559,7 @@ const ServiceQuestion = () => {
 
                               setQuestions(
                                 questions.map((q) =>
-                                  q.id === question.id ? { ...q, orderNumber: value } : q
+                                  q.id === question.id ? { ...q, order: value } : q
                                 )
                               )
                             }}
@@ -534,11 +599,13 @@ const ServiceQuestion = () => {
                                       ? {
                                         id: original.id,
                                         question: original.question,
-                                        type: original.type,
-                                        isEnabled: original.isEnabled,
-                                        isPricing: original.isPricing,
-                                        orderNumber: original.orderNumber ?? q.orderNumber,
-                                        options: original.options as QuestionOption[],
+                                        isBudgetQuestion: original.isBudgetQuestion,
+                                        order: original.order ?? q.order,
+                                        options: original.options.map((opt) => ({
+                                          id: opt.id,
+                                          label: opt.label,
+                                          value: opt.value,
+                                        })),
                                       }
                                       : q
                                   )
@@ -620,23 +687,23 @@ const ServiceQuestion = () => {
                           onChange={(e) =>
                             handleOptionChange(question.id!, option.id, 'label', e.target.value)
                           }
-                          placeholder={question.isPricing ? 'Enter budget' : 'Type option'}
+                          placeholder={question.isBudgetQuestion ? 'Enter budget' : 'Type option'}
                           className="flex-1 bg-card rounded-full"
                           disabled={editingQuestionId !== question.id}
                         />
-                        {question.isPricing && (
+                        {question.isBudgetQuestion && (
                           <Input
                             type="number"
-                            value={option.price || ''}
+                            value={option.value || ''}
                             onChange={(e) =>
                               handleOptionChange(
                                 question.id!,
                                 option.id,
-                                'price',
+                                'value',
                                 parseFloat(e.target.value) || 0
                               )
                             }
-                            placeholder="Enter Price"
+                            placeholder="Enter Value"
                             className="w-32 bg-card rounded-full"
                             disabled={editingQuestionId !== question.id}
                           />
@@ -696,11 +763,19 @@ const ServiceQuestion = () => {
                         setShowAddQuestionForm(false)
                         setNewQuestion({
                           question: '',
-                          type: 'radio',
-                          isEnabled: true,
-                          isPricing: false,
-                          orderNumber: questions.length + 1,
+                          isBudgetQuestion: false,
+                          order: questions.length + 1,
                           options: [{ id: Date.now().toString(), label: '' }],
+                        })
+                        setNewBudgetQuestion({
+                          question: 'Approximate Budget',
+                          isBudgetQuestion: true,
+                          order: 1,
+                          options: [
+                            { id: Date.now().toString() + '-1', label: 'Under $500', value: 500 },
+                            { id: Date.now().toString() + '-2', label: '$500 - $1000', value: 1000 },
+                            { id: Date.now().toString() + '-3', label: 'Above $1000', value: 2000 },
+                          ],
                         })
                       }}
                     >
@@ -718,13 +793,13 @@ const ServiceQuestion = () => {
                     </div>
                     <Input
                       type="number"
-                      value={newQuestion.orderNumber === 0 ? '' : newQuestion.orderNumber}
+                      value={newQuestion.order === 0 ? '' : newQuestion.order}
                       onChange={(e) => {
                         const raw = e.target.value
                         const total = questions.length + 1
 
                         if (raw === '') {
-                          setNewQuestion({ ...newQuestion, orderNumber: 0 })
+                          setNewQuestion({ ...newQuestion, order: 0 })
                           return
                         }
 
@@ -732,7 +807,7 @@ const ServiceQuestion = () => {
                         if (Number.isNaN(value)) return
                         if (value > total) return
 
-                        setNewQuestion({ ...newQuestion, orderNumber: value })
+                        setNewQuestion({ ...newQuestion, order: value })
                       }}
                       className="w-1/2  bg-card rounded-full"
                       min={1}
@@ -798,24 +873,24 @@ const ServiceQuestion = () => {
                               ),
                             })
                           }}
-                          placeholder={newQuestion.isPricing ? 'Enter budget' : 'Type option'}
+                          placeholder={newQuestion.isBudgetQuestion ? 'Enter budget' : 'Type option'}
                           className="flex-1 bg-card rounded-full"
                         />
-                        {newQuestion.isPricing && (
+                        {newQuestion.isBudgetQuestion && (
                           <Input
                             type="number"
-                            value={option.price || ''}
+                            value={option.value || ''}
                             onChange={(e) => {
                               setNewQuestion({
                                 ...newQuestion,
                                 options: newQuestion.options.map((opt) =>
                                   opt.id === option.id
-                                    ? { ...opt, price: parseFloat(e.target.value) || 0 }
+                                    ? { ...opt, value: parseFloat(e.target.value) || 0 }
                                     : opt
                                 ),
                               })
                             }}
-                            placeholder="Enter Price"
+                            placeholder="Enter Value"
                             className="w-32 bg-card rounded-full"
                           />
                         )}
@@ -861,17 +936,113 @@ const ServiceQuestion = () => {
                         setShowAddQuestionForm(false)
                         setNewQuestion({
                           question: '',
-                          type: 'radio',
-                          isEnabled: true,
-                          isPricing: false,
-                          orderNumber: questions.length + 1,
+                          isBudgetQuestion: false,
+                          order: questions.length + 1,
                           options: [{ id: Date.now().toString(), label: '' }],
+                        })
+                        setNewBudgetQuestion({
+                          question: 'Approximate Budget',
+                          isBudgetQuestion: true,
+                          order: 1,
+                          options: [
+                            { id: Date.now().toString() + '-1', label: 'Under $500', value: 500 },
+                            { id: Date.now().toString() + '-2', label: '$500 - $1000', value: 1000 },
+                            { id: Date.now().toString() + '-3', label: 'Above $1000', value: 2000 },
+                          ],
                         })
                       }}
                     >
                       Cancel
                     </Button>
-                    <Button onClick={handleAddQuestion}>Add Question</Button>
+                    <Button onClick={handleAddQuestion}>Add Questions</Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Budget Question Form (always shown when adding questions) */}
+          {showAddQuestionForm && !hasBudgetQuestion && (
+            <Card className="border-2 border-primary">
+              <CardContent className="pt-6">
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm font-semibold text-primary">Budget Question (Default)</span>
+                    <Input
+                      value={newBudgetQuestion.question}
+                      onChange={(e) =>
+                        setNewBudgetQuestion({ ...newBudgetQuestion, question: e.target.value })
+                      }
+                      placeholder="Approximate Budget"
+                      className="flex-1 bg-card rounded-full"
+                    />
+                  </div>
+
+                  <div className="space-y-3 grid grid-cols-2 gap-3">
+                    {newBudgetQuestion.options.map((option) => (
+                      <div key={option.id} className="flex items-center gap-3">
+                        <Input
+                          value={option.label}
+                          onChange={(e) => {
+                            setNewBudgetQuestion({
+                              ...newBudgetQuestion,
+                              options: newBudgetQuestion.options.map((opt) =>
+                                opt.id === option.id ? { ...opt, label: e.target.value } : opt
+                              ),
+                            })
+                          }}
+                          placeholder="Enter budget"
+                          className="flex-1 bg-card rounded-full"
+                        />
+                        <Input
+                          type="number"
+                          value={option.value || ''}
+                          onChange={(e) => {
+                            setNewBudgetQuestion({
+                              ...newBudgetQuestion,
+                              options: newBudgetQuestion.options.map((opt) =>
+                                opt.id === option.id
+                                  ? { ...opt, value: parseFloat(e.target.value) || 0 }
+                                  : opt
+                              ),
+                            })
+                          }}
+                          placeholder="Enter Value"
+                          className="w-32 bg-card rounded-full"
+                        />
+                        {newBudgetQuestion.options.length > 1 && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              setNewBudgetQuestion({
+                                ...newBudgetQuestion,
+                                options: newBudgetQuestion.options.filter((opt) => opt.id !== option.id),
+                              })
+                            }}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                    ))}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setNewBudgetQuestion({
+                          ...newBudgetQuestion,
+                          options: [
+                            ...newBudgetQuestion.options,
+                            { id: Date.now().toString(), label: '', value: 0 },
+                          ],
+                        })
+                      }}
+                      className="w-full border-dashed"
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Option
+                    </Button>
                   </div>
                 </div>
               </CardContent>
@@ -883,8 +1054,8 @@ const ServiceQuestion = () => {
             <div className="flex justify-end">
               <Button
                 onClick={() => {
-                  if (hasPricingQuestion) {
-                    setNewQuestion({ ...newQuestion, isPricing: false })
+                  if (hasBudgetQuestion) {
+                    setNewQuestion({ ...newQuestion, isBudgetQuestion: false })
                   }
                   setShowAddQuestionForm(true)
                 }}

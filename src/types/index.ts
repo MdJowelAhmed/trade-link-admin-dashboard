@@ -599,25 +599,24 @@ export interface ServiceFormData {
 }
 
 // ==================== Service Question Types ====================
-export type QuestionType = 'radio' | 'checkbox'
+export type QuestionType = 'radio' | 'checkbox' | 'SELECT'
 
 export interface QuestionOption {
   id: string
   label: string
-  value?: string
-  price?: number
+  value?: number // For budget questions, this is the price/value
 }
 
+// Frontend representation (for UI state)
 export interface ServiceQuestion {
   id: string
   serviceId: string
-  categoryId: string
-  question: string
+  categoryId?: string // Optional, not always in backend response
+  question: string // Maps to questionText in backend
   type: QuestionType
-  isEnabled: boolean
-  isPricing: boolean
-  /** 1-based order within the service, cannot exceed total questions count */
-  orderNumber: number
+  isBudgetQuestion: boolean // Maps from isPricing
+  /** 1-based order within the service */
+  order: number // Maps from orderNumber
   options: QuestionOption[]
   createdAt: string
   updatedAt: string
@@ -625,11 +624,12 @@ export interface ServiceQuestion {
 
 export interface ServiceQuestionFormData {
   serviceId: string
-  categoryId: string
-  question: string
-  type: QuestionType
-  isEnabled: boolean
-  isPricing: boolean
-  orderNumber: number
-  options: Omit<QuestionOption, 'id'>[]
+  questionText: string // Backend field name
+  options: Array<{
+    label: string
+    value?: number // Only for budget questions
+  }>
+  order: number // Backend field name
+  isBudgetQuestion: boolean // Backend field name
+  type?: string // Optional, defaults to "SELECT"
 }

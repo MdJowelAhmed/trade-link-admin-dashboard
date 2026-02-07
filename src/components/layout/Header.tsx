@@ -14,6 +14,7 @@ import { useAppDispatch, useAppSelector } from '@/redux/hooks'
 import { toggleSidebar } from '@/redux/slices/uiSlice'
 import { logout } from '@/redux/slices/authSlice'
 import { getInitials } from '@/utils/formatters'
+// import { Moon, Sun } from 'lucide-react'
 
 const routeTitles: Record<string, string> = {
   '/dashboard': 'Dashboard',
