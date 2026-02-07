@@ -45,7 +45,9 @@ export const yearlyData: Record<string, ReturnType<typeof generateYearData>> = {
     '2021': generateYearData(2021),
 }
 
-export const years = [2026, 2025, 2024, 2023, 2022, 2021]
+// Generate years array dynamically (current year and 5 previous years)
+const currentYear = new Date().getFullYear()
+export const years = Array.from({ length: 6 }, (_, i) => currentYear - i)
 
 export const carBookingsData = [
     {

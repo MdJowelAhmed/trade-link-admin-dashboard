@@ -140,7 +140,7 @@ export function EarningsSummaryChart({
                             <SelectContent>
                                 {years.map((year) => (
                                     <SelectItem key={year} value={year.toString()}>
-                                        Last {year}
+                                        {year}
                                     </SelectItem>
                                 ))}
                             </SelectContent>
