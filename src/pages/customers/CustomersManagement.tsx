@@ -8,10 +8,33 @@ import { CustomerTable } from './components/CustomerTable'
 import { ViewCustomerDetailsModal } from './components/ViewCustomerDetailsModal'
 import { ConfirmDialog } from '@/components/common/ConfirmDialog'
 import { useAppDispatch, useAppSelector } from '@/redux/hooks'
-import { setFilters, setPage, setLimit, setCustomerStatus } from '@/redux/slices/customerSlice'
+import { setCustomers, setPage, setLimit, setPagination, setCustomerStatus } from '@/redux/slices/customerSlice'
 import { useUrlString, useUrlNumber } from '@/hooks/useUrlState'
 import { toast } from '@/utils/toast'
+import { useGetCustomersQuery, useStatusUpdateCustomerMutation } from '@/redux/api/customersApi'
+import { imageUrl } from '@/utils/imageUrl'
 import type { Customer, CustomerStatus } from '@/types'
+import type { BackendCustomer } from '@/redux/api/customersApi'
+
+// Map backend customer status to UI CustomerStatus
+const mapBackendStatusToCustomerStatus = (status: string): CustomerStatus => {
+  return status === 'ACTIVE' ? 'active' : 'inactive'
+}
+
+// Map backend customer to UI Customer
+const mapBackendCustomerToCustomer = (item: BackendCustomer): Customer => {
+  return {
+    id: item._id,
+    userName: item.name,
+    contact: item.phone || '',
+    email: item.email,
+    location: item.customer?.address || '',
+    status: mapBackendStatusToCustomerStatus(item.status),
+    avatar: item.customer?.profileImage ? imageUrl(item.customer.profileImage) : undefined,
+    createdAt: item.createdAt,
+    updatedAt: item.updatedAt,
+  }
+}
 
 export default function CustomersManagement() {
   const dispatch = useAppDispatch()
@@ -26,7 +49,6 @@ export default function CustomersManagement() {
     type: 'toggle'
     customer: Customer
   } | null>(null)
-  const [isConfirmLoading, setIsConfirmLoading] = useState(false)
 
   // URL state management
   const [searchQuery, setSearchQuery] = useUrlString('search', '')
@@ -34,36 +56,66 @@ export default function CustomersManagement() {
   const [currentPage, setCurrentPage] = useUrlNumber('page', 1)
   const [itemsPerPage, setItemsPerPage] = useUrlNumber('limit', 10)
 
+  // API query - convert status filter to uppercase for backend
+  const backendStatus = statusFilter !== 'all' ? statusFilter.toUpperCase() : undefined
+  const {
+    data: customersResponse,
+    isLoading: isCustomersLoading,
+    isFetching: isCustomersFetching,
+    isError: isCustomersError,
+    error: customersError,
+  } = useGetCustomersQuery({
+    searchTerm: searchQuery || undefined,
+    status: backendStatus,
+    page: currentPage,
+    limit: itemsPerPage,
+  })
+
+  const [updateCustomerStatus, { isLoading: isStatusUpdating }] =
+    useStatusUpdateCustomerMutation()
+
   // Redux state
-  const { filteredList, pagination } = useAppSelector(
-    (state) => state.customers
-  )
+  const { list, pagination } = useAppSelector((state) => state.customers)
 
-  // Sync URL state with Redux filters
+  // Sync backend customers into Redux store
   useEffect(() => {
-    dispatch(
-      setFilters({
-        search: searchQuery,
-        status: statusFilter as CustomerStatus | 'all',
+    if (customersResponse?.data && Array.isArray(customersResponse.data)) {
+      const mappedCustomers: Customer[] = customersResponse.data.map(mapBackendCustomerToCustomer)
+
+      dispatch(setCustomers(mappedCustomers))
+
+      // Update pagination from API response
+      if (customersResponse.pagination) {
+        dispatch(setPagination({
+          page: customersResponse.pagination.page,
+          limit: customersResponse.pagination.limit,
+          total: customersResponse.pagination.total,
+          totalPages: customersResponse.pagination.totalPage,
+        }))
+      }
+    }
+  }, [customersResponse, dispatch])
+
+  // Error handling
+  useEffect(() => {
+    if (isCustomersError) {
+      const errorMessage =
+        customersError && typeof customersError === 'object' && 'data' in customersError
+          ? // @ts-expect-error – RTK Query error shape
+            (customersError.data?.message as string | undefined)
+          : undefined
+
+      toast({
+        title: 'Error',
+        description: errorMessage || 'Failed to load customers. Please try again.',
+        variant: 'destructive',
       })
-    )
-  }, [searchQuery, statusFilter, dispatch])
+    }
+  }, [isCustomersError, customersError])
 
-  // Sync URL pagination with Redux
-  useEffect(() => {
-    dispatch(setPage(currentPage))
-  }, [currentPage, dispatch])
-
-  useEffect(() => {
-    dispatch(setLimit(itemsPerPage))
-  }, [itemsPerPage, dispatch])
-
-  // Pagination
-  const totalPages = pagination.totalPages
-  const paginatedData = useMemo(() => {
-    const startIndex = (pagination.page - 1) * pagination.limit
-    return filteredList.slice(startIndex, startIndex + pagination.limit)
-  }, [filteredList, pagination.page, pagination.limit])
+  // Pagination from API response
+  const totalPages = customersResponse?.pagination?.totalPage || pagination.totalPages
+  const totalItems = customersResponse?.pagination?.total || list.length
 
   // Handlers
   const handleView = (customer: Customer) => {
@@ -79,13 +131,21 @@ export default function CustomersManagement() {
   const handleConfirmAction = async () => {
     if (!confirmAction) return
 
-    setIsConfirmLoading(true)
     try {
       const { type, customer } = confirmAction
 
       if (type === 'toggle') {
         const nextStatus: CustomerStatus =
           customer.status === 'active' ? 'inactive' : 'active'
+        
+        // Convert to uppercase for API (ACTIVE/INACTIVE)
+        const apiStatus = nextStatus.toUpperCase() as 'ACTIVE' | 'INACTIVE'
+        
+        await updateCustomerStatus({ 
+          id: customer.id, 
+          status: apiStatus 
+        }).unwrap()
+        
         dispatch(setCustomerStatus({ id: customer.id, status: nextStatus }))
         toast({
           title: 'Success',
@@ -102,8 +162,6 @@ export default function CustomersManagement() {
         description: 'Failed to update customer status. Please try again.',
         variant: 'destructive',
       })
-    } finally {
-      setIsConfirmLoading(false)
     }
   }
 
@@ -163,24 +221,35 @@ export default function CustomersManagement() {
         </CardHeader>
 
         <CardContent className="p-0">
-          {/* Table */}
-          <CustomerTable
-            customers={paginatedData}
-            onView={handleView}
-            onToggleStatus={handleToggleStatus}
-          />
+          {/* Loading State */}
+          {(isCustomersLoading || isCustomersFetching) && (
+            <div className="flex items-center justify-center py-12">
+              <div className="text-sm text-gray-500">Loading customers...</div>
+            </div>
+          )}
 
-          {/* Pagination */}
-          <div className="px-6 py-4 border-t border-gray-100">
-            <Pagination
-              currentPage={pagination.page}
-              totalPages={totalPages}
-              totalItems={filteredList.length}
-              itemsPerPage={pagination.limit}
-              onPageChange={handlePageChange}
-              onItemsPerPageChange={handleItemsPerPageChange}
-            />
-          </div>
+          {/* Table */}
+          {!isCustomersLoading && !isCustomersFetching && (
+            <>
+              <CustomerTable
+                customers={list}
+                onView={handleView}
+                onToggleStatus={handleToggleStatus}
+              />
+
+              {/* Pagination */}
+              <div className="px-6 py-4 border-t border-gray-100">
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  totalItems={totalItems}
+                  itemsPerPage={itemsPerPage}
+                  onPageChange={handlePageChange}
+                  onItemsPerPageChange={handleItemsPerPageChange}
+                />
+              </div>
+            </>
+          )}
         </CardContent>
       </Card>
 
@@ -207,7 +276,7 @@ export default function CustomersManagement() {
           description={getConfirmDialogConfig()!.description}
           variant={getConfirmDialogConfig()!.variant}
           confirmText={getConfirmDialogConfig()!.confirmText}
-          isLoading={isConfirmLoading}
+          isLoading={isStatusUpdating}
         />
       )}
     </motion.div>
