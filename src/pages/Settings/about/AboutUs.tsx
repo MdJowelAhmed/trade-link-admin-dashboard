@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Shield, Save, Eye, Edit2 } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { TiptapEditor } from '@/components/common'
 import { toast } from '@/utils/toast'
 import { motion } from 'framer-motion'
+import { useGetSettingsQuery, useUpdateSettingMutation } from '@/redux/api/settingApi'
 
 const defaultAboutUs = `<h1>About Us</h1>
 <p><em>Last updated: January 2024</em></p>
@@ -72,21 +73,35 @@ const defaultAboutUs = `<h1>About Us</h1>
 
 export default function AboutUs() {
   const [aboutUs, setAboutUs] = useState(defaultAboutUs)
-  const [isSubmitting, setIsSubmitting] = useState(false)
   const [activeTab, setActiveTab] = useState('preview')
 
+  const { data } = useGetSettingsQuery('about-us')
+  const [updateSetting, { isLoading: isSubmitting }] = useUpdateSettingMutation()
+
+  useEffect(() => {
+    if (data?.data?.content) {
+      setAboutUs(data.data.content)
+    }
+  }, [data])
+
   const handleSave = async () => {
-    setIsSubmitting(true)
-    
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500))
-    
-    toast({
-      title: 'About Us Updated',
-      description: 'About Us has been updated successfully.',
-    })
-    
-    setIsSubmitting(false)
+    try {
+      await updateSetting({
+        type: 'about-us',
+        content: aboutUs,
+      }).unwrap()
+
+      toast({
+        title: 'About Us Updated',
+        description: 'About Us has been updated successfully.',
+      })
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to update About Us. Please try again.',
+        variant: 'destructive',
+      })
+    }
   }
 
 

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Shield, Save, Eye } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { TiptapEditor } from '@/components/common'
 import { toast } from '@/utils/toast'
 import { motion } from 'framer-motion'
+import { useGetSettingsQuery, useUpdateSettingMutation } from '@/redux/api/settingApi'
 
 const defaultPrivacy = `<h1>Privacy Policy</h1>
 <p><em>Last updated: January 2024</em></p>
@@ -72,21 +73,35 @@ const defaultPrivacy = `<h1>Privacy Policy</h1>
 
 export default function PrivacySettings() {
   const [privacy, setPrivacy] = useState(defaultPrivacy)
-  const [isSubmitting, setIsSubmitting] = useState(false)
   const [activeTab, setActiveTab] = useState('preview')
 
+  const { data } = useGetSettingsQuery('privacy-policy')
+  const [updateSetting, { isLoading: isSubmitting }] = useUpdateSettingMutation()
+
+  useEffect(() => {
+    if (data?.data?.content) {
+      setPrivacy(data.data.content)
+    }
+  }, [data])
+
   const handleSave = async () => {
-    setIsSubmitting(true)
-    
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500))
-    
-    toast({
-      title: 'Privacy Policy Updated',
-      description: 'Privacy Policy has been updated successfully.',
-    })
-    
-    setIsSubmitting(false)
+    try {
+      await updateSetting({
+        type: 'privacy-policy',
+        content: privacy,
+      }).unwrap()
+
+      toast({
+        title: 'Privacy Policy Updated',
+        description: 'Privacy Policy has been updated successfully.',
+      })
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to update Privacy Policy. Please try again.',
+        variant: 'destructive',
+      })
+    }
   }
 
 
