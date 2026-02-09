@@ -19,6 +19,7 @@ import {
   ShieldCheck,
   Star,
   Gift,
+  Award,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
@@ -105,6 +106,11 @@ const navItems: NavItem[] = [
     href: '/transactions-history',
     icon: CreditCard,
   },
+  {
+    title: 'Bonus Management',
+    href: '/bonus-management',
+    icon: Award,
+  },
 
   // {
   //   title: 'Client Management',
@@ -145,6 +151,7 @@ const settingsItems: NavItem[] = [
     href: '/settings/about-us',
     icon: Info,
   },
+  
   // {
   //   title: 'FAQ',
   //   href: '/settings/faq',

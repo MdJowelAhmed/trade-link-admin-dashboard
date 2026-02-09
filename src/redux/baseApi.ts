@@ -34,6 +34,7 @@ export const baseApi = createApi({
         'Dashboard',
         'Review',
         'SignupBonus',
+        'BonusManagement',
     ],
     endpoints: () => ({}),
 })

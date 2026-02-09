@@ -17,6 +17,7 @@ import leadReducer from './slices/leadSlice'
 import serviceQuestionReducer from './slices/serviceQuestionSlice'
 import reviewUIReducer from './slices/reviewsSlice'
 import signupBonusUIReducer from './slices/signupBonusSlice'
+import bonusManageReducer from './slices/bonusManageSlice'
 
 export const store = configureStore({
   reducer: {
@@ -37,6 +38,7 @@ export const store = configureStore({
     serviceQuestions: serviceQuestionReducer,
     reviewUI: reviewUIReducer,
     signupBonusUI: signupBonusUIReducer,
+    bonusManagement: bonusManageReducer,
     [baseApi.reducerPath]: baseApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>

@@ -36,6 +36,7 @@ import ServiceQuestion from './pages/service-question/ServiceQuestion'
 import AboutUs from './pages/Settings/about/AboutUs'
 import ReviewsManagement from './pages/reviews/ReviewsManagement'
 import SignUpBonus from './pages/Settings/signupBonus/SignUpBonus'
+import BonusManagement from './pages/bonusManagement/BonusManagement'
 
 function App() {
   const dispatch = useAppDispatch()
@@ -105,7 +106,9 @@ function App() {
           <Route path="products" element={<ProductList />} />
 
           <Route path="transactions-history" element={<TransactionsHistory />} />
-          
+
+          {/* Bonus Management */}
+          <Route path="bonus-management" element={<BonusManagement />} />
           {/* Category Management */}
           <Route path="categories" element={<CategoryList />} />
           
