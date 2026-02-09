@@ -6,7 +6,7 @@ import { Pagination } from '@/components/common/Pagination'
 import { TradePersonFilterDropdown } from './components/TradePersonFilterDropdown'
 import { TradePersonTable } from './components/TradePersonTable'
 import { ViewTradePersonDetailsModal } from './components/ViewTradePersonDetailsModal'
-import { ConfirmDialog } from '@/components/common/ConfirmDialog'
+import { UpdateStatusModal } from './components/UpdateStatusModal'
 import { useAppDispatch, useAppSelector } from '@/redux/hooks'
 import { 
   setFilters, 
@@ -27,13 +27,13 @@ export default function TradePersonManagement() {
   const [isViewModalOpen, setIsViewModalOpen] = useState(false)
   const [selectedTradePerson, setSelectedTradePerson] = useState<TradePerson | null>(null)
 
-  // Confirmation dialog state
-  const [isConfirmOpen, setIsConfirmOpen] = useState(false)
-  const [confirmAction, setConfirmAction] = useState<{
+  // Status update modal state
+  const [isStatusModalOpen, setIsStatusModalOpen] = useState(false)
+  const [statusModalAction, setStatusModalAction] = useState<{
     type: 'approve' | 'reject' | 'toggle'
     tradePerson: TradePerson
   } | null>(null)
-  const [isConfirmLoading, setIsConfirmLoading] = useState(false)
+  const [isStatusModalLoading, setIsStatusModalLoading] = useState(false)
 
   // URL state management
   const [searchQuery, setSearchQuery] = useUrlString('search', '')
@@ -79,56 +79,51 @@ export default function TradePersonManagement() {
   }
 
   const handleToggleStatus = (tradePerson: TradePerson) => {
-    setConfirmAction({ type: 'toggle', tradePerson })
-    setIsConfirmOpen(true)
+    setStatusModalAction({ type: 'toggle', tradePerson })
+    setIsStatusModalOpen(true)
   }
 
   const handleApprove = (tradePerson: TradePerson) => {
-    setConfirmAction({ type: 'approve', tradePerson })
-    setIsConfirmOpen(true)
+    setStatusModalAction({ type: 'approve', tradePerson })
+    setIsStatusModalOpen(true)
   }
 
   const handleReject = (tradePerson: TradePerson) => {
-    setConfirmAction({ type: 'reject', tradePerson })
-    setIsConfirmOpen(true)
+    setStatusModalAction({ type: 'reject', tradePerson })
+    setIsStatusModalOpen(true)
   }
 
-  const handleConfirmAction = async () => {
-    if (!confirmAction) return
+  const handleStatusUpdate = async (id: string, status: 'approved' | 'rejected') => {
+    if (!statusModalAction) return
 
-    setIsConfirmLoading(true)
+    setIsStatusModalLoading(true)
     try {
-      const { type, tradePerson } = confirmAction
-
-      if (type === 'approve') {
-        dispatch(approveTradePerson(tradePerson.id))
+      if (statusModalAction.type === 'toggle') {
+        dispatch(setTradePersonStatus({ id, status }))
         toast({
           title: 'Success',
-          description: `${tradePerson.businessName} has been approved.`,
+          description: `${statusModalAction.tradePerson.businessName} status changed to ${status}.`,
           variant: 'success',
         })
-        setIsViewModalOpen(false)
-      } else if (type === 'reject') {
-        dispatch(rejectTradePerson(tradePerson.id))
+      } else if (status === 'approved') {
+        dispatch(approveTradePerson(id))
         toast({
           title: 'Success',
-          description: `${tradePerson.businessName} has been rejected.`,
+          description: `${statusModalAction.tradePerson.businessName} has been approved.`,
           variant: 'success',
         })
-        setIsViewModalOpen(false)
-      } else if (type === 'toggle') {
-        const nextStatus: TradePersonStatus =
-          tradePerson.status === 'approved' ? 'rejected' : 'approved'
-        dispatch(setTradePersonStatus({ id: tradePerson.id, status: nextStatus }))
+      } else {
+        dispatch(rejectTradePerson(id))
         toast({
           title: 'Success',
-          description: `${tradePerson.businessName} status changed to ${nextStatus}.`,
+          description: `${statusModalAction.tradePerson.businessName} has been rejected.`,
           variant: 'success',
         })
       }
 
-      setIsConfirmOpen(false)
-      setConfirmAction(null)
+      setIsViewModalOpen(false)
+      setIsStatusModalOpen(false)
+      setStatusModalAction(null)
     } catch (error) {
       toast({
         title: 'Error',
@@ -136,41 +131,25 @@ export default function TradePersonManagement() {
         variant: 'destructive',
       })
     } finally {
-      setIsConfirmLoading(false)
+      setIsStatusModalLoading(false)
     }
   }
 
-  const getConfirmDialogConfig = () => {
-    if (!confirmAction) return null
+  const getStatusModalStatus = (): 'approved' | 'rejected' | null => {
+    if (!statusModalAction) return null
 
-    const { type, tradePerson } = confirmAction
+    const { type, tradePerson } = statusModalAction
 
     if (type === 'approve') {
-      return {
-        title: 'Approve Trade Person',
-        description: `Are you sure you want to approve ${tradePerson.businessName}?`,
-        variant: 'info' as const,
-        confirmText: 'Approve',
-      }
+      return 'approved'
     }
 
     if (type === 'reject') {
-      return {
-        title: 'Reject Trade Person',
-        description: `Are you sure you want to reject ${tradePerson.businessName}?`,
-        variant: 'danger' as const,
-        confirmText: 'Reject',
-      }
+      return 'rejected'
     }
 
     if (type === 'toggle') {
-      const nextStatus = tradePerson.status === 'approved' ? 'rejected' : 'approved'
-      return {
-        title: 'Change Status',
-        description: `Are you sure you want to change ${tradePerson.businessName}'s status to ${nextStatus}?`,
-        variant: 'warning' as const,
-        confirmText: 'Change Status',
-      }
+      return tradePerson.status === 'approved' ? 'rejected' : 'approved'
     }
 
     return null
@@ -247,20 +226,18 @@ export default function TradePersonManagement() {
         onReject={handleReject}
       />
 
-      {/* Confirmation Dialog */}
-      {confirmAction && getConfirmDialogConfig() && (
-        <ConfirmDialog
-          open={isConfirmOpen}
+      {/* Status Update Modal */}
+      {statusModalAction && (
+        <UpdateStatusModal
+          open={isStatusModalOpen}
           onClose={() => {
-            setIsConfirmOpen(false)
-            setConfirmAction(null)
+            setIsStatusModalOpen(false)
+            setStatusModalAction(null)
           }}
-          onConfirm={handleConfirmAction}
-          title={getConfirmDialogConfig()!.title}
-          description={getConfirmDialogConfig()!.description}
-          variant={getConfirmDialogConfig()!.variant}
-          confirmText={getConfirmDialogConfig()!.confirmText}
-          isLoading={isConfirmLoading}
+          tradePerson={statusModalAction.tradePerson}
+          status={getStatusModalStatus()}
+          onConfirm={handleStatusUpdate}
+          isLoading={isStatusModalLoading}
         />
       )}
     </motion.div>
