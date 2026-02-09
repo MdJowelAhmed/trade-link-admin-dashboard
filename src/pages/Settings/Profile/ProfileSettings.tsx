@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -10,6 +10,7 @@ import { Separator } from '@/components/ui/separator'
 import { FormInput } from '@/components/common'
 import { toast } from '@/utils/toast'
 import { motion } from 'framer-motion'
+import { useGetMyProfileQuery, useUpdateMyProfileMutation } from '@/redux/api/authApi'
 
 const profileSchema = z.object({
   firstName: z.string().min(2, 'First name must be at least 2 characters'),
@@ -27,28 +28,57 @@ type ProfileFormData = z.infer<typeof profileSchema>
 export default function ProfileSettings() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [avatar, setAvatar] = useState('https://api.dicebear.com/7.x/avataaars/svg?seed=Admin')
+  const [avatarFile, setAvatarFile] = useState<File | null>(null)
+
+  const { data: profileResponse } = useGetMyProfileQuery()
+  const [updateMyProfile] = useUpdateMyProfileMutation()
 
   const {
     register,
     handleSubmit,
     formState: { errors },
+    reset,
   } = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
-      firstName: 'Jowel',
-      lastName: 'Ahmed',
-      email: 'mdjowelahmed924@gmail.com',
-      phone: '+1234567890',
-      address: '123 Main Street',
-      city: 'Dhaka',
-      country: 'Bangladesh',
+      firstName: '',
+      lastName: '',
+      email: '',
+      phone: '',
+      address: '',
+      city: '',
+      country: '',
       // bio: 'Dashboard administrator with full access to all features.',
     },
   })
 
+  useEffect(() => {
+    if (profileResponse?.data) {
+      const { name, email, profileImage } = profileResponse.data
+      const [firstName, ...lastParts] = name?.split(' ') ?? ['']
+      const lastName = lastParts.join(' ')
+
+      reset({
+        firstName: firstName || '',
+        lastName: lastName || '',
+        email: email || '',
+        phone: '',
+        address: '',
+        city: '',
+        country: '',
+      })
+
+      if (profileImage) {
+        const baseUrl = import.meta.env.VITE_API_BASE_URL
+        setAvatar(`${baseUrl}${profileImage}`)
+      }
+    }
+  }, [profileResponse, reset])
+
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
+      setAvatarFile(file)
       const reader = new FileReader()
       reader.onload = () => {
         setAvatar(reader.result as string)
@@ -59,18 +89,32 @@ export default function ProfileSettings() {
 
   const onSubmit = async (data: ProfileFormData) => {
     setIsSubmitting(true)
-    
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500))
-    
-    console.log('Profile data:', data)
-    
-    toast({
-      title: 'Profile Updated',
-      description: 'Your profile has been updated successfully.',
-    })
-    
-    setIsSubmitting(false)
+    try {
+      const fullName = `${data.firstName} ${data.lastName}`.trim()
+
+      const response = await updateMyProfile({
+        name: fullName || undefined,
+        profileImage: avatarFile,
+      }).unwrap()
+
+      if (response?.data?.profileImage) {
+        const baseUrl = import.meta.env.VITE_API_BASE_URL
+        setAvatar(`${baseUrl}${response.data.profileImage}`)
+      }
+
+      toast({
+        title: 'Profile Updated',
+        description: 'Your profile has been updated successfully.',
+      })
+    } catch (error: any) {
+      toast({
+        title: 'Update Failed',
+        description: error?.data?.message || 'Failed to update profile. Please try again.',
+        variant: 'destructive',
+      })
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (

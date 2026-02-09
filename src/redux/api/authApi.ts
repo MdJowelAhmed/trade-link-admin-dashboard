@@ -46,6 +46,38 @@ interface ResetPasswordResponse {
     message: string;
 }
 
+interface GetMyProfileResponse {
+    success: boolean;
+    message: string;
+    data: {
+        _id: string;
+        name: string;
+        email: string;
+        role: string;
+        profileImage?: string;
+        status: string;
+        isVerified: boolean;
+        isPhoneVerified: boolean;
+        isEmailVerified: boolean;
+        isDeleted: boolean;
+        authProviders: string[];
+        createdAt: string;
+        updatedAt: string;
+        __v: number;
+    };
+}
+
+interface UpdateMyProfileResponse {
+    success: boolean;
+    message: string;
+    data: GetMyProfileResponse['data'];
+}
+
+export interface UpdateMyProfilePayload {
+    name?: string;
+    profileImage?: File | null;
+}
+
 const authApi = baseApi.injectEndpoints({
     endpoints: (builder) => ({
         login: builder.mutation<LoginResponse, LoginCredentials>({
@@ -155,6 +187,35 @@ const authApi = baseApi.injectEndpoints({
             invalidatesTags: ['Auth'],
         }),
 
+        getMyProfile: builder.query<GetMyProfileResponse, void>({
+            query: () => ({
+                url: '/users/profile',
+                method: 'GET',
+            }),
+            providesTags: ['Auth'],
+        }),
+
+        updateMyProfile: builder.mutation<UpdateMyProfileResponse, UpdateMyProfilePayload>({
+            query: ({ name, profileImage }) => {
+                const formData = new FormData();
+
+                if (name) {
+                    formData.append('name', name);
+                }
+
+                if (profileImage) {
+                    formData.append('profileImage', profileImage);
+                }
+
+                return {
+                    url: '/users/profile',
+                    method: 'PATCH',
+                    body: formData,
+                };
+            },
+            invalidatesTags: ['Auth'],
+        }),
+
 
     }),
 
@@ -169,5 +230,8 @@ export const {
     useForgotPasswordMutation,
     useVerifyEmailMutation,
     useResetPasswordMutation,
-    useResentOtpMutation } =
+    useResentOtpMutation,
+    useGetMyProfileQuery,
+    useUpdateMyProfileMutation,
+ } =
     authApi
