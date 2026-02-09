@@ -105,8 +105,11 @@ export default function VerifyEmail() {
       }
     } catch (err: unknown) {
       let message = 'An error occurred. Please try again.'
-      if (err && typeof err === 'object' && 'data' in err && (err as { data?: { message?: string } }).data?.message) {
-        message = String((err as { data?: { message?: string } }).data.message)
+      if (err && typeof err === 'object' && 'data' in err) {
+        const data = (err as { data?: { message?: string } }).data
+        if (data?.message) {
+          message = String(data.message)
+        }
       }
       setError(message)
     }

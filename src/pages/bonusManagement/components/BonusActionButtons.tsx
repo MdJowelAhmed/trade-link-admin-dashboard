@@ -1,4 +1,4 @@
-import { DollarSign, CheckCircle, XCircle, Pencil } from 'lucide-react'
+import {  CheckCircle, XCircle, Pencil } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import type { BackendProfessional } from '@/redux/api/bonusManageApi'
 

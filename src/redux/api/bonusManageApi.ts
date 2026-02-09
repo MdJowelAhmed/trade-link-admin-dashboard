@@ -23,6 +23,7 @@ export interface BackendProfessional {
     professional: {
         address: string
         approveStatus: 'PENDING' | 'APPROVED' | 'REJECTED'
+        services?: string[]
     }
     walletBalance: number
 }

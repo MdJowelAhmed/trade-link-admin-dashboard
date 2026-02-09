@@ -81,8 +81,7 @@ const ServiceQuestion = () => {
 
   // Use RTK Query for services (filter by category when selected)
   const { data: servicesResponse, isLoading: isLoadingServices } = useGetServicesQuery(
-    selectedCategoryId
-   
+    selectedCategoryId ? { categoryId: selectedCategoryId } : undefined
   )
   
   // Map backend services to frontend Service type
@@ -105,9 +104,9 @@ const ServiceQuestion = () => {
     selectedServiceId,
     { skip: !selectedServiceId }
   )
-  const [addServiceQuestion, { isLoading: isAdding }] = useAddServiceQuestionMutation()
-  const [updateServiceQuestion, { isLoading: isUpdating }] = useUpdateServiceQuestionMutation()
-  const [deleteServiceQuestion, { isLoading: isDeleting }] = useDeleteServiceQuestionMutation()
+  const [addServiceQuestion, ] = useAddServiceQuestionMutation()
+  const [updateServiceQuestion, ] = useUpdateServiceQuestionMutation()
+  const [deleteServiceQuestion, ] = useDeleteServiceQuestionMutation()
 
   // Transform backend questions to frontend format
   const serviceQuestionsList = useMemo(() => {
