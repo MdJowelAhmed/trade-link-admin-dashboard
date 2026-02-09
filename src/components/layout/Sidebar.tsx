@@ -27,6 +27,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { useAppDispatch, useAppSelector } from '@/redux/hooks'
 import { toggleSidebar } from '@/redux/slices/uiSlice'
 import { cn } from '@/utils/cn'
+import { logout } from '@/redux/slices/authSlice'
 
 interface NavItem {
   title: string
@@ -283,7 +284,7 @@ export function Sidebar() {
         {/* Footer */}
         <div className="p-4 border-t bg-white rounded-lg">
           {!sidebarCollapsed && (
-           <Button variant="outline" className="w-full">
+           <Button variant="outline" className="w-full" onClick={() => dispatch(logout())}>
             <LogOut className="h-4 w-4" />
             <span>Logout</span>
            </Button>
