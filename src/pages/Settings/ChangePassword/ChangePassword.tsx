@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label'
 import { toast } from '@/utils/toast'
 import { cn } from '@/utils/cn'
 import { motion } from 'framer-motion'
+import { useChangePasswordMutation } from '@/redux/api/authApi'
 
 const passwordSchema = z.object({
   currentPassword: z.string().min(1, 'Current password is required'),
@@ -77,7 +78,7 @@ function PasswordInput({
 }
 
 export default function ChangePassword() {
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [changePassword, { isLoading }] = useChangePasswordMutation()
 
   const {
     register,
@@ -100,20 +101,47 @@ export default function ChangePassword() {
   ]
 
   const onSubmit = async (data: PasswordFormData) => {
-    setIsSubmitting(true)
-    
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500))
-    
-    console.log('Password change:', data)
-    
-    toast({
-      title: 'Password Changed',
-      description: 'Your password has been changed successfully.',
-    })
-    
-    reset()
-    setIsSubmitting(false)
+    try {
+      const response = await changePassword({
+        currentPassword: data.currentPassword,
+        newPassword: data.newPassword,
+        confirmPassword: data.confirmPassword,
+      }).unwrap()
+
+      if (response?.success) {
+        toast({
+          title: 'Password Changed',
+          description: response.message || 'Your password has been changed successfully.',
+          variant: 'success',
+        })
+        reset()
+      } else {
+        toast({
+          title: 'Failed to change password',
+          description: response?.message || 'Something went wrong. Please try again.',
+          variant: 'destructive',
+        })
+      }
+    } catch (error: unknown) {
+      let message = 'Something went wrong. Please try again.'
+
+      if (error && typeof error === 'object') {
+        const errWithData = error as { data?: { message?: string } }
+        if (errWithData.data && typeof errWithData.data === 'object' && typeof errWithData.data.message === 'string') {
+          message = errWithData.data.message
+        } else if ('message' in error && typeof (error as { message?: string }).message === 'string') {
+          message = (error as { message?: string }).message as string
+        }
+      } else if (error instanceof Error) {
+        message = error.message
+      }
+
+      toast({
+        title: 'Failed to change password',
+        description: message,
+        variant: 'destructive',
+      })
+    }
   }
 
   return (
@@ -187,7 +215,7 @@ export default function ChangePassword() {
               <Button type="button" variant="outline" onClick={() => reset()}>
                 Cancel
               </Button>
-              <Button type="submit" isLoading={isSubmitting}>
+              <Button type="submit" isLoading={isLoading}>
                 Change Password
               </Button>
             </div>

@@ -13,6 +13,17 @@ interface LoginCredentials {
   password: string;
 }
 
+interface ChangePasswordPayload {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
+interface ChangePasswordResponse {
+  success: boolean;
+  message: string;
+}
+
 const authApi = baseApi.injectEndpoints({
     endpoints: (builder) => ({
         login: builder.mutation<LoginResponse, LoginCredentials>({
@@ -45,7 +56,7 @@ const authApi = baseApi.injectEndpoints({
             }),
             providesTags: ['Auth'],
         }),
-        changePassword: builder.mutation ({
+        changePassword: builder.mutation<ChangePasswordResponse, ChangePasswordPayload> ({
             query: (credentials) => ({
                 url: '/auth/change-password',
                 method: 'POST',
