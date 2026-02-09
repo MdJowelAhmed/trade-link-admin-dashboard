@@ -4,6 +4,7 @@ import { ArrowLeft, ArrowRight, Mail } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useAppSelector } from '@/redux/hooks'
+import { useVerifyEmailMutation, useResentOtpMutation } from '@/redux/api/authApi'
 import { cn } from '@/utils/cn'
 import { motion } from 'framer-motion'
 
@@ -17,10 +18,12 @@ export default function VerifyEmail() {
   const isPasswordReset = location.state?.type === 'reset'
   const email = isPasswordReset ? passwordResetEmail : verificationEmail
 
-  const [otp, setOtp] = useState<string[]>(new Array(OTP_LENGTH).fill(''))
-  const [isLoading, setIsLoading] = useState(false)
+  const [otp, setOtp] = useState<number[]>(new Array(OTP_LENGTH).fill(0))
   const [error, setError] = useState('')
   const [resendTimer, setResendTimer] = useState(30)
+
+  const [verifyEmail, { isLoading: isVerifying }] = useVerifyEmailMutation()
+  const [resentOtp, { isLoading: isResendLoading }] = useResentOtpMutation()
   
   const inputRefs = useRef<(HTMLInputElement | null)[]>([])
 
@@ -39,7 +42,7 @@ export default function VerifyEmail() {
     if (!/^\d*$/.test(value)) return
 
     const newOtp = [...otp]
-    newOtp[index] = value.slice(-1)
+    newOtp[index] = parseInt(value.slice(-1))
     setOtp(newOtp)
     setError('')
 
@@ -62,7 +65,7 @@ export default function VerifyEmail() {
 
     const newOtp = [...otp]
     pastedData.split('').forEach((char, index) => {
-      if (index < OTP_LENGTH) newOtp[index] = char
+      if (index < OTP_LENGTH) newOtp[index] = parseInt(char)
     })
     setOtp(newOtp)
 
@@ -79,33 +82,49 @@ export default function VerifyEmail() {
       return
     }
 
-    setIsLoading(true)
+    if (!email) {
+      setError('Email not found. Please try again from the beginning.')
+      return
+    }
 
+    setError('')
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500))
+      const response = await verifyEmail({
+        email,
+        oneTimeCode: parseInt(code),
+      }).unwrap()
 
-      // Mock verification - accept any 6-digit code
-      if (code === '123456' || code.length === 6) {
+      if (response?.success) {
         if (isPasswordReset) {
           navigate('/auth/reset-password')
         } else {
           navigate('/auth/login', { state: { verified: true } })
         }
       } else {
-        setError('Invalid verification code')
+        setError(response?.message || 'Invalid verification code')
       }
-    } catch {
-      setError('An error occurred. Please try again.')
-    } finally {
-      setIsLoading(false)
+    } catch (err: unknown) {
+      let message = 'An error occurred. Please try again.'
+      if (err && typeof err === 'object' && 'data' in err && (err as { data?: { message?: string } }).data?.message) {
+        message = String((err as { data?: { message?: string } }).data.message)
+      }
+      setError(message)
     }
   }
 
   const handleResend = async () => {
+    if (!email) return
+    setError('')
     setResendTimer(30)
-    // Simulate resending code
-    await new Promise((resolve) => setTimeout(resolve, 500))
+    try {
+      await resentOtp({ email }).unwrap()
+    } catch (err: unknown) {
+      let message = 'Failed to resend code. Please try again.'
+        if (err && typeof err === 'object' && 'data' in err && (err as { data?: { message?: string } }).data?.message) {
+        message = String((err as { data?: { message?: string } }).data?.message)
+      }
+      setError(message)
+    }
   }
 
   return (
@@ -168,8 +187,8 @@ export default function VerifyEmail() {
           ))}
         </div>
 
-        <Button type="submit" className="w-full" size="lg" isLoading={isLoading}>
-          {!isLoading && (
+        <Button type="submit" className="w-full" size="lg" isLoading={isVerifying}>
+          {!isVerifying && (
             <>
               Verify
               <ArrowRight className="ml-2 h-4 w-4" />
@@ -188,17 +207,13 @@ export default function VerifyEmail() {
           ) : (
             <button
               onClick={handleResend}
-              className="text-primary font-medium hover:underline"
+              disabled={isResendLoading}
+              className="text-primary font-medium hover:underline disabled:opacity-60"
             >
-              Click to resend
+              {isResendLoading ? 'Resending...' : 'Click to resend'}
             </button>
           )}
         </p>
-      </div>
-
-      <div className="p-4 rounded-lg bg-muted/50 border text-sm text-center">
-        <p className="text-muted-foreground">Demo: Enter any 6-digit code or use</p>
-        <p className="font-mono font-medium">123456</p>
       </div>
     </div>
   )

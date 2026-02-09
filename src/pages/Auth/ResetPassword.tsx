@@ -7,6 +7,7 @@ import { Eye, EyeOff, Lock, ArrowLeft, ArrowRight, CheckCircle } from 'lucide-re
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { useResetPasswordMutation } from '@/redux/api/authApi'
 import { cn } from '@/utils/cn'
 import { motion, AnimatePresence } from 'framer-motion'
 
@@ -27,10 +28,12 @@ type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>
 
 export default function ResetPassword() {
   const navigate = useNavigate()
-  const [isLoading, setIsLoading] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [error, setError] = useState('')
+
+  const [resetPassword, { isLoading }] = useResetPasswordMutation()
 
   const {
     register,
@@ -51,17 +54,31 @@ export default function ResetPassword() {
   ]
 
   const onSubmit = async (data: ResetPasswordFormData) => {
-    setIsLoading(true)
-
+    setError('')
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500))
-      console.log('Reset password:', data)
-      setIsSuccess(true)
-    } catch {
-      // Handle error
-    } finally {
-      setIsLoading(false)
+      const response = await resetPassword({
+        newPassword: data.password,
+        confirmPassword: data.confirmPassword,
+      }).unwrap()
+
+      if (response?.success) {
+        setIsSuccess(true)
+        try {
+          if (typeof localStorage !== 'undefined') {
+            localStorage.removeItem('resetPasswordToken')
+          }
+        } catch {
+          // ignore storage errors
+        }
+      } else {
+        setError(response?.message || 'Failed to reset password. Please try again.')
+      }
+    } catch (err: unknown) {
+      let message = 'Failed to reset password. Please try again.'
+      if (err && typeof err === 'object' && 'data' in err && (err as any).data?.message) {
+        message = String((err as any).data.message)
+      }
+      setError(message)
     }
   }
 
@@ -84,6 +101,16 @@ export default function ResetPassword() {
             exit={{ opacity: 0, x: 20 }}
             className="space-y-6"
           >
+            {error && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm"
+              >
+                {error}
+              </motion.div>
+            )}
+
             <Link
               to="/auth/verify-email"
               className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
