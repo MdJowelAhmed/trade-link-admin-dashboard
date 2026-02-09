@@ -187,7 +187,7 @@ export function EarningsSummaryChart({
                                     cursor={{ stroke: strokeColor, strokeWidth: 1, strokeDasharray: '3 3' }}
                                 />
                                 <Area
-                                    type="natural"
+                                    type="monotone"
                                     dataKey={dataKey}
                                     stroke={strokeColor}
                                     strokeWidth={1}

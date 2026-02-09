@@ -6,7 +6,7 @@ import { EarningsSummaryChart } from './EarningsSummaryChart'
 // import { RentStatusChart } from './RentStatusChart'
 // import { RecentActivityCard } from './RecentActivityCard'
 import { useGetDashboardDataQuery, useGetEarningsDataQuery } from '@/redux/api/dashboardApi'
-import { years } from './dashboardData'
+// import { years } from './dashboardData'
 
 // Month names mapping
 const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
