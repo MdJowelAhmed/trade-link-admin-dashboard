@@ -1,4 +1,4 @@
-import { DollarSign, CheckCircle, XCircle } from 'lucide-react'
+import { DollarSign, CheckCircle, XCircle, Pencil } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import type { BackendProfessional } from '@/redux/api/bonusManageApi'
 
@@ -24,7 +24,8 @@ export function BonusActionButtons({
         className="h-8 w-8 hover:bg-blue-50"
         title="Update Amount"
       >
-        <DollarSign className="h-4 w-4 text-blue-600" />
+        {/* <DollarSign className="h-4 w-4 text-blue-600" /> */}
+        <Pencil className="h-4 w-4 text-blue-600" />
       </Button>
       {professional.professional.approveStatus === 'PENDING' && (
         <>

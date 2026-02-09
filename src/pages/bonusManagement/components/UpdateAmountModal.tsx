@@ -1,15 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
+import { ModalWrapper } from '@/components/common'
 import { Button } from '@/components/ui/button'
 import { FormInput } from '@/components/common'
 import type { BackendProfessional } from '@/redux/api/bonusManageApi'
@@ -61,36 +54,37 @@ export function UpdateAmountModal({
     reset()
   }
 
+  if (!professional) return null
+
   return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Update Wallet Amount</DialogTitle>
-          <DialogDescription>
-            Update the wallet balance for {professional?.name}
-          </DialogDescription>
-        </DialogHeader>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <FormInput
-            label="Amount"
-            type="number"
-            placeholder="Enter amount"
-            error={errors.amount?.message}
-            required
-            step="0.01"
-            min="0"
-            {...register('amount', { valueAsNumber: true })}
-          />
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={onClose} disabled={isLoading}>
-              Cancel
-            </Button>
-            <Button type="submit" isLoading={isLoading}>
-              Update Amount
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+    <ModalWrapper
+      open={open}
+      onClose={onClose}
+      title="Update Wallet Amount"
+      description={`Update the wallet balance for ${professional.name}`}
+      size="md"
+      className="bg-white"
+    >
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <FormInput
+          label="Amount"
+          type="number"
+          placeholder="Enter amount"
+          error={errors.amount?.message}
+          required
+          step="0.01"
+          min="0"
+          {...register('amount', { valueAsNumber: true })}
+        />
+        <div className="flex justify-end gap-2 pt-4 border-t">
+          {/* <Button type="button" variant="outline" onClick={onClose} disabled={isLoading}>
+            Cancel
+          </Button> */}
+          <Button type="submit" isLoading={isLoading}>
+            Update Amount
+          </Button>
+        </div>
+      </form>
+    </ModalWrapper>
   )
 }

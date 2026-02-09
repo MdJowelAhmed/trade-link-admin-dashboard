@@ -1,11 +1,4 @@
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
+import { ModalWrapper } from '@/components/common'
 import { Button } from '@/components/ui/button'
 import type { BackendProfessional } from '@/redux/api/bonusManageApi'
 
@@ -31,32 +24,31 @@ export function UpdateStatusModal({
     await onConfirm(professional._id, status)
   }
 
+  if (!professional || !status) return null
+
   return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>
-            {status === 'APPROVED' ? 'Approve Professional' : 'Reject Professional'}
-          </DialogTitle>
-          <DialogDescription>
-            Are you sure you want to {status === 'APPROVED' ? 'approve' : 'reject'}{' '}
-            {professional?.name}?
-          </DialogDescription>
-        </DialogHeader>
-        <DialogFooter>
-          <Button type="button" variant="outline" onClick={onClose} disabled={isLoading}>
-            Cancel
-          </Button>
-          <Button
-            type="button"
-            onClick={handleConfirm}
-            isLoading={isLoading}
-            variant={status === 'APPROVED' ? 'default' : 'destructive'}
-          >
-            {status === 'APPROVED' ? 'Approve' : 'Reject'}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <ModalWrapper
+      open={open}
+      onClose={onClose}
+      title={status === 'APPROVED' ? 'Approve Professional' : 'Reject Professional'}
+      description={`Are you sure you want to ${status === 'APPROVED' ? 'approve' : 'reject'} ${professional.name}?`}
+      size="md"
+      className="bg-white"
+    >
+      <div className="flex justify-end gap-2 py-4 border-t">
+        {/* <Button type="button" variant="outline" onClick={onClose} disabled={isLoading}>
+          Cancel
+        </Button> */}
+        <Button
+          type="button"
+          onClick={handleConfirm}
+          isLoading={isLoading}
+          variant={status === 'APPROVED' ? 'default' : 'destructive'}
+          className=" "
+        >
+          {status === 'APPROVED' ? 'Approve' : 'Reject'}
+        </Button>
+      </div>
+    </ModalWrapper>
   )
 }

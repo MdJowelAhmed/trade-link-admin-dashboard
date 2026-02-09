@@ -68,7 +68,7 @@ const bonusManageApi = baseApi.injectEndpoints({
         }),
         updateBonusManagementAmount: builder.mutation<{ success: boolean; message: string }, { id: string; payload: UpdateAmountPayload }>({
             query: ({ id, payload }) => ({
-                url: `/admin/professionals/${id}/balance`,
+                url: `/admin/professional/${id}/balance`,
                 method: 'PATCH',
                 body: payload,
             }),

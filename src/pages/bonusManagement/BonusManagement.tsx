@@ -6,8 +6,6 @@ import { Pagination } from '@/components/common/Pagination'
 import { useAppDispatch, useAppSelector } from '@/redux/hooks'
 import {
   setProfessionals,
-  setPage,
-  setLimit,
   setPagination,
   updateProfessionalWallet,
   updateProfessionalStatus,
