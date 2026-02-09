@@ -34,6 +34,8 @@ import NotFound from './pages/NotFound/NotFound'
 import Leads from './pages/leads/Leads'
 import ServiceQuestion from './pages/service-question/ServiceQuestion'
 import AboutUs from './pages/Settings/about/AboutUs'
+import ReviewsManagement from './pages/reviews/ReviewsManagement'
+import SignUpBonus from './pages/Settings/signupBonus/SignUpBonus'
 
 function App() {
   const dispatch = useAppDispatch()
@@ -83,6 +85,7 @@ function App() {
           <Route path="leads" element={<Leads />} />
           {/* Customer Management */}
           <Route path="customers" element={<CustomersManagement />} />
+          <Route path="reviews" element={<ReviewsManagement />} />
           
           {/* Service Question Management */}
           <Route path="service-question" element={<ServiceQuestion />} />
@@ -113,6 +116,7 @@ function App() {
             <Route path="terms" element={<TermsSettings />} />
             <Route path="privacy" element={<PrivacySettings />} />
             <Route path="about-us" element={<AboutUs />} />
+            <Route path="signup-bonus" element={<SignUpBonus />} />
             {/* <Route path="faq" element={<FAQ />} /> */}
           </Route>
         </Route>

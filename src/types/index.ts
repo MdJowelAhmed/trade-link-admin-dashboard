@@ -65,6 +65,15 @@ export interface ProductFormData {
 }
 
 // ==================== Category Types ====================
+export interface CategoryFAQ {
+  _id?: string
+  question: string
+  answer: string
+  isActive?: boolean
+  createdAt?: string
+  updatedAt?: string
+}
+
 export interface Category {
   id: string
   name: string
@@ -74,6 +83,7 @@ export interface Category {
   parentId?: string | null
   status: CategoryStatus
   productCount: number
+  faqs?: CategoryFAQ[]
   createdAt: string
   updatedAt: string
 }

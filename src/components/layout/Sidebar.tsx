@@ -17,6 +17,8 @@ import {
   FolderTree,
   Info,
   ShieldCheck,
+  Star,
+  Gift,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
@@ -78,6 +80,11 @@ const navItems: NavItem[] = [
     href: '/service-question',
     icon: HelpCircle,
   },
+  {
+    title: 'Reviews',
+    href: '/reviews',
+    icon: Star,
+  },
   // {
   //   title: 'Car List',
   //   href: '/cars',
@@ -117,6 +124,11 @@ const settingsItems: NavItem[] = [
     title: 'Password',
     href: '/settings/password',
     icon: Lock,
+  },
+  {
+    title: 'Signup Bonus',
+    href: '/settings/signup-bonus',
+    icon: Gift,
   },
   {
     title: 'Terms',

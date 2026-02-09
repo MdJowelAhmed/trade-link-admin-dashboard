@@ -25,6 +25,16 @@ import type { Service } from '@/types'
 import { motion } from 'framer-motion'
 import { toast } from '@/utils/toast'
 
+// Backend FAQ type
+interface BackendFAQ {
+  _id: string
+  question: string
+  answer: string
+  isActive: boolean
+  createdAt: string
+  updatedAt: string
+}
+
 // Backend category type (from API response)
 interface BackendCategory {
   _id: string
@@ -33,7 +43,8 @@ interface BackendCategory {
   description?: string
   image?: string
   isActive: boolean
-  serviceCount: number
+  serviceCount?: number
+  faqs?: BackendFAQ[]
   createdAt: string
   updatedAt: string
 }
@@ -133,6 +144,8 @@ export default function CategoryList() {
   const [showEditServiceModal, setShowEditServiceModal] = useState(false)
   const [showDeleteServiceModal, setShowDeleteServiceModal] = useState(false)
   const [serviceToDelete, setServiceToDelete] = useState<Service | null>(null)
+  const [showCategoryDetailsModal, setShowCategoryDetailsModal] = useState(false)
+  const [faqMode, setFaqMode] = useState<'edit' | 'faq' | 'details'>('edit')
 
   // RTK Query mutations for services
   const [deleteService, { isLoading: isDeletingService }] = useDeleteServiceMutation()
@@ -169,7 +182,20 @@ export default function CategoryList() {
 
   const handleEditCategory = (category: BackendCategory) => {
     dispatch(setSelectedCategoryId(category._id))
+    setFaqMode('edit')
     setShowEditCategoryModal(true)
+  }
+
+  const handleFaqCategory = (category: BackendCategory) => {
+    dispatch(setSelectedCategoryId(category._id))
+    setFaqMode('faq')
+    setShowEditCategoryModal(true)
+  }
+
+  const handleCategoryDetails = (category: BackendCategory) => {
+    dispatch(setSelectedCategoryId(category._id))
+    setFaqMode('details')
+    setShowCategoryDetailsModal(true)
   }
 
 
@@ -248,7 +274,15 @@ export default function CategoryList() {
     description: category.description,
     image: category.image,
     status: category.isActive ? 'active' as const : 'inactive' as const,
-    productCount: category.serviceCount,
+    productCount: category.serviceCount || 0,
+    faqs: (category.faqs || []).map((faq) => ({
+      _id: faq._id,
+      question: faq.question,
+      answer: faq.answer,
+      isActive: faq.isActive,
+      createdAt: faq.createdAt,
+      updatedAt: faq.updatedAt,
+    })),
     createdAt: category.createdAt,
     updatedAt: category.updatedAt,
   })
@@ -330,6 +364,9 @@ export default function CategoryList() {
                         key={category._id}
                         category={mapCategoryForCard(category)}
                         onEdit={() => handleEditCategory(category)}
+                        onFaq={() => handleFaqCategory(category)}
+                        onDetails={() => handleCategoryDetails(category)}
+                        hasFaqs={(category.faqs && category.faqs.length > 0) || false}
                         index={index}
                       />
                     ))}
@@ -402,8 +439,23 @@ export default function CategoryList() {
           onClose={() => {
             setShowEditCategoryModal(false)
             dispatch(setSelectedCategoryId(null))
+            setFaqMode('edit')
           }}
-          mode="edit"
+          mode={faqMode === 'faq' ? 'faq' : 'edit'}
+          category={selectedCategoryForModal}
+        />
+      )}
+
+      {/* Category Details Modal */}
+      {selectedCategoryForModal && (
+        <AddEditCategoryModal
+          open={showCategoryDetailsModal}
+          onClose={() => {
+            setShowCategoryDetailsModal(false)
+            dispatch(setSelectedCategoryId(null))
+            setFaqMode('edit')
+          }}
+          mode="details"
           category={selectedCategoryForModal}
         />
       )}

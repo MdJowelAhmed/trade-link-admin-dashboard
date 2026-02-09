@@ -1,4 +1,4 @@
-import { Edit } from 'lucide-react'
+import { Edit, HelpCircle, Info } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { motion } from 'framer-motion'
@@ -10,10 +10,13 @@ import { capitalize } from '@/utils/formatters'
 interface CategoryCardProps {
   category: Category
   onEdit: () => void
+  onFaq: () => void
+  onDetails: () => void
+  hasFaqs: boolean
   index?: number
 }
 
-export function CategoryCard({ category, onEdit, index = 0 }: CategoryCardProps) {
+export function CategoryCard({ category, onEdit, onFaq, onDetails, hasFaqs, index = 0 }: CategoryCardProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20, scale: 0.95 }}
@@ -58,18 +61,40 @@ export function CategoryCard({ category, onEdit, index = 0 }: CategoryCardProps)
             </Badge>
        
         </div>
-        <div className="p-4">
+        <div className="p-4 space-y-2">
           <h3 className="font-semibold text-lg mb-2 line-clamp-2">{category.name}</h3>
 
-          <Button
-            variant="outline"
-            size="sm"
-            className="w-full"
-            onClick={onEdit}
-          >
-            <Edit className="h-4 w-4 mr-2" />
-            Edit
-          </Button>
+          <div className="flex  gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full"
+              onClick={onEdit}
+            >
+              <Edit className="h-4 w-4 mr-2" />
+              Edit
+            </Button>
+
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full"
+              onClick={onFaq}
+            >
+              <HelpCircle className="h-4 w-4 mr-2" />
+              {hasFaqs ? 'Edit FAQ' : 'Add FAQ'}
+            </Button>
+
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full"
+              onClick={onDetails}
+            >
+              <Info className="h-4 w-4 mr-2" />
+              Details
+            </Button>
+          </div>
         </div>
       </Card>
     </motion.div>

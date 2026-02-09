@@ -15,6 +15,8 @@ import customerReducer from './slices/customerSlice'
 import tradePersonReducer from './slices/tradePersonSlice'
 import leadReducer from './slices/leadSlice'
 import serviceQuestionReducer from './slices/serviceQuestionSlice'
+import reviewUIReducer from './slices/reviewsSlice'
+import signupBonusUIReducer from './slices/signupBonusSlice'
 
 export const store = configureStore({
   reducer: {
@@ -33,6 +35,8 @@ export const store = configureStore({
     tradePersons: tradePersonReducer,
     leads: leadReducer,
     serviceQuestions: serviceQuestionReducer,
+    reviewUI: reviewUIReducer,
+    signupBonusUI: signupBonusUIReducer,
     [baseApi.reducerPath]: baseApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
