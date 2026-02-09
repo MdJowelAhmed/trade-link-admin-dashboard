@@ -44,10 +44,10 @@ export default function ProfileSettings() {
       firstName: '',
       lastName: '',
       email: '',
-      phone: '',
-      address: '',
-      city: '',
-      country: '',
+      // phone: '',
+      // address: '',
+      // city: '',
+      // country: '',
       // bio: 'Dashboard administrator with full access to all features.',
     },
   })
@@ -137,7 +137,7 @@ export default function ProfileSettings() {
             <div className="flex items-center gap-6">
               <div className="relative">
                 <Avatar className="h-24 w-24">
-                  <AvatarImage src={avatar} />
+                  <AvatarImage src={avatar}  className='object-cover'/>
                   <AvatarFallback>AD</AvatarFallback>
                 </Avatar>
                 <label
@@ -190,22 +190,23 @@ export default function ProfileSettings() {
                   placeholder="Enter email"
                   error={errors.email?.message}
                   required
+                  disabled
                   {...register('email')}
                 />
-                <FormInput
+                {/* <FormInput
                   label="Phone"
                   placeholder="Enter phone number"
                   error={errors.phone?.message}
                   required
                   {...register('phone')}
-                />
+                /> */}
               </div>
             </div>
 
-            <Separator />
+            {/* <Separator /> */}
 
             {/* Address Information */}
-            <div className="space-y-4">
+            {/* <div className="space-y-4">
               <h3 className="font-semibold">Address</h3>
               <FormInput
                 label="Street Address"
@@ -227,7 +228,7 @@ export default function ProfileSettings() {
                   {...register('country')}
                 />
               </div>
-            </div>
+            </div> */}
 
             <Separator />
 
