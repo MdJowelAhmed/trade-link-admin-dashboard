@@ -14,6 +14,7 @@ interface BackendLead {
     creator: {
         name: string
         email: string
+        phone?: string
         customer?: Record<string, unknown>
     }
     service: {

@@ -495,18 +495,45 @@ export interface TransactionFilters {
 // ==================== Lead Types ====================
 export type LeadStatus = 'active' | 'expired'
 
+// Raw answered question info attached to a lead
+export interface LeadAnsweredQuestion {
+  id?: string
+  _id?: string
+  questionText?: string
+  answerText?: string
+  // Some backend payloads may use these alternative keys
+  question?: string
+  answer?: string | string[]
+}
+
 export interface Lead {
   id: string
+  /** Backend job number (e.g. JOB-000001) */
   leadId: string
+  /** Lead creator name */
   name: string
+  /** Lead creator email */
   email: string
+  /** Lead creator phone/contact number */
   contact: string
+  /** Selected service name */
   requiredService: string
+  /** Basic location/country info */
   location: string
+  /** UI-friendly status mapped from backend status */
   status: LeadStatus
+  /** Optional avatar URL */
   avatar?: string
+  /** Budget summary derived from answered questions */
   budget?: string
+  /** Notes summary derived from answered questions */
   notes?: string
+  /** All answered questions for detailed view */
+  answeredQuestions?: LeadAnsweredQuestion[]
+  /** Raw backend status (e.g. OPEN, CLOSED) */
+  backendStatus?: string
+  /** Country code if provided by backend */
+  country?: string
   createdAt: string
   updatedAt: string
 }

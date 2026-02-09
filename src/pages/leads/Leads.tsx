@@ -10,7 +10,7 @@ import { InlineLoader } from '@/components/common/Loading'
 import { useAppDispatch, useAppSelector } from '@/redux/hooks'
 import { useUrlNumber, useUrlString } from '@/hooks/useUrlState'
 import { toast } from '@/utils/toast'
-import type { Lead, LeadStatus } from '@/types'
+import type { Lead, LeadStatus, LeadAnsweredQuestion } from '@/types'
 import {
   clearFilters,
   setFilters,
@@ -18,7 +18,10 @@ import {
   setLimit,
   setPage,
 } from '@/redux/slices/leadSlice'
-import { useGetLeadsQuery, useUpdateLeadStatusMutation } from '@/redux/api/leadsApi'
+import {
+  useGetLeadsQuery,
+  useUpdateLeadStatusMutation,
+} from '@/redux/api/leadsApi'
 import { LeadFilterDropdown } from './components/LeadFilterDropdown'
 import { LeadTable } from './components/LeadTable'
 import { ViewLeadDetailsModal } from './components/ViewLeadDetailsModal'
@@ -31,29 +34,37 @@ const mapBackendStatusToLeadStatus = (status: string): LeadStatus => {
 
 // Safely build budget/notes from answered questions
 const buildLeadBudgetAndNotes = (
-  answeredQuestions:
-    | Array<{
-        questionText?: string
-        answerText?: string
-      }>
-    | undefined
+  answeredQuestions: LeadAnsweredQuestion[] | undefined
 ): { budget?: string; notes?: string } => {
   if (!answeredQuestions || answeredQuestions.length === 0) {
     return {}
   }
 
+  // Helper to normalize question/answer text regardless of backend key names
+  const getQuestionText = (q: LeadAnsweredQuestion): string | undefined => {
+    return (q.questionText || q.question)?.trim()
+  }
+
+  const getAnswerText = (q: LeadAnsweredQuestion): string | undefined => {
+    if (Array.isArray(q.answer)) {
+      return q.answer.filter(Boolean).join(', ').trim()
+    }
+    return (q.answerText || (typeof q.answer === 'string' ? q.answer : ''))?.trim()
+  }
+
   // Try to find a budget-like answer
   const budgetAnswer = answeredQuestions.find((q) => {
-    const qt = q.questionText?.toLowerCase() ?? ''
-    return qt.includes('budget') && q.answerText && q.answerText.trim().length > 0
+    const qt = getQuestionText(q)?.toLowerCase() ?? ''
+    const at = getAnswerText(q)
+    return qt.includes('budget') && !!at && at.length > 0
   })
 
-  const budget = budgetAnswer?.answerText?.trim()
+  const budget = budgetAnswer ? getAnswerText(budgetAnswer) : undefined
 
   const notesParts = answeredQuestions
     .map((q) => {
-      const qt = q.questionText?.trim()
-      const at = q.answerText?.trim()
+      const qt = getQuestionText(q)
+      const at = getAnswerText(q)
       if (!qt || !at) return null
       return `${qt}: ${at}`
     })
@@ -104,15 +115,17 @@ export default function Leads() {
   useEffect(() => {
     if (leadsResponse?.data && Array.isArray(leadsResponse.data)) {
       const mappedLeads: Lead[] = leadsResponse.data.map((item) => {
-        const { budget, notes } = buildLeadBudgetAndNotes(item.answeredQuestions)
+        const { budget, notes } = buildLeadBudgetAndNotes(
+          // Cast to LeadAnsweredQuestion[] to match shared type
+          item.answeredQuestions as unknown as LeadAnsweredQuestion[] | undefined
+        )
 
         return {
           id: item._id,
           leadId: item.jobNumber,
           name: item.creator?.name ?? 'Unknown',
           email: item.creator?.email ?? '',
-          // Backend does not currently expose a phone field – keep contact empty for now
-          contact: '',
+          contact: item.creator?.phone ?? '',
           requiredService: item.service?.name ?? '',
           // Use country code as a basic location until we have more detailed data
           location: item.country || '',
@@ -120,6 +133,11 @@ export default function Leads() {
           avatar: undefined,
           budget,
           notes,
+          answeredQuestions: item.answeredQuestions as unknown as
+            | LeadAnsweredQuestion[]
+            | undefined,
+          backendStatus: item.status,
+          country: item.country,
           createdAt: item.createdAt,
           updatedAt: item.updatedAt,
         }
