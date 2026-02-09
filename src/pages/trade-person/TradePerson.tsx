@@ -8,17 +8,57 @@ import { TradePersonTable } from './components/TradePersonTable'
 import { ViewTradePersonDetailsModal } from './components/ViewTradePersonDetailsModal'
 import { UpdateStatusModal } from './components/UpdateStatusModal'
 import { useAppDispatch, useAppSelector } from '@/redux/hooks'
-import { 
-  setFilters, 
-  setPage, 
-  setLimit, 
-  setTradePersonStatus,
+import {
   approveTradePerson,
-  rejectTradePerson 
+  clearFilters,
+  rejectTradePerson,
+  setError,
+  setFilters,
+  setLimit,
+  setLoading,
+  setPage,
+  setTradePersonStatus,
+  setTradePersons,
 } from '@/redux/slices/tradePersonSlice'
-import { useUrlString, useUrlNumber } from '@/hooks/useUrlState'
+import { useUrlNumber, useUrlString } from '@/hooks/useUrlState'
 import { toast } from '@/utils/toast'
 import type { TradePerson, TradePersonStatus } from '@/types'
+import {
+  useGetBonusManagementQuery,
+  type BackendProfessional,
+} from '@/redux/api/bonusManageApi'
+
+const mapApproveStatusToTradePersonStatus = (
+  approveStatus: BackendProfessional['professional']['approveStatus']
+): TradePersonStatus => {
+  if (approveStatus === 'APPROVED') return 'approved'
+  if (approveStatus === 'REJECTED') return 'rejected'
+  return 'pending'
+}
+
+const mapBackendProfessionalToTradePerson = (
+  professional: BackendProfessional
+): TradePerson => {
+  const address = professional.professional?.address || ''
+
+  return {
+    id: professional._id,
+    businessName: professional.name,
+    ownerName: professional.name,
+    services: professional.professional?.services ?? [],
+    email: professional.email,
+    mobile: professional.phone || '',
+    location: address,
+    address,
+    status: mapApproveStatusToTradePersonStatus(
+      professional.professional?.approveStatus
+    ),
+    avatar: undefined,
+    galleryImages: [],
+    createdAt: professional.createdAt,
+    updatedAt: professional.updatedAt,
+  }
+}
 
 export default function TradePersonManagement() {
   const dispatch = useAppDispatch()
@@ -35,6 +75,13 @@ export default function TradePersonManagement() {
   } | null>(null)
   const [isStatusModalLoading, setIsStatusModalLoading] = useState(false)
 
+  // Backend data (professionals)
+  const {
+    data: professionalsResponse,
+    isLoading: isProfessionalsLoading,
+    isError: isProfessionalsError,
+  } = useGetBonusManagementQuery()
+
   // URL state management
   const [searchQuery, setSearchQuery] = useUrlString('search', '')
   const [statusFilter, setStatusFilter] = useUrlString('status', 'all')
@@ -45,6 +92,30 @@ export default function TradePersonManagement() {
   const { filteredList, pagination } = useAppSelector(
     (state) => state.tradePersons
   )
+
+  // Sync backend loading & error to Redux
+  useEffect(() => {
+    dispatch(setLoading(isProfessionalsLoading))
+    if (isProfessionalsError) {
+      dispatch(setError('Failed to load professionals'))
+    } else {
+      dispatch(setError(null))
+    }
+  }, [dispatch, isProfessionalsLoading, isProfessionalsError])
+
+  // Load professionals from backend into trade person list
+  useEffect(() => {
+    if (!professionalsResponse?.data) return
+
+    const mappedTradePersons = professionalsResponse.data.map(
+      mapBackendProfessionalToTradePerson
+    )
+
+    dispatch(setTradePersons(mappedTradePersons))
+
+    // Reset filters when new backend data arrives
+    dispatch(clearFilters())
+  }, [dispatch, professionalsResponse])
 
   // Sync URL state with Redux filters
   useEffect(() => {

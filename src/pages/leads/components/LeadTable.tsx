@@ -116,7 +116,7 @@ export function LeadTable({ leads, onView }: LeadTableProps) {
                 {/* Actions Column */}
                 <td className="px-6 py-4 flex items-center justify-end gap-2">
                   <LeadActionButtons lead={lead} onView={onView} />
-                  <button  onClick={() => changeStatus(lead)}><Edit className="w-4 h-4" /> </button>
+                  {/* <button  onClick={() => changeStatus(lead)}><Edit className="w-4 h-4" /> </button> */}
                 </td>
               </motion.tr>
             ))

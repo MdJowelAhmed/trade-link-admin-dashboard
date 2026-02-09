@@ -17,7 +17,7 @@ export function LeadActionButtons({ lead, onView }: LeadActionButtonsProps) {
         className="h-8 w-8 hover:bg-gray-100"
         title="View Details"
       >
-        <Eye className="h-4 w-4 text-gray-600" />
+        <Eye className="h-6 w-6 text-gray-600" />
       </Button>
     </div>
   )
