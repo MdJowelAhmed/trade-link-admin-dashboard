@@ -9,21 +9,15 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
-  server: {
-    port: 3000,
-    open: true,
+
+  preview: {
+    host: true,
+    port: 4173,
+    allowedHosts: [
+      '76.13.255.95',
+      'admin.tradelinknetwork.co.uk',
+      'localhost',
+    ],
   },
 })
-
-
-
-
-
-
-
-
-
-
-
-
 
