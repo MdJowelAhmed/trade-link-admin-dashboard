@@ -1,6 +1,3 @@
-
-
-
 export const imageUrl = (path: string) => {
         if (!path || typeof path !== "string") {
         return "";
