@@ -117,17 +117,18 @@ export function TransactionTable({
                   <div className="flex justify-end gap-3">
                     <button
                       onClick={() => onView(transaction)}
-                      className="text-gray-400 hover:text-gray-600 transition-colors"
+                      className="text-gray-400 hover:text-gray-600 transition-colors flex items-center gap-2"
                       aria-label="View"
                     >
                       <EyeOff className="h-4 w-4" />
+                      Details
                     </button>
-                    <button
+                    {/* <button
                       className="text-gray-400 hover:text-gray-600 transition-colors"
                       aria-label="Lock"
                     >
                       <Lock className="h-4 w-4" />
-                    </button>
+                    </button> */}
                   </div>
                 </td>
               </motion.tr>

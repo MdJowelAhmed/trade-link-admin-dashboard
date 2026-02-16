@@ -1,23 +1,68 @@
+import { useState, useEffect } from 'react'
 import { CreditCard, Calendar, User, Mail, DollarSign, FileText, CheckCircle, XCircle, Clock, AlertCircle } from 'lucide-react'
 import { ModalWrapper } from '@/components/common'
 import { Separator } from '@/components/ui/separator'
 import { Card, CardContent } from '@/components/ui/card'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Button } from '@/components/ui/button'
 import type { Transaction, Refund } from '@/types'
 import { cn } from '@/utils/cn'
 import { formatDate } from '@/utils/formatters'
+import { useUpdateRefundStatusMutation } from '@/redux/api/transactionApi'
+import { toast } from '@/utils/toast'
 
 interface ViewTransactionDetailsModalProps {
   open: boolean
   onClose: () => void
   transaction: Transaction | Refund | null
+  onStatusUpdate?: () => void
 }
 
 export function ViewTransactionDetailsModal({
   open,
   onClose,
   transaction,
+  onStatusUpdate,
 }: ViewTransactionDetailsModalProps) {
+  const [selectedStatus, setSelectedStatus] = useState<'APPROVED' | 'REJECTED' | ''>('')
+  const [updateRefundStatus, { isLoading: isUpdating }] = useUpdateRefundStatusMutation()
+
+  // Reset selected status when modal opens/closes or transaction changes
+  useEffect(() => {
+    if (!open) {
+      setSelectedStatus('')
+    }
+  }, [open, transaction])
+
   if (!transaction) return null
+
+  // Check if this is a refund and status is PENDING
+  const isRefund = 'refundId' in transaction
+  const canUpdateStatus = isRefund && transaction.status === 'PENDING'
+
+  const handleStatusUpdate = async () => {
+    if (!selectedStatus || !isRefund) return
+
+    try {
+      await updateRefundStatus({
+        id: transaction.id,
+        status: selectedStatus as 'APPROVED' | 'REJECTED',
+      }).unwrap()
+      
+      toast({
+        title: `Refund ${selectedStatus.toLowerCase()} successfully`,
+        variant: 'success',
+      })
+      setSelectedStatus('')
+      onStatusUpdate?.()
+      onClose()
+    } catch (error: any) {
+      toast({
+        title: error?.data?.message || `Failed to ${selectedStatus.toLowerCase()} refund`,
+        variant: 'destructive',
+      })
+    }
+  }
 
   const getStatusIcon = () => {
     switch (transaction.status) {
@@ -279,7 +324,48 @@ export function ViewTransactionDetailsModal({
 
         <Separator />
 
-       
+        {/* Status Update Section (Only for PENDING refunds) */}
+        {canUpdateStatus && (
+          <div>
+            <h3 className="text-lg font-semibold mb-4 text-gray-900">
+              Update Refund Status
+            </h3>
+            <Card className="border border-gray-200">
+              <CardContent className="p-4">
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 mb-2 block">
+                      Select Status
+                    </label>
+                    <Select
+                      value={selectedStatus}
+                      onValueChange={(value) => setSelectedStatus(value as 'APPROVED' | 'REJECTED')}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select status..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="APPROVED">Approve</SelectItem>
+                        <SelectItem value="REJECTED">Reject</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  {selectedStatus && (
+                    <Button
+                      onClick={handleStatusUpdate}
+                      isLoading={isUpdating}
+                      disabled={!selectedStatus || isUpdating}
+                      className="w-full"
+                      variant={selectedStatus === 'APPROVED' ? 'success' : 'destructive'}
+                    >
+                      {selectedStatus === 'APPROVED' ? 'Approve Refund' : 'Reject Refund'}
+                    </Button>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
       
       </div>

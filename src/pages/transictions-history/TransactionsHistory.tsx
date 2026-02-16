@@ -15,22 +15,25 @@ import { ViewTransactionDetailsModal } from "./components/ViewTransactionDetails
 import { cn } from "@/utils/cn";
 import type { Transaction, Refund, TransactionStatus } from "@/types";
 import { useGetTransactionsQuery, useGetRefundTransactionsQuery } from "@/redux/api/transactionApi";
+import { useUrlParams } from "@/hooks/useUrlState";
 
 const STATUS_OPTIONS: { value: TransactionStatus | "all"; label: string }[] = [
   { value: "all", label: "All" },
-  { value: "SUCCESS", label: "Success" },
-  { value: "REFUNDED", label: "Refunded" },
+  // { value: "SUCCESS", label: "Success" },
+  // { value: "REFUNDED", label: "Refunded" },
   { value: "PENDING", label: "Pending" },
   { value: "APPROVED", label: "Approved" },
   { value: "REJECTED", label: "Rejected" },
-  { value: "Failed", label: "Failed" },
-  { value: "Cancelled", label: "Cancelled" },
+  // { value: "Failed", label: "Failed" },
+  // { value: "Cancelled", label: "Cancelled" },
 ];
 
 type TabType = "transaction" | "refund";
 
 export default function TransactionsHistory() {
-  const [activeTab, setActiveTab] = useState<TabType>("transaction");
+  // URL-based state management
+  const { getParam, setParam } = useUrlParams();
+  const activeTab = (getParam('tab', 'transaction') as TabType) || 'transaction';
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<TransactionStatus | "all">("all");
   const [currentPage, setCurrentPage] = useState(1);
@@ -109,7 +112,7 @@ export default function TransactionsHistory() {
 
   // Reset to page 1 when changing tabs or filters
   const handleTabChange = (tab: TabType) => {
-    setActiveTab(tab);
+    setParam('tab', tab);
     setCurrentPage(1);
   };
 
@@ -228,6 +231,10 @@ export default function TransactionsHistory() {
           setSelectedTransaction(null);
         }}
         transaction={selectedTransaction}
+        onStatusUpdate={() => {
+          // Refetch data after status update
+          // RTK Query will automatically refetch due to invalidatesTags
+        }}
       />
     </motion.div>
   );

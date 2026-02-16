@@ -132,8 +132,8 @@ const transactionApi = baseApi.injectEndpoints({
 
         updateRefundStatus: builder.mutation<Refund, { id: string; status: 'APPROVED' | 'REJECTED' }>({
             query: ({ id, status }) => ({
-                url: `/refundRequests/${id}`,
-                method: 'PUT',
+                url: `/refundRequests/${id}/status`,
+                method: 'PATCH',
                 body: { status },
             }),
             transformResponse: (response: RefundResponse) => transformRefund(response.data),
