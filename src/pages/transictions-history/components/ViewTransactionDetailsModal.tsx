@@ -67,11 +67,9 @@ export function ViewTransactionDetailsModal({
   const getStatusIcon = () => {
     switch (transaction.status) {
       case 'SUCCESS':
-      case 'Completed':
       case 'APPROVED':
         return <CheckCircle className="h-5 w-5 text-green-600" />
       case 'PENDING':
-      case 'Pending':
         return <Clock className="h-5 w-5 text-orange-600" />
       case 'REFUNDED':
       case 'REJECTED':
@@ -104,9 +102,9 @@ export function ViewTransactionDetailsModal({
           <div
             className={cn(
               'inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium',
-              transaction.status === 'SUCCESS' || transaction.status === 'Completed' || transaction.status === 'APPROVED'
+              transaction.status === 'SUCCESS' || transaction.status === 'APPROVED'
                 ? 'bg-green-100 text-green-800'
-                : transaction.status === 'PENDING' || transaction.status === 'Pending'
+                : transaction.status === 'PENDING'
                   ? 'bg-orange-100 text-orange-800'
                   : transaction.status === 'REFUNDED' || transaction.status === 'REJECTED' || transaction.status === 'Failed'
                     ? 'bg-red-100 text-red-800'

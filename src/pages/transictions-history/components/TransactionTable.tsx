@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { EyeOff, Lock } from 'lucide-react'
+import { EyeOff } from 'lucide-react'
 import { cn } from '@/utils/cn'
 import type { Transaction, Refund } from '@/types'
 import { formatDate } from '@/utils/formatters'
@@ -96,9 +96,9 @@ export function TransactionTable({
                   <span
                     className={cn(
                       'inline-flex items-center px-6 py-2 rounded-full text-sm w-28 justify-center font-medium',
-                      transaction.status === 'SUCCESS' || transaction.status === 'Completed' || transaction.status === 'APPROVED'
+                      transaction.status === 'SUCCESS' || transaction.status === 'APPROVED'
                         ? 'bg-secondary text-white'
-                        : transaction.status === 'PENDING' || transaction.status === 'Pending'
+                        : transaction.status === 'PENDING'
                         ? 'bg-primary-foreground text-white'
                         : transaction.status === 'REFUNDED' || transaction.status === 'REJECTED' || transaction.status === 'Failed'
                         ? 'bg-secondary-foreground text-white'
@@ -106,7 +106,6 @@ export function TransactionTable({
                     )}
                   >
                     {transaction.status === 'SUCCESS' ? 'Success' : 
-                     transaction.status === 'Completed' ? 'Complete' : 
                      transaction.status === 'PENDING' ? 'Pending' :
                      transaction.status}
                   </span>
