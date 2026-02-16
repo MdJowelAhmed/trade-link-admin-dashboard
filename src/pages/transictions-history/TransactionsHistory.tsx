@@ -12,14 +12,17 @@ import { SearchInput } from "@/components/common/SearchInput";
 import { Pagination } from "@/components/common/Pagination";
 import { TransactionTable } from "./components/TransactionTable";
 import { ViewTransactionDetailsModal } from "./components/ViewTransactionDetailsModal";
-import { mockTransactions, mockRefunds } from "./transactionData";
 import { cn } from "@/utils/cn";
 import type { Transaction, Refund, TransactionStatus } from "@/types";
+import { useGetTransactionsQuery, useGetRefundTransactionsQuery } from "@/redux/api/transactionApi";
 
 const STATUS_OPTIONS: { value: TransactionStatus | "all"; label: string }[] = [
   { value: "all", label: "All" },
-  { value: "Pending", label: "Pending" },
-  { value: "Completed", label: "Completed" },
+  { value: "SUCCESS", label: "Success" },
+  { value: "REFUNDED", label: "Refunded" },
+  { value: "PENDING", label: "Pending" },
+  { value: "APPROVED", label: "Approved" },
+  { value: "REJECTED", label: "Rejected" },
   { value: "Failed", label: "Failed" },
   { value: "Cancelled", label: "Cancelled" },
 ];
@@ -37,41 +40,57 @@ export default function TransactionsHistory() {
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | Refund | null>(null);
 
+  // API queries
+  const {
+    data: transactionsData,
+    isLoading: isLoadingTransactions,
+    error: transactionsError,
+  } = useGetTransactionsQuery({
+    searchTerm: searchQuery || undefined,
+    status: statusFilter !== "all" ? statusFilter : undefined,
+    page: currentPage,
+    limit: itemsPerPage,
+  }, {
+    skip: activeTab !== "transaction",
+  });
+
+  const {
+    data: refundsData,
+    isLoading: isLoadingRefunds,
+    error: refundsError,
+  } = useGetRefundTransactionsQuery({
+    searchTerm: searchQuery || undefined,
+    status: statusFilter !== "all" ? statusFilter : undefined,
+    page: currentPage,
+    limit: itemsPerPage,
+  }, {
+    skip: activeTab !== "refund",
+  });
+
   // Get data based on active tab
   const allData: (Transaction | Refund)[] = useMemo(() => {
-    return activeTab === "transaction" ? mockTransactions : mockRefunds
-  }, [activeTab])
-
-  // Filter data
-  const filteredData = useMemo(() => {
-    let filtered = allData;
-
-    // Search filter
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(
-        (item) =>
-          item.userName.toLowerCase().includes(query) ||
-          item.leadId.toLowerCase().includes(query) ||
-          item.service.toLowerCase().includes(query) ||
-          item.email.toLowerCase().includes(query)
-      );
+    if (activeTab === "transaction") {
+      return transactionsData?.data || [];
+    } else {
+      return refundsData?.data || [];
     }
+  }, [activeTab, transactionsData, refundsData]);
 
-    // Status filter
-    if (statusFilter !== "all") {
-      filtered = filtered.filter((item) => item.status === statusFilter);
+  // Get pagination info
+  const pagination = useMemo(() => {
+    if (activeTab === "transaction") {
+      return transactionsData?.pagination;
+    } else {
+      return refundsData?.pagination;
     }
+  }, [activeTab, transactionsData, refundsData]);
 
-    return filtered;
-  }, [allData, searchQuery, statusFilter]);
+  const isLoading = activeTab === "transaction" ? isLoadingTransactions : isLoadingRefunds;
+  const error = activeTab === "transaction" ? transactionsError : refundsError;
 
   // Pagination
-  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
-  const paginatedData = useMemo(() => {
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    return filteredData.slice(startIndex, startIndex + itemsPerPage);
-  }, [filteredData, currentPage, itemsPerPage]);
+  const totalPages = pagination?.totalPage || 1;
+  const totalItems = pagination?.total || 0;
 
   // Handlers
   const handleView = (transaction: Transaction | Refund) => {
@@ -169,25 +188,35 @@ export default function TransactionsHistory() {
 
 
           {/* Table */}
+          {isLoading ? (
+            <div className="px-6 py-8 text-center text-gray-500">
+              Loading...
+            </div>
+          ) : error ? (
+            <div className="px-6 py-8 text-center text-red-500">
+              Error loading data. Please try again.
+            </div>
+          ) : (
+            <>
+              <TransactionTable
+                transactions={allData}
+                onView={handleView}
+                startIndex={(currentPage - 1) * itemsPerPage}
+              />
 
-          <TransactionTable
-            transactions={paginatedData}
-            onView={handleView}
-            startIndex={(currentPage - 1) * itemsPerPage}
-          />
-
-
-          {/* Pagination */}
-          <div className="mt-4 pt-4 border-t border-gray-100 px-6">
-            <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              totalItems={filteredData.length}
-              itemsPerPage={itemsPerPage}
-              onPageChange={handlePageChange}
-              onItemsPerPageChange={handleItemsPerPageChange}
-            />
-          </div>
+              {/* Pagination */}
+              <div className="mt-4 pt-4 border-t border-gray-100 px-6">
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  totalItems={totalItems}
+                  itemsPerPage={itemsPerPage}
+                  onPageChange={handlePageChange}
+                  onItemsPerPageChange={handleItemsPerPageChange}
+                />
+              </div>
+            </>
+          )}
         </CardContent>
       </Card>
 

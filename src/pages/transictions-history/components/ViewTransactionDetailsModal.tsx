@@ -21,10 +21,15 @@ export function ViewTransactionDetailsModal({
 
   const getStatusIcon = () => {
     switch (transaction.status) {
+      case 'SUCCESS':
       case 'Completed':
+      case 'APPROVED':
         return <CheckCircle className="h-5 w-5 text-green-600" />
+      case 'PENDING':
       case 'Pending':
         return <Clock className="h-5 w-5 text-orange-600" />
+      case 'REFUNDED':
+      case 'REJECTED':
       case 'Failed':
         return <XCircle className="h-5 w-5 text-red-600" />
       case 'Cancelled':
@@ -54,17 +59,19 @@ export function ViewTransactionDetailsModal({
           <div
             className={cn(
               'inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium',
-              transaction.status === 'Completed'
+              transaction.status === 'SUCCESS' || transaction.status === 'Completed' || transaction.status === 'APPROVED'
                 ? 'bg-green-100 text-green-800'
-                : transaction.status === 'Pending'
+                : transaction.status === 'PENDING' || transaction.status === 'Pending'
                   ? 'bg-orange-100 text-orange-800'
-                  : transaction.status === 'Failed'
+                  : transaction.status === 'REFUNDED' || transaction.status === 'REJECTED' || transaction.status === 'Failed'
                     ? 'bg-red-100 text-red-800'
                     : 'bg-gray-100 text-gray-800'
             )}
           >
             {getStatusIcon()}
-            {transaction.status}
+            {transaction.status === 'SUCCESS' ? 'Success' : 
+             transaction.status === 'PENDING' ? 'Pending' :
+             transaction.status}
           </div>
         </div>
 
@@ -221,6 +228,49 @@ export function ViewTransactionDetailsModal({
                   <p className="text-sm text-gray-700">
                     {transaction.description}
                   </p>
+                </CardContent>
+              </Card>
+            </div>
+          </>
+        )}
+
+        {/* Refund-specific fields */}
+        {'reason' in transaction && transaction.reason && (
+          <>
+            <div>
+              <h3 className="text-lg font-semibold mb-4 text-gray-900">
+                Refund Reason
+              </h3>
+              <Card className="border border-gray-200">
+                <CardContent className="p-4">
+                  <p className="text-sm text-gray-700">
+                    {transaction.reason}
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+          </>
+        )}
+
+        {/* Refund Images */}
+        {'images' in transaction && transaction.images && transaction.images.length > 0 && (
+          <>
+            <div>
+              <h3 className="text-lg font-semibold mb-4 text-gray-900">
+                Refund Images
+              </h3>
+              <Card className="border border-gray-200">
+                <CardContent className="p-4">
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {transaction.images.map((image, index) => (
+                      <img
+                        key={index}
+                        src={image.startsWith('http') ? image : `${import.meta.env.VITE_API_BASE_URL}${image}`}
+                        alt={`Refund evidence ${index + 1}`}
+                        className="w-full h-32 object-cover rounded-lg border border-gray-200"
+                      />
+                    ))}
+                  </div>
                 </CardContent>
               </Card>
             </div>

@@ -451,15 +451,40 @@ export interface FAQFormData {
 }
 
 // ==================== Transaction Types ====================
-export type TransactionStatus = 'Pending' | 'Completed' | 'Failed' | 'Cancelled'
+export type TransactionStatus = 'SUCCESS' | 'REFUNDED' | 'PENDING' | 'APPROVED' | 'REJECTED' | 'Failed' | 'Cancelled'
 
+// Backend API response types
+export interface BackendTransaction {
+  _id: string
+  createdAt: string
+  leadId: string
+  professionalName: string
+  serviceName: string
+  price: number
+  status: 'SUCCESS' | 'REFUNDED' | 'PENDING'
+}
+
+export interface BackendRefund {
+  _id: string
+  reason: string
+  images: string[]
+  status: 'PENDING' | 'APPROVED' | 'REJECTED'
+  createdAt: string
+  updatedAt: string
+  leadId: string
+  professionalName: string
+  serviceName: string
+  amount: number
+}
+
+// Frontend types (transformed from backend)
 export interface Transaction {
   id: string
   transactionId: string
   leadId: string
   date: string
   userName: string
-  email: string
+  email?: string
   service: string
   amount: number
   currency?: string
@@ -467,7 +492,7 @@ export interface Transaction {
   paymentMethod?: string
   description?: string
   createdAt: string
-  updatedAt: string
+  updatedAt?: string
 }
 
 export interface Refund {
@@ -476,13 +501,15 @@ export interface Refund {
   leadId: string
   date: string
   userName: string
-  email: string
+  email?: string
   service: string
   amount: number
   currency?: string
   status: TransactionStatus
   paymentMethod?: string
   description?: string
+  reason?: string
+  images?: string[]
   createdAt: string
   updatedAt: string
 }

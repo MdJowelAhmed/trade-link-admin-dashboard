@@ -96,16 +96,19 @@ export function TransactionTable({
                   <span
                     className={cn(
                       'inline-flex items-center px-6 py-2 rounded-full text-sm w-28 justify-center font-medium',
-                      transaction.status === 'Completed'
+                      transaction.status === 'SUCCESS' || transaction.status === 'Completed' || transaction.status === 'APPROVED'
                         ? 'bg-secondary text-white'
-                        : transaction.status === 'Pending'
+                        : transaction.status === 'PENDING' || transaction.status === 'Pending'
                         ? 'bg-primary-foreground text-white'
-                        : transaction.status === 'Failed'
+                        : transaction.status === 'REFUNDED' || transaction.status === 'REJECTED' || transaction.status === 'Failed'
                         ? 'bg-secondary-foreground text-white'
                         : 'bg-gray-100 text-gray-800'
                     )}
                   >
-                    {transaction.status === 'Completed' ? 'Complete' : transaction.status}
+                    {transaction.status === 'SUCCESS' ? 'Success' : 
+                     transaction.status === 'Completed' ? 'Complete' : 
+                     transaction.status === 'PENDING' ? 'Pending' :
+                     transaction.status}
                   </span>
                 </td>
 
