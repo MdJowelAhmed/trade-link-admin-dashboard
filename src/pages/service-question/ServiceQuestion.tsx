@@ -396,8 +396,76 @@ const ServiceQuestion = () => {
       return
     }
 
+    // Start with existing questions
+    let questionsToSave: QuestionForm[] = [...questions]
+
+    // If user has typed a normal question but not clicked "Add Question",
+    // include it in the save flow automatically
+    if (activeAddType === 'normal' && newQuestion.question.trim()) {
+      const currentMaxOrder = questionsToSave.length > 0 ? Math.max(...questionsToSave.map(q => q.order)) : 0
+
+      if (newQuestion.options.length === 0 || newQuestion.options.some((opt) => !opt.label.trim())) {
+        toast({
+          title: 'Error',
+          description: 'Please add at least one valid option for the new question',
+          variant: 'destructive',
+        })
+        return
+      }
+
+      const questionToAdd: QuestionForm = {
+        question: newQuestion.question,
+        isBudgetQuestion: false,
+        order: newQuestion.order || currentMaxOrder + 1,
+        options: newQuestion.options.map((opt) => ({
+          id: opt.id,
+          label: opt.label,
+          value: undefined,
+        })),
+      }
+
+      questionsToSave = [...questionsToSave, questionToAdd].sort((a, b) => a.order - b.order)
+    }
+
+    // If user has typed a budget question but not clicked "Add Budget Question",
+    // also include it automatically
+    if (activeAddType === 'budget' && newBudgetQuestion.question.trim() && !hasBudgetQuestion) {
+      const currentMaxOrder = questionsToSave.length > 0 ? Math.max(...questionsToSave.map(q => q.order)) : 0
+
+      if (newBudgetQuestion.options.length === 0 || newBudgetQuestion.options.some((opt) => !opt.label.trim())) {
+        toast({
+          title: 'Error',
+          description: 'Please add at least one valid option for the budget question',
+          variant: 'destructive',
+        })
+        return
+      }
+
+      if (newBudgetQuestion.options.some((opt) => opt.value === undefined || opt.value === null)) {
+        toast({
+          title: 'Error',
+          description: 'Budget question options must have values',
+          variant: 'destructive',
+        })
+        return
+      }
+
+      const budgetQuestionToAdd: QuestionForm = {
+        question: newBudgetQuestion.question || 'Approximate Budget',
+        isBudgetQuestion: true,
+        order: newBudgetQuestion.order || currentMaxOrder + 1,
+        options: newBudgetQuestion.options.map((opt) => ({
+          id: opt.id,
+          label: opt.label || '',
+          value: opt.value,
+        })),
+      }
+
+      questionsToSave = [...questionsToSave, budgetQuestionToAdd].sort((a, b) => a.order - b.order)
+    }
+
     // Validate all questions before saving
-    for (const q of questions) {
+    for (const q of questionsToSave) {
       if (!q.question.trim()) {
         toast({ title: 'Error', description: 'Please enter all questions', variant: 'destructive' })
         return
@@ -413,7 +481,7 @@ const ServiceQuestion = () => {
     }
 
     // Save all questions - POST for new, PATCH for existing
-    const sortedQuestions = questions
+    const sortedQuestions = questionsToSave
       .slice()
       .sort((a, b) => a.order - b.order)
 
@@ -462,6 +530,25 @@ const ServiceQuestion = () => {
       const results = await Promise.all(savePromises)
       console.log('🎉 All questions saved successfully:', results)
       toast({ title: 'Success', description: `All ${sortedQuestions.length} questions saved successfully` })
+
+      // Reset temporary add forms after successful save
+      setActiveAddType(null)
+      setNewQuestion({
+        question: '',
+        isBudgetQuestion: false,
+        order: questionsToSave.length + 1,
+        options: [{ id: Date.now().toString(), label: '' }],
+      })
+      setNewBudgetQuestion({
+        question: 'Approximate Budget',
+        isBudgetQuestion: true,
+        order: questionsToSave.length + 1,
+        options: [
+          { id: Date.now().toString() + '-1', label: 'Under £500', value: 500 },
+          { id: Date.now().toString() + '-2', label: '£500 - £1000', value: 1000 },
+          { id: Date.now().toString() + '-3', label: 'Above £1000', value: 2000 },
+        ],
+      })
     } catch (error: unknown) {
       console.error('❌ Error saving questions:', error)
       const errorMessage = error && typeof error === 'object' && 'data' in error
