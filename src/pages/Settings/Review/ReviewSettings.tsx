@@ -86,7 +86,7 @@ export default function ReviewSettings() {
   const [review, setReview] = useState(defaultReview)
   const [activeTab, setActiveTab] = useState('preview')
 
-  const { data } = useGetSettingsQuery('review')
+  const { data } = useGetSettingsQuery('review-policy')
   const [updateSetting, { isLoading: isSubmitting }] = useUpdateSettingMutation()
 
   useEffect(() => {
@@ -98,7 +98,7 @@ export default function ReviewSettings() {
   const handleSave = async () => {
     try {
       await updateSetting({
-        type: 'review',
+        type: 'review-policy',
         content: review,
       }).unwrap()
 

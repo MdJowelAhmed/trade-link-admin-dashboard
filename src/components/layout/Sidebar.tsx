@@ -154,7 +154,7 @@ const settingsItems: NavItem[] = [
     icon: Info,
   },
   {
-    title: 'Review',
+    title: 'Review Policy',
     href: '/settings/review',
     icon: Star,
   },
