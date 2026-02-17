@@ -20,6 +20,7 @@ import {
   Star,
   Gift,
   Award,
+  Scale,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
@@ -151,6 +152,16 @@ const settingsItems: NavItem[] = [
     title: 'About Us',
     href: '/settings/about-us',
     icon: Info,
+  },
+  {
+    title: 'Review',
+    href: '/settings/review',
+    icon: Star,
+  },
+  {
+    title: 'Code of Conduct',
+    href: '/settings/code-of-conduct',
+    icon: Scale,
   },
   
   // {

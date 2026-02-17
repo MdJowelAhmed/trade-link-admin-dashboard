@@ -25,6 +25,9 @@ const routeTitles: Record<string, string> = {
   '/settings/password': 'Change Password',
   '/settings/terms': 'Terms & Conditions',
   '/settings/privacy': 'Privacy Policy',
+  '/settings/about-us': 'About Us',
+  '/settings/review': 'Review Policy',
+  '/settings/code-of-conduct': 'Code of Conduct',
 }
 
 export function Header() {

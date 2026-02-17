@@ -1,6 +1,6 @@
 import { baseApi } from "../baseApi";
 
-export type DisclaimerType = "about-us" | "privacy-policy" | "terms-and-conditions";
+export type DisclaimerType = "about-us" | "privacy-policy" | "terms-and-conditions" | "review" | "code-of-conduct";
 
 export interface Setting {
     type: DisclaimerType;
