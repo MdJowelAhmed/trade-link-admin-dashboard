@@ -61,7 +61,7 @@ export function UpdateAmountModal({
       open={open}
       onClose={onClose}
       title="Update Wallet Amount"
-      description={`Update the wallet balance for ${professional.name}`}
+      description={`Update the wallet balance for ${professional.name} .`}
       size="md"
       className="bg-white"
     >

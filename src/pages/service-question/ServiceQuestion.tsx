@@ -69,9 +69,9 @@ const ServiceQuestion = () => {
     isBudgetQuestion: true,
     order: 1,
     options: [
-      { id: Date.now().toString() + '-1', label: 'Under $500', value: 500 },
-      { id: Date.now().toString() + '-2', label: '$500 - $1000', value: 1000 },
-      { id: Date.now().toString() + '-3', label: 'Above $1000', value: 2000 },
+      { id: Date.now().toString() + '-1', label: 'Under £500', value: 500 },
+      { id: Date.now().toString() + '-2', label: '£500 - £1000', value: 1000 },
+      { id: Date.now().toString() + '-3', label: 'Above £1000', value: 2000 },
     ],
   })
 
@@ -83,7 +83,7 @@ const ServiceQuestion = () => {
   const { data: servicesResponse, isLoading: isLoadingServices } = useGetServicesQuery(
     selectedCategoryId ? { categoryId: selectedCategoryId } : undefined
   )
-  
+
   // Map backend services to frontend Service type
   const services = useMemo(() => {
     if (!Array.isArray(servicesResponse?.data)) return []
@@ -104,9 +104,9 @@ const ServiceQuestion = () => {
     selectedServiceId,
     { skip: !selectedServiceId }
   )
-  const [addServiceQuestion, ] = useAddServiceQuestionMutation()
-  const [updateServiceQuestion, ] = useUpdateServiceQuestionMutation()
-  const [deleteServiceQuestion, ] = useDeleteServiceQuestionMutation()
+  const [addServiceQuestion,] = useAddServiceQuestionMutation()
+  const [updateServiceQuestion,] = useUpdateServiceQuestionMutation()
+  const [deleteServiceQuestion,] = useDeleteServiceQuestionMutation()
 
   // Transform backend questions to frontend format
   const serviceQuestionsList = useMemo(() => {
@@ -118,13 +118,16 @@ const ServiceQuestion = () => {
   const categoryServices = useMemo(() => {
     if (!selectedCategoryId) return []
     // Services are already filtered by API, but ensure they match
-    return services.filter((s) => s.categoryId === selectedCategoryId && s.status === 'active')
+    return services.filter((s) =>
+      s.categoryId === selectedCategoryId
+    )
+
   }, [selectedCategoryId, services])
 
   // Check if budget question exists (both in backend and local state)
   const hasBudgetQuestion = useMemo(() => {
-    return serviceQuestionsList.some((q) => q.isBudgetQuestion) || 
-           questions.some((q) => q.isBudgetQuestion)
+    return serviceQuestionsList.some((q) => q.isBudgetQuestion) ||
+      questions.some((q) => q.isBudgetQuestion)
   }, [serviceQuestionsList, questions])
 
   // Load questions when service is selected or questions response changes
@@ -198,7 +201,7 @@ const ServiceQuestion = () => {
 
     // Add budget question only if it doesn't exist (even if empty - user can fill later)
     if (!hasBudgetQuestion) {
-      const budgetOrder = questionsToAdd.length > 0 
+      const budgetOrder = questionsToAdd.length > 0
         ? Math.max(...questionsToAdd.map(q => q.order), currentMaxOrder) + 1
         : currentMaxOrder + 1
 
@@ -219,7 +222,7 @@ const ServiceQuestion = () => {
       .sort((a, b) => a.order - b.order)
 
     setQuestions(updatedQuestions)
-    
+
     // Reset forms
     setNewQuestion({
       question: '',
@@ -232,9 +235,9 @@ const ServiceQuestion = () => {
       isBudgetQuestion: true,
       order: 1,
       options: [
-        { id: Date.now().toString() + '-1', label: 'Under $500', value: 500 },
-        { id: Date.now().toString() + '-2', label: '$500 - $1000', value: 1000 },
-        { id: Date.now().toString() + '-3', label: 'Above $1000', value: 2000 },
+        { id: Date.now().toString() + '-1', label: 'Under £500', value: 500 },
+        { id: Date.now().toString() + '-2', label: '£500 - £1000', value: 1000 },
+        { id: Date.now().toString() + '-3', label: 'Above £1000', value: 2000 },
       ],
     })
     setShowAddQuestionForm(false)
@@ -294,13 +297,13 @@ const ServiceQuestion = () => {
       setEditingQuestionId(null)
       toast({ title: 'Success', description: 'Question updated successfully' })
     } catch (error: unknown) {
-      const errorMessage = error && typeof error === 'object' && 'data' in error 
-        ? (error as { data?: { message?: string } }).data?.message 
+      const errorMessage = error && typeof error === 'object' && 'data' in error
+        ? (error as { data?: { message?: string } }).data?.message
         : 'Failed to update question'
-      toast({ 
-        title: 'Error', 
-        description: errorMessage || 'Failed to update question', 
-        variant: 'destructive' 
+      toast({
+        title: 'Error',
+        description: errorMessage || 'Failed to update question',
+        variant: 'destructive'
       })
     }
   }
@@ -311,13 +314,13 @@ const ServiceQuestion = () => {
       setQuestions(questions.filter((q) => q.id !== questionId))
       toast({ title: 'Success', description: 'Question deleted successfully' })
     } catch (error: unknown) {
-      const errorMessage = error && typeof error === 'object' && 'data' in error 
-        ? (error as { data?: { message?: string } }).data?.message 
+      const errorMessage = error && typeof error === 'object' && 'data' in error
+        ? (error as { data?: { message?: string } }).data?.message
         : 'Failed to delete question'
-      toast({ 
-        title: 'Error', 
-        description: errorMessage || 'Failed to delete question', 
-        variant: 'destructive' 
+      toast({
+        title: 'Error',
+        description: errorMessage || 'Failed to delete question',
+        variant: 'destructive'
       })
     }
   }
@@ -431,13 +434,13 @@ const ServiceQuestion = () => {
       toast({ title: 'Success', description: `All ${sortedQuestions.length} questions saved successfully` })
     } catch (error: unknown) {
       console.error('❌ Error saving questions:', error)
-      const errorMessage = error && typeof error === 'object' && 'data' in error 
-        ? (error as { data?: { message?: string } }).data?.message 
+      const errorMessage = error && typeof error === 'object' && 'data' in error
+        ? (error as { data?: { message?: string } }).data?.message
         : 'Failed to save questions'
-      toast({ 
-        title: 'Error', 
-        description: errorMessage || 'Failed to save questions', 
-        variant: 'destructive' 
+      toast({
+        title: 'Error',
+        description: errorMessage || 'Failed to save questions',
+        variant: 'destructive'
       })
     }
   }
@@ -471,8 +474,8 @@ const ServiceQuestion = () => {
                     key={service.id}
                     onClick={() => handleServiceSelect(service.id)}
                     className={`px-6 py-[10px] rounded-full font-medium transition-colors ${selectedServiceId === service.id
-                        ? 'bg-primary text-white'
-                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                      ? 'bg-primary text-white'
+                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                       }`}
                   >
                     {service.name}
@@ -771,8 +774,8 @@ const ServiceQuestion = () => {
                           isBudgetQuestion: true,
                           order: 1,
                           options: [
-                            { id: Date.now().toString() + '-1', label: 'Under $500', value: 500 },
-                            { id: Date.now().toString() + '-2', label: '$500 - $1000', value: 1000 },
+                            { id: Date.now().toString() + '-1', label: 'Under £500', value: 500 },
+                            { id: Date.now().toString() + '-2', label: '£500 - £1000', value: 1000 },
                             { id: Date.now().toString() + '-3', label: 'Above $1000', value: 2000 },
                           ],
                         })
@@ -946,7 +949,7 @@ const ServiceQuestion = () => {
                           options: [
                             { id: Date.now().toString() + '-1', label: 'Under $500', value: 500 },
                             { id: Date.now().toString() + '-2', label: '$500 - $1000', value: 1000 },
-                            { id: Date.now().toString() + '-3', label: 'Above $1000', value: 2000 },
+                            { id: Date.now().toString() + '-3', label: 'Above £1000', value: 2000 },
                           ],
                         })
                       }}

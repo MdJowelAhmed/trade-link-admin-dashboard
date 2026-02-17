@@ -248,7 +248,7 @@ export default function TradePersonManagement() {
     try {
       await updateStatus({
         id,
-        payload: { approveStatus: status },
+        payload: { status },
       }).unwrap()
 
       // Update local state

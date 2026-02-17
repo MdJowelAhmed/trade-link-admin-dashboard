@@ -87,9 +87,10 @@ const serviceApi = baseApi.injectEndpoints({
             invalidatesTags: ['Service'],
         }),
         updateServiceStatus: builder.mutation({
-            query: (id) => ({
+            query: ({ id, isActive }) => ({
                 url: `/admin/services/${id}`,
                 method: 'PATCH',
+                body: { isActive },
             }),
             invalidatesTags: ['Service'],
         }),

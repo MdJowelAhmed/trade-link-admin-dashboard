@@ -150,7 +150,7 @@ export default function BonusManagement() {
     try {
       await updateStatus({
         id,
-        payload: { approveStatus: status },
+        payload: { status },
       }).unwrap()
 
       dispatch(updateProfessionalStatus({ id, approveStatus: status }))

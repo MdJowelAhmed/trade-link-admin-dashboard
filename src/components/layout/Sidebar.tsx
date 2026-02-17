@@ -19,7 +19,6 @@ import {
   ShieldCheck,
   Star,
   Gift,
-  Award,
   Scale,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'

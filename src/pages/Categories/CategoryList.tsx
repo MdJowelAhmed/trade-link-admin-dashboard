@@ -249,7 +249,14 @@ export default function CategoryList() {
 
   const handleToggleServiceStatus = async (service: Service) => {
     try {
-      await updateServiceStatus(service.id).unwrap()
+      // Toggle the status: if active, make inactive; if inactive, make active
+      const newIsActive = service.status === 'active' ? false : true
+      
+      await updateServiceStatus({
+        id: service.id,
+        isActive: newIsActive,
+      }).unwrap()
+      
       toast({
         title: 'Status Updated',
         description: `${service.name} status has been updated successfully.`,

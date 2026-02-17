@@ -1,4 +1,4 @@
-import { Edit, Trash2 } from 'lucide-react'
+import { Edit } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { motion } from 'framer-motion'
@@ -12,7 +12,7 @@ interface ServiceCardProps {
   index?: number
 }
 
-export function ServiceCard({ service, onEdit, onDelete, onToggleStatus, index = 0 }: ServiceCardProps) {
+export function ServiceCard({ service, onEdit, onToggleStatus, index = 0 }: ServiceCardProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20, scale: 0.95 }}
@@ -43,7 +43,7 @@ export function ServiceCard({ service, onEdit, onDelete, onToggleStatus, index =
               <Edit className="h-4 w-4 mr-2" />
               Edit
             </Button>
-            {onDelete && (
+            {/* {onDelete && (
               <Button
                 variant="outline"
                 size="sm"
@@ -53,7 +53,7 @@ export function ServiceCard({ service, onEdit, onDelete, onToggleStatus, index =
                 <Trash2 className="h-4 w-4 mr-2" />
                 Delete
               </Button>
-            )}
+            )} */}
             {onToggleStatus && (
               <Button
                 variant="outline"
