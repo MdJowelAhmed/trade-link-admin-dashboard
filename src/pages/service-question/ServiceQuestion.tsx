@@ -213,8 +213,7 @@ const ServiceQuestion = () => {
       order: updatedQuestions.length + 1,
       options: [{ id: Date.now().toString(), label: '' }],
     })
-    setActiveAddType(null)
-    toast({ title: 'Success', description: 'Question added to list. Click Save to save all questions.' })
+    toast({ title: 'Success', description: 'Question added. You can add another one or click Save to save all questions.' })
   }
 
   const handleAddBudgetQuestion = async () => {
@@ -978,6 +977,35 @@ const ServiceQuestion = () => {
                       Cancel
                     </Button>
                     <Button onClick={handleAddNormalQuestion}>Add Question</Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        // Prevent losing an unsaved normal question
+                        if (newQuestion.question.trim()) {
+                          toast({
+                            title: 'Error',
+                            description: 'Please add the current question first, then add a budget question',
+                            variant: 'destructive',
+                          })
+                          return
+                        }
+                        if (hasBudgetQuestion) {
+                          toast({
+                            title: 'Error',
+                            description: 'Budget question already exists for this service',
+                            variant: 'destructive',
+                          })
+                          return
+                        }
+                        setNewBudgetQuestion((prev) => ({
+                          ...prev,
+                          order: questions.length + 1,
+                        }))
+                        setActiveAddType('budget')
+                      }}
+                    >
+                      Add Budget Question
+                    </Button>
                   </div>
                 </div>
               </CardContent>
