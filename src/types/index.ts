@@ -612,6 +612,7 @@ export interface TradePerson {
   status: TradePersonStatus
   avatar?: string
   galleryImages?: string[]
+  walletBalance?: number
   createdAt: string
   updatedAt: string
 }

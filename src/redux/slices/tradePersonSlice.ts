@@ -139,6 +139,24 @@ const tradePersonSlice = createSlice({
         filteredTradePerson.updatedAt = new Date().toISOString()
       }
     },
+    updateTradePersonWallet: (
+      state,
+      action: PayloadAction<{ id: string; walletBalance: number }>
+    ) => {
+      const { id, walletBalance } = action.payload
+
+      const tradePerson = state.list.find((t) => t.id === id)
+      if (tradePerson) {
+        tradePerson.walletBalance = walletBalance
+        tradePerson.updatedAt = new Date().toISOString()
+      }
+
+      const filteredTradePerson = state.filteredList.find((t) => t.id === id)
+      if (filteredTradePerson) {
+        filteredTradePerson.walletBalance = walletBalance
+        filteredTradePerson.updatedAt = new Date().toISOString()
+      }
+    },
     addTradePerson: (state, action: PayloadAction<TradePerson>) => {
       state.list.unshift(action.payload)
       state.filteredList.unshift(action.payload)
@@ -180,9 +198,11 @@ export const {
   clearFilters,
   setPage,
   setLimit,
+  setPagination,
   setTradePersonStatus,
   approveTradePerson,
   rejectTradePerson,
+  updateTradePersonWallet,
   addTradePerson,
   updateTradePerson,
   deleteTradePerson,

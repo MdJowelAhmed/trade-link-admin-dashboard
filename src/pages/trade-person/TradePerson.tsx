@@ -7,24 +7,24 @@ import { TradePersonFilterDropdown } from './components/TradePersonFilterDropdow
 import { TradePersonTable } from './components/TradePersonTable'
 import { ViewTradePersonDetailsModal } from './components/ViewTradePersonDetailsModal'
 import { UpdateStatusModal } from './components/UpdateStatusModal'
+import { UpdateAmountModal } from './components/UpdateAmountModal'
 import { useAppDispatch, useAppSelector } from '@/redux/hooks'
 import {
-  approveTradePerson,
-  clearFilters,
-  rejectTradePerson,
   setError,
   setFilters,
-  setLimit,
   setLoading,
-  setPage,
+  setPagination,
   setTradePersonStatus,
   setTradePersons,
+  updateTradePersonWallet,
 } from '@/redux/slices/tradePersonSlice'
 import { useUrlNumber, useUrlString } from '@/hooks/useUrlState'
 import { toast } from '@/utils/toast'
 import type { TradePerson, TradePersonStatus } from '@/types'
 import {
   useGetBonusManagementQuery,
+  useUpdateBonusManagementAmountMutation,
+  useUpdateBonusManagementStatusMutation,
   type BackendProfessional,
 } from '@/redux/api/bonusManageApi'
 
@@ -55,6 +55,7 @@ const mapBackendProfessionalToTradePerson = (
     ),
     avatar: undefined,
     galleryImages: [],
+    walletBalance: professional.walletBalance,
     createdAt: professional.createdAt,
     updatedAt: professional.updatedAt,
   }
@@ -67,20 +68,12 @@ export default function TradePersonManagement() {
   const [isViewModalOpen, setIsViewModalOpen] = useState(false)
   const [selectedTradePerson, setSelectedTradePerson] = useState<TradePerson | null>(null)
 
+  // Amount update modal state
+  const [isAmountModalOpen, setIsAmountModalOpen] = useState(false)
+
   // Status update modal state
   const [isStatusModalOpen, setIsStatusModalOpen] = useState(false)
-  const [statusModalAction, setStatusModalAction] = useState<{
-    type: 'approve' | 'reject' | 'toggle'
-    tradePerson: TradePerson
-  } | null>(null)
-  const [isStatusModalLoading, setIsStatusModalLoading] = useState(false)
-
-  // Backend data (professionals)
-  const {
-    data: professionalsResponse,
-    isLoading: isProfessionalsLoading,
-    isError: isProfessionalsError,
-  } = useGetBonusManagementQuery()
+  const [statusToUpdate, setStatusToUpdate] = useState<'APPROVED' | 'REJECTED' | null>(null)
 
   // URL state management
   const [searchQuery, setSearchQuery] = useUrlString('search', '')
@@ -88,8 +81,27 @@ export default function TradePersonManagement() {
   const [currentPage, setCurrentPage] = useUrlNumber('page', 1)
   const [itemsPerPage, setItemsPerPage] = useUrlNumber('limit', 10)
 
-  // Redux state
-  const { filteredList, pagination } = useAppSelector(
+  // Backend data (professionals)
+  const {
+    data: professionalsResponse,
+    isLoading: isProfessionalsLoading,
+    isFetching: isProfessionalsFetching,
+    isError: isProfessionalsError,
+    error: professionalsError,
+  } = useGetBonusManagementQuery({
+    searchTerm: searchQuery || undefined,
+    page: currentPage,
+    limit: itemsPerPage,
+  })
+
+  // API mutations
+  const [updateAmount, { isLoading: isAmountUpdating }] =
+    useUpdateBonusManagementAmountMutation()
+  const [updateStatus, { isLoading: isStatusUpdating }] =
+    useUpdateBonusManagementStatusMutation()
+
+  // Redux state (pagination is synced from API response)
+  const { pagination } = useAppSelector(
     (state) => state.tradePersons
   )
 
@@ -113,11 +125,39 @@ export default function TradePersonManagement() {
 
     dispatch(setTradePersons(mappedTradePersons))
 
-    // Reset filters when new backend data arrives
-    dispatch(clearFilters())
+    // Update pagination from API response
+    if (professionalsResponse.pagination) {
+      dispatch(setPagination({
+        page: professionalsResponse.pagination.page,
+        limit: professionalsResponse.pagination.limit,
+        total: professionalsResponse.pagination.total,
+        totalPages: professionalsResponse.pagination.totalPage,
+      }))
+    }
   }, [dispatch, professionalsResponse])
 
-  // Sync URL state with Redux filters
+  // Error handling
+  useEffect(() => {
+    if (isProfessionalsError) {
+      const errorMessage =
+        professionalsError && typeof professionalsError === 'object' && 'data' in professionalsError
+          ? // @ts-expect-error – RTK Query error shape
+            (professionalsError.data?.message as string | undefined)
+          : undefined
+
+      dispatch(setError(errorMessage || 'Failed to load professionals'))
+      toast({
+        title: 'Error',
+        description: errorMessage || 'Failed to load professionals. Please try again.',
+        variant: 'destructive',
+      })
+    } else {
+      dispatch(setError(null))
+    }
+  }, [dispatch, isProfessionalsError, professionalsError])
+
+  // Note: Filtering is handled server-side via API query params
+  // We still sync to Redux for potential client-side filtering if needed
   useEffect(() => {
     dispatch(
       setFilters({
@@ -127,21 +167,28 @@ export default function TradePersonManagement() {
     )
   }, [searchQuery, statusFilter, dispatch])
 
-  // Sync URL pagination with Redux
-  useEffect(() => {
-    dispatch(setPage(currentPage))
-  }, [currentPage, dispatch])
+  // Apply client-side status filter on current page data
+  const filteredData = useMemo(() => {
+    if (!professionalsResponse?.data) return []
+    
+    const mapped = professionalsResponse.data.map(mapBackendProfessionalToTradePerson)
+    
+    // Apply status filter if not 'all'
+    if (statusFilter !== 'all') {
+      return mapped.filter(tp => tp.status === statusFilter)
+    }
+    
+    return mapped
+  }, [professionalsResponse, statusFilter])
 
-  useEffect(() => {
-    dispatch(setLimit(itemsPerPage))
-  }, [itemsPerPage, dispatch])
+  // Pagination from API response
+  const totalPages = professionalsResponse?.pagination?.totalPage || pagination.totalPages
+  const totalItems = statusFilter === 'all' 
+    ? (professionalsResponse?.pagination?.total || 0)
+    : filteredData.length
 
-  // Pagination
-  const totalPages = pagination.totalPages
-  const paginatedData = useMemo(() => {
-    const startIndex = (pagination.page - 1) * pagination.limit
-    return filteredList.slice(startIndex, startIndex + pagination.limit)
-  }, [filteredList, pagination.page, pagination.limit])
+  // Calculate start index for SL column
+  const startIndex = (currentPage - 1) * itemsPerPage
 
   // Handlers
   const handleView = (tradePerson: TradePerson) => {
@@ -149,81 +196,87 @@ export default function TradePersonManagement() {
     setIsViewModalOpen(true)
   }
 
-  const handleToggleStatus = (tradePerson: TradePerson) => {
-    setStatusModalAction({ type: 'toggle', tradePerson })
-    setIsStatusModalOpen(true)
+  const handleUpdateAmount = (tradePerson: TradePerson) => {
+    setSelectedTradePerson(tradePerson)
+    setIsAmountModalOpen(true)
   }
 
   const handleApprove = (tradePerson: TradePerson) => {
-    setStatusModalAction({ type: 'approve', tradePerson })
+    setSelectedTradePerson(tradePerson)
+    setStatusToUpdate('APPROVED')
     setIsStatusModalOpen(true)
   }
 
   const handleReject = (tradePerson: TradePerson) => {
-    setStatusModalAction({ type: 'reject', tradePerson })
+    setSelectedTradePerson(tradePerson)
+    setStatusToUpdate('REJECTED')
     setIsStatusModalOpen(true)
   }
 
-  const handleStatusUpdate = async (id: string, status: 'approved' | 'rejected') => {
-    if (!statusModalAction) return
-
-    setIsStatusModalLoading(true)
+  const handleConfirmAmount = async (id: string, amount: number) => {
     try {
-      if (statusModalAction.type === 'toggle') {
-        dispatch(setTradePersonStatus({ id, status }))
-        toast({
-          title: 'Success',
-          description: `${statusModalAction.tradePerson.businessName} status changed to ${status}.`,
-          variant: 'success',
-        })
-      } else if (status === 'approved') {
-        dispatch(approveTradePerson(id))
-        toast({
-          title: 'Success',
-          description: `${statusModalAction.tradePerson.businessName} has been approved.`,
-          variant: 'success',
-        })
-      } else {
-        dispatch(rejectTradePerson(id))
-        toast({
-          title: 'Success',
-          description: `${statusModalAction.tradePerson.businessName} has been rejected.`,
-          variant: 'success',
-        })
-      }
+      await updateAmount({
+        id,
+        payload: { amount },
+      }).unwrap()
 
-      setIsViewModalOpen(false)
-      setIsStatusModalOpen(false)
-      setStatusModalAction(null)
-    } catch (error) {
+      // Update Redux state
+      dispatch(updateTradePersonWallet({ id, walletBalance: amount }))
+
+      toast({
+        title: 'Success',
+        description: 'Wallet amount updated successfully.',
+        variant: 'success',
+      })
+      setIsAmountModalOpen(false)
+      setSelectedTradePerson(null)
+    } catch (error: unknown) {
+      const errorMessage =
+        error && typeof error === 'object' && 'data' in error &&
+        error.data && typeof error.data === 'object' && 'message' in error.data
+          ? String(error.data.message)
+          : 'Failed to update amount. Please try again.'
+
       toast({
         title: 'Error',
-        description: 'Failed to update trade person status. Please try again.',
+        description: errorMessage,
         variant: 'destructive',
       })
-    } finally {
-      setIsStatusModalLoading(false)
     }
   }
 
-  const getStatusModalStatus = (): 'approved' | 'rejected' | null => {
-    if (!statusModalAction) return null
+  const handleConfirmStatus = async (id: string, status: 'APPROVED' | 'REJECTED') => {
+    try {
+      await updateStatus({
+        id,
+        payload: { approveStatus: status },
+      }).unwrap()
 
-    const { type, tradePerson } = statusModalAction
+      // Update local state
+      const newStatus: TradePersonStatus = status === 'APPROVED' ? 'approved' : 'rejected'
+      dispatch(setTradePersonStatus({ id, status: newStatus }))
 
-    if (type === 'approve') {
-      return 'approved'
+      toast({
+        title: 'Success',
+        description: `Trade person ${status.toLowerCase()} successfully.`,
+        variant: 'success',
+      })
+      setIsStatusModalOpen(false)
+      setSelectedTradePerson(null)
+      setStatusToUpdate(null)
+    } catch (error: unknown) {
+      const errorMessage =
+        error && typeof error === 'object' && 'data' in error &&
+        error.data && typeof error.data === 'object' && 'message' in error.data
+          ? String(error.data.message)
+          : 'Failed to update status. Please try again.'
+
+      toast({
+        title: 'Error',
+        description: errorMessage,
+        variant: 'destructive',
+      })
     }
-
-    if (type === 'reject') {
-      return 'rejected'
-    }
-
-    if (type === 'toggle') {
-      return tradePerson.status === 'approved' ? 'rejected' : 'approved'
-    }
-
-    return null
   }
 
   const handlePageChange = (page: number) => {
@@ -264,24 +317,38 @@ export default function TradePersonManagement() {
         </CardHeader>
 
         <CardContent className="p-0">
-          {/* Table */}
-          <TradePersonTable
-            tradePersons={paginatedData}
-            onView={handleView}
-            onToggleStatus={handleToggleStatus}
-          />
+          {/* Loading State */}
+          {(isProfessionalsLoading || isProfessionalsFetching) && (
+            <div className="flex items-center justify-center py-12">
+              <div className="text-sm text-gray-500">Loading trade persons...</div>
+            </div>
+          )}
 
-          {/* Pagination */}
-          <div className="px-6 py-4 border-t border-gray-100">
-            <Pagination
-              currentPage={pagination.page}
-              totalPages={totalPages}
-              totalItems={filteredList.length}
-              itemsPerPage={pagination.limit}
-              onPageChange={handlePageChange}
-              onItemsPerPageChange={handleItemsPerPageChange}
-            />
-          </div>
+          {/* Table */}
+          {!isProfessionalsLoading && !isProfessionalsFetching && (
+            <>
+              <TradePersonTable
+                tradePersons={filteredData}
+                onView={handleView}
+                onUpdateAmount={handleUpdateAmount}
+                onApprove={handleApprove}
+                onReject={handleReject}
+                startIndex={startIndex}
+              />
+
+              {/* Pagination */}
+              <div className="px-6 py-4 border-t border-gray-100">
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  totalItems={totalItems}
+                  itemsPerPage={itemsPerPage}
+                  onPageChange={handlePageChange}
+                  onItemsPerPageChange={handleItemsPerPageChange}
+                />
+              </div>
+            </>
+          )}
         </CardContent>
       </Card>
 
@@ -297,20 +364,31 @@ export default function TradePersonManagement() {
         onReject={handleReject}
       />
 
+      {/* Update Amount Modal */}
+      <UpdateAmountModal
+        open={isAmountModalOpen}
+        onClose={() => {
+          setIsAmountModalOpen(false)
+          setSelectedTradePerson(null)
+        }}
+        tradePerson={selectedTradePerson}
+        onConfirm={handleConfirmAmount}
+        isLoading={isAmountUpdating}
+      />
+
       {/* Status Update Modal */}
-      {statusModalAction && (
-        <UpdateStatusModal
-          open={isStatusModalOpen}
-          onClose={() => {
-            setIsStatusModalOpen(false)
-            setStatusModalAction(null)
-          }}
-          tradePerson={statusModalAction.tradePerson}
-          status={getStatusModalStatus()}
-          onConfirm={handleStatusUpdate}
-          isLoading={isStatusModalLoading}
-        />
-      )}
+      <UpdateStatusModal
+        open={isStatusModalOpen}
+        onClose={() => {
+          setIsStatusModalOpen(false)
+          setSelectedTradePerson(null)
+          setStatusToUpdate(null)
+        }}
+        tradePerson={selectedTradePerson}
+        status={statusToUpdate}
+        onConfirm={handleConfirmStatus}
+        isLoading={isStatusUpdating}
+      />
     </motion.div>
   )
 }

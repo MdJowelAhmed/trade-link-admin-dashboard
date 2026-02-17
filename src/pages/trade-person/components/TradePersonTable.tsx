@@ -6,13 +6,19 @@ import type { TradePerson } from '@/types'
 interface TradePersonTableProps {
   tradePersons: TradePerson[]
   onView: (tradePerson: TradePerson) => void
-  onToggleStatus: (tradePerson: TradePerson) => void
+  onUpdateAmount: (tradePerson: TradePerson) => void
+  onApprove: (tradePerson: TradePerson) => void
+  onReject: (tradePerson: TradePerson) => void
+  startIndex?: number
 }
 
 export function TradePersonTable({
   tradePersons,
   onView,
-  onToggleStatus,
+  onUpdateAmount,
+  onApprove,
+  onReject,
+  startIndex = 0,
 }: TradePersonTableProps) {
   const getStatusBadge = (status: string) => {
     const statusConfig = {
@@ -58,6 +64,7 @@ export function TradePersonTable({
             <th className="px-6 py-4 text-left text-sm font-semibold">Services</th>
             <th className="px-6 py-4 text-left text-sm font-semibold">Email</th>
             <th className="px-6 py-4 text-left text-sm font-semibold">Location</th>
+            <th className="px-6 py-4 text-left text-sm font-semibold">Wallet Balance</th>
             <th className="px-6 py-4 text-center text-sm font-semibold">Status</th>
             <th className="px-6 py-4 text-right text-sm font-semibold">Action</th>
           </tr>
@@ -66,7 +73,7 @@ export function TradePersonTable({
           {tradePersons.length === 0 ? (
             <tr>
               <td
-                colSpan={7}
+                colSpan={8}
                 className="px-6 py-8 text-center text-gray-500"
               >
                 No trade persons found
@@ -84,7 +91,7 @@ export function TradePersonTable({
                 {/* SL Column */}
                 <td className="px-6 py-4">
                   <span className="text-sm font-medium text-slate-700">
-                    {String(index + 1).padStart(2, '0')}
+                    {String(startIndex + index + 1).padStart(2, '0')}
                   </span>
                 </td>
 
@@ -116,6 +123,13 @@ export function TradePersonTable({
                   </span>
                 </td>
 
+                {/* Wallet Balance Column */}
+                <td className="px-6 py-4">
+                  <span className="text-sm font-semibold text-slate-800">
+                    ${(tradePerson.walletBalance ?? 0).toFixed(2)}
+                  </span>
+                </td>
+
                 {/* Status Column */}
                 <td className="text-center">
                   {getStatusBadge(tradePerson.status)}
@@ -126,7 +140,9 @@ export function TradePersonTable({
                   <TradePersonActionButtons
                     tradePerson={tradePerson}
                     onView={onView}
-                    onToggleStatus={onToggleStatus}
+                    onUpdateAmount={onUpdateAmount}
+                    onApprove={onApprove}
+                    onReject={onReject}
                   />
                 </td>
               </motion.tr>

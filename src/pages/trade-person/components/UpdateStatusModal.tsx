@@ -6,8 +6,8 @@ interface UpdateStatusModalProps {
   open: boolean
   onClose: () => void
   tradePerson: TradePerson | null
-  status: 'approved' | 'rejected' | null
-  onConfirm: (id: string, status: 'approved' | 'rejected') => Promise<void>
+  status: 'APPROVED' | 'REJECTED' | null
+  onConfirm: (id: string, status: 'APPROVED' | 'REJECTED') => Promise<void>
   isLoading?: boolean
 }
 
@@ -30,8 +30,8 @@ export function UpdateStatusModal({
     <ModalWrapper
       open={open}
       onClose={onClose}
-      title={status === 'approved' ? 'Approve Trade Person' : 'Reject Trade Person'}
-      description={`Are you sure you want to ${status === 'approved' ? 'approve' : 'reject'} ${tradePerson.businessName}?`}
+      title={status === 'APPROVED' ? 'Approve Trade Person' : 'Reject Trade Person'}
+      description={`Are you sure you want to ${status === 'APPROVED' ? 'approve' : 'reject'} ${tradePerson.businessName}?`}
       size="md"
       className="bg-white"
     >
@@ -40,10 +40,10 @@ export function UpdateStatusModal({
           type="button"
           onClick={handleConfirm}
           isLoading={isLoading}
-          variant={status === 'approved' ? 'default' : 'destructive'}
+          variant={status === 'APPROVED' ? 'default' : 'destructive'}
           className=" "
         >
-          {status === 'approved' ? 'Approve' : 'Reject'}
+          {status === 'APPROVED' ? 'Approve' : 'Reject'}
         </Button>
       </div>
     </ModalWrapper>

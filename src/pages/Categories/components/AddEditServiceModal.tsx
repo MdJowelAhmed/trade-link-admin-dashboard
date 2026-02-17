@@ -85,7 +85,7 @@ export function AddEditServiceModal({ open, onClose, mode, service }: AddEditSer
       const servicePayload = {
         name: data.name,
         categoryId: data.categoryId,
-        isActive: data.status === 'active',
+        // isActive: data.status === 'active',
       }
 
       if (mode === 'edit' && service) {
