@@ -163,8 +163,8 @@ export default function Login() {
           )}
         </div>
 
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
+        <div className="flex items-center justify-end">
+          {/* <div className="flex items-center gap-2">
             <input
               type="checkbox"
               id="remember"
@@ -177,7 +177,7 @@ export default function Login() {
             >
               Remember me for 30 days
             </Label>
-          </div>
+          </div> */}
           <Link
             to="/auth/forgot-password"
             className="text-sm text-primary hover:underline"
@@ -201,21 +201,21 @@ export default function Login() {
         </Button>
       </form>
 
-      <div className="relative">
+      {/* <div className="relative">
         <Separator />
         <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-background px-2 text-xs text-muted-foreground">
           Demo Credentials
         </span>
-      </div>
+      </div> */}
 
-      <div className="p-4 rounded-lg bg-muted/50 border text-sm space-y-1">
+      {/* <div className="p-4 rounded-lg bg-muted/50 border text-sm space-y-1">
         <p>
           <strong>Email:</strong> admin@example.com
         </p>
         <p>
           <strong>Password:</strong> password
         </p>
-      </div>
+      </div> */}
     </div>
   );
 }
