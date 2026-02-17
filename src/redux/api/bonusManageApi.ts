@@ -5,6 +5,7 @@ interface GetBonusManagementParams {
     searchTerm?: string
     page?: number
     limit?: number
+    status?: 'PENDING' | 'APPROVED' | 'REJECTED'
 }
 
 // Backend professional shape (from API response)
@@ -48,7 +49,7 @@ interface UpdateAmountPayload {
 
 // Update status payload
 interface UpdateStatusPayload {
-    approveStatus: 'APPROVED' | 'REJECTED' | 'PENDING'
+    status: 'APPROVED' | 'REJECTED' | 'PENDING'
 }
 
 const bonusManageApi = baseApi.injectEndpoints({
@@ -59,6 +60,7 @@ const bonusManageApi = baseApi.injectEndpoints({
                 if (params?.searchTerm) queryParams.append('searchTerm', params.searchTerm)
                 if (params?.page) queryParams.append('page', params.page.toString())
                 if (params?.limit) queryParams.append('limit', params.limit.toString())
+                if (params?.status) queryParams.append('status', params.status)
                 const queryString = queryParams.toString()
                 return {
                     url: `/admin/professionals${queryString ? `?${queryString}` : ''}`,

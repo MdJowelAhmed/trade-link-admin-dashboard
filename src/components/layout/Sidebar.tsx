@@ -84,7 +84,12 @@ const navItems: NavItem[] = [
     icon: HelpCircle,
   },
   {
-    title: 'Reviews',
+    title: 'Transactions History',
+    href: '/transactions-history',
+    icon: CreditCard,
+  },
+  {
+    title: 'User Reviews',
     href: '/reviews',
     icon: Star,
   },
@@ -103,16 +108,12 @@ const navItems: NavItem[] = [
   //   href: '/calender',
   //   icon: Calendar,
   // },
-  {
-    title: 'Transactions History',
-    href: '/transactions-history',
-    icon: CreditCard,
-  },
-  {
-    title: 'Bonus Management',
-    href: '/bonus-management',
-    icon: Award,
-  },
+ 
+  // {
+  //   title: 'Bonus Management',
+  //   href: '/bonus-management',
+  //   icon: Award,
+  // },
 
   // {
   //   title: 'Client Management',

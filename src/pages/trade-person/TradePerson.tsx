@@ -29,10 +29,10 @@ import {
 } from '@/redux/api/bonusManageApi'
 
 const mapApproveStatusToTradePersonStatus = (
-  approveStatus: BackendProfessional['professional']['approveStatus']
+  status: BackendProfessional['professional']['approveStatus']
 ): TradePersonStatus => {
-  if (approveStatus === 'APPROVED') return 'approved'
-  if (approveStatus === 'REJECTED') return 'rejected'
+  if (status === 'APPROVED') return 'approved'
+  if (status === 'REJECTED') return 'rejected'
   return 'pending'
 }
 
@@ -81,6 +81,15 @@ export default function TradePersonManagement() {
   const [currentPage, setCurrentPage] = useUrlNumber('page', 1)
   const [itemsPerPage, setItemsPerPage] = useUrlNumber('limit', 10)
 
+  // Map frontend status filter to backend status
+  const backendStatusFilter = useMemo(() => {
+    if (statusFilter === 'all') return undefined
+    if (statusFilter === 'pending') return 'PENDING' as const
+    if (statusFilter === 'approved') return 'APPROVED' as const
+    if (statusFilter === 'rejected') return 'REJECTED' as const
+    return undefined
+  }, [statusFilter])
+
   // Backend data (professionals)
   const {
     data: professionalsResponse,
@@ -92,6 +101,7 @@ export default function TradePersonManagement() {
     searchTerm: searchQuery || undefined,
     page: currentPage,
     limit: itemsPerPage,
+    status: backendStatusFilter,
   })
 
   // API mutations
@@ -156,8 +166,7 @@ export default function TradePersonManagement() {
     }
   }, [dispatch, isProfessionalsError, professionalsError])
 
-  // Note: Filtering is handled server-side via API query params
-  // We still sync to Redux for potential client-side filtering if needed
+  // Sync filters to Redux (for reference, filtering is handled server-side)
   useEffect(() => {
     dispatch(
       setFilters({
@@ -167,25 +176,15 @@ export default function TradePersonManagement() {
     )
   }, [searchQuery, statusFilter, dispatch])
 
-  // Apply client-side status filter on current page data
-  const filteredData = useMemo(() => {
+  // Map backend data to trade persons (no client-side filtering needed)
+  const tradePersonsData = useMemo(() => {
     if (!professionalsResponse?.data) return []
-    
-    const mapped = professionalsResponse.data.map(mapBackendProfessionalToTradePerson)
-    
-    // Apply status filter if not 'all'
-    if (statusFilter !== 'all') {
-      return mapped.filter(tp => tp.status === statusFilter)
-    }
-    
-    return mapped
-  }, [professionalsResponse, statusFilter])
+    return professionalsResponse.data.map(mapBackendProfessionalToTradePerson)
+  }, [professionalsResponse])
 
-  // Pagination from API response
+  // Pagination from API response (backend handles filtering)
   const totalPages = professionalsResponse?.pagination?.totalPage || pagination.totalPages
-  const totalItems = statusFilter === 'all' 
-    ? (professionalsResponse?.pagination?.total || 0)
-    : filteredData.length
+  const totalItems = professionalsResponse?.pagination?.total || 0
 
   // Calculate start index for SL column
   const startIndex = (currentPage - 1) * itemsPerPage
@@ -328,7 +327,7 @@ export default function TradePersonManagement() {
           {!isProfessionalsLoading && !isProfessionalsFetching && (
             <>
               <TradePersonTable
-                tradePersons={filteredData}
+                tradePersons={tradePersonsData}
                 onView={handleView}
                 onUpdateAmount={handleUpdateAmount}
                 onApprove={handleApprove}
