@@ -4,6 +4,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { FormSelect } from '@/components/common'
+import { useUrlString } from '@/hooks/useUrlState'
 import { useGetCategoriesQuery } from '@/redux/api/categoriesApi'
 import { useGetServicesQuery } from '@/redux/api/serviceApi'
 import {
@@ -52,11 +53,11 @@ const transformBackendToFrontend = (backendQuestion: BackendServiceQuestion, cat
 
 const ServiceQuestion = () => {
   // State declarations first
-  const [selectedCategoryId, setSelectedCategoryId] = useState<string>('')
+  const [selectedCategoryId, setSelectedCategoryId] = useUrlString('categoryId', '')
   const [selectedServiceId, setSelectedServiceId] = useState<string>('')
   const [questions, setQuestions] = useState<QuestionForm[]>([])
   const [editingQuestionId, setEditingQuestionId] = useState<string | null>(null)
-  const [showAddQuestionForm, setShowAddQuestionForm] = useState(false)
+  const [activeAddType, setActiveAddType] = useState<'normal' | 'budget' | null>(null)
   const [newQuestion, setNewQuestion] = useState<QuestionForm>({
     question: '',
     isBudgetQuestion: false,
@@ -165,60 +166,42 @@ const ServiceQuestion = () => {
   const handleServiceSelect = (serviceId: string) => {
     setSelectedServiceId(serviceId)
     setEditingQuestionId(null)
-    setShowAddQuestionForm(false)
+    setActiveAddType(null)
     // Reset default question creation tracking when switching services
     // (will be set again in useEffect if needed)
     // Questions will be loaded via useEffect when questionsResponse changes
   }
 
-  const handleAddQuestion = async () => {
+  const handleAddNormalQuestion = async () => {
     if (!selectedServiceId) {
       toast({ title: 'Error', description: 'Please select a service first', variant: 'destructive' })
       return
     }
 
-    const questionsToAdd: QuestionForm[] = []
     const currentMaxOrder = questions.length > 0 ? Math.max(...questions.map(q => q.order)) : 0
 
-    // Add normal question if filled
-    if (newQuestion.question.trim()) {
-      if (newQuestion.options.length === 0 || newQuestion.options.some((opt) => !opt.label.trim())) {
-        toast({ title: 'Error', description: 'Please add at least one valid option for normal question', variant: 'destructive' })
-        return
-      }
-
-      questionsToAdd.push({
-        question: newQuestion.question,
-        isBudgetQuestion: false,
-        order: newQuestion.order || currentMaxOrder + 1,
-        options: newQuestion.options.map((opt) => ({
-          id: opt.id,
-          label: opt.label,
-          value: undefined,
-        })),
-      })
+    if (!newQuestion.question.trim()) {
+      toast({ title: 'Error', description: 'Please enter a question', variant: 'destructive' })
+      return
     }
 
-    // Add budget question only if it doesn't exist (even if empty - user can fill later)
-    if (!hasBudgetQuestion) {
-      const budgetOrder = questionsToAdd.length > 0
-        ? Math.max(...questionsToAdd.map(q => q.order), currentMaxOrder) + 1
-        : currentMaxOrder + 1
-
-      questionsToAdd.push({
-        question: newBudgetQuestion.question || 'Approximate Budget',
-        isBudgetQuestion: true,
-        order: budgetOrder,
-        options: newBudgetQuestion.options.map((opt) => ({
-          id: opt.id,
-          label: opt.label || '',
-          value: opt.value,
-        })),
-      })
+    if (newQuestion.options.length === 0 || newQuestion.options.some((opt) => !opt.label.trim())) {
+      toast({ title: 'Error', description: 'Please add at least one valid option for normal question', variant: 'destructive' })
+      return
     }
 
-    // Add all questions to local state
-    const updatedQuestions = [...questions, ...questionsToAdd]
+    const questionToAdd: QuestionForm = {
+      question: newQuestion.question,
+      isBudgetQuestion: false,
+      order: newQuestion.order || currentMaxOrder + 1,
+      options: newQuestion.options.map((opt) => ({
+        id: opt.id,
+        label: opt.label,
+        value: undefined,
+      })),
+    }
+
+    const updatedQuestions = [...questions, questionToAdd]
       .sort((a, b) => a.order - b.order)
 
     setQuestions(updatedQuestions)
@@ -230,18 +213,66 @@ const ServiceQuestion = () => {
       order: updatedQuestions.length + 1,
       options: [{ id: Date.now().toString(), label: '' }],
     })
+    setActiveAddType(null)
+    toast({ title: 'Success', description: 'Question added to list. Click Save to save all questions.' })
+  }
+
+  const handleAddBudgetQuestion = async () => {
+    if (!selectedServiceId) {
+      toast({ title: 'Error', description: 'Please select a service first', variant: 'destructive' })
+      return
+    }
+
+    if (hasBudgetQuestion) {
+      toast({ title: 'Error', description: 'Budget question already exists for this service', variant: 'destructive' })
+      return
+    }
+
+    const currentMaxOrder = questions.length > 0 ? Math.max(...questions.map(q => q.order)) : 0
+
+    if (!newBudgetQuestion.question.trim()) {
+      toast({ title: 'Error', description: 'Please enter a budget question', variant: 'destructive' })
+      return
+    }
+
+    if (newBudgetQuestion.options.length === 0 || newBudgetQuestion.options.some((opt) => !opt.label.trim())) {
+      toast({ title: 'Error', description: 'Please add at least one valid option for budget question', variant: 'destructive' })
+      return
+    }
+
+    if (newBudgetQuestion.options.some((opt) => opt.value === undefined || opt.value === null)) {
+      toast({ title: 'Error', description: 'Budget question options must have values', variant: 'destructive' })
+      return
+    }
+
+    const questionToAdd: QuestionForm = {
+      question: newBudgetQuestion.question || 'Approximate Budget',
+      isBudgetQuestion: true,
+      order: newBudgetQuestion.order || currentMaxOrder + 1,
+      options: newBudgetQuestion.options.map((opt) => ({
+        id: opt.id,
+        label: opt.label || '',
+        value: opt.value,
+      })),
+    }
+
+    const updatedQuestions = [...questions, questionToAdd]
+      .sort((a, b) => a.order - b.order)
+
+    setQuestions(updatedQuestions)
+
     setNewBudgetQuestion({
       question: 'Approximate Budget',
       isBudgetQuestion: true,
-      order: 1,
+      order: updatedQuestions.length + 1,
       options: [
         { id: Date.now().toString() + '-1', label: 'Under £500', value: 500 },
         { id: Date.now().toString() + '-2', label: '£500 - £1000', value: 1000 },
         { id: Date.now().toString() + '-3', label: 'Above £1000', value: 2000 },
       ],
     })
-    setShowAddQuestionForm(false)
-    toast({ title: 'Success', description: 'Questions added to list. Click Save to save all questions.' })
+    setActiveAddType(null)
+    toast({ title: 'Success', description: 'Budget question added to list. Click Save to save all questions.' })
   }
 
   const handleUpdateQuestion = async (questionId: string) => {
@@ -738,8 +769,8 @@ const ServiceQuestion = () => {
             </Card>
           ))}
 
-          {/* Add Question Form */}
-          {showAddQuestionForm && (
+          {/* Add Normal Question Form */}
+          {activeAddType === 'normal' && (
             <Card>
               <CardContent className="pt-6">
                 <div className="space-y-4">
@@ -762,7 +793,7 @@ const ServiceQuestion = () => {
                       variant="ghost"
                       size="sm"
                       onClick={() => {
-                        setShowAddQuestionForm(false)
+                        setActiveAddType(null)
                         setNewQuestion({
                           question: '',
                           isBudgetQuestion: false,
@@ -935,36 +966,26 @@ const ServiceQuestion = () => {
                     <Button
                       variant="outline"
                       onClick={() => {
-                        setShowAddQuestionForm(false)
+                        setActiveAddType(null)
                         setNewQuestion({
                           question: '',
                           isBudgetQuestion: false,
                           order: questions.length + 1,
                           options: [{ id: Date.now().toString(), label: '' }],
                         })
-                        setNewBudgetQuestion({
-                          question: 'Approximate Budget',
-                          isBudgetQuestion: true,
-                          order: 1,
-                          options: [
-                            { id: Date.now().toString() + '-1', label: 'Under $500', value: 500 },
-                            { id: Date.now().toString() + '-2', label: '$500 - $1000', value: 1000 },
-                            { id: Date.now().toString() + '-3', label: 'Above £1000', value: 2000 },
-                          ],
-                        })
                       }}
                     >
                       Cancel
                     </Button>
-                    <Button onClick={handleAddQuestion}>Add Questions</Button>
+                    <Button onClick={handleAddNormalQuestion}>Add Question</Button>
                   </div>
                 </div>
               </CardContent>
             </Card>
           )}
 
-          {/* Budget Question Form (always shown when adding questions) */}
-          {showAddQuestionForm && !hasBudgetQuestion && (
+          {/* Budget Question Form */}
+          {activeAddType === 'budget' && !hasBudgetQuestion && (
             <Card className="border-2 border-primary">
               <CardContent className="pt-6">
                 <div className="space-y-4">
@@ -1046,24 +1067,72 @@ const ServiceQuestion = () => {
                       Add Option
                     </Button>
                   </div>
+                  <div className="flex justify-end gap-2 pt-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setActiveAddType(null)
+                        setNewBudgetQuestion({
+                          question: 'Approximate Budget',
+                          isBudgetQuestion: true,
+                          order: questions.length + 1,
+                          options: [
+                            { id: Date.now().toString() + '-1', label: 'Under £500', value: 500 },
+                            { id: Date.now().toString() + '-2', label: '£500 - £1000', value: 1000 },
+                            { id: Date.now().toString() + '-3', label: 'Above £1000', value: 2000 },
+                          ],
+                        })
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                    <Button onClick={handleAddBudgetQuestion}>Add Budget Question</Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
           )}
 
-          {/* Add Question Button */}
-          {!showAddQuestionForm && (
-            <div className="flex justify-end">
+          {/* Add Question / Add Budget Question Buttons */}
+          {!activeAddType && (
+            <div className="flex justify-end gap-2">
               <Button
                 onClick={() => {
-                  if (hasBudgetQuestion) {
-                    setNewQuestion({ ...newQuestion, isBudgetQuestion: false })
+                  if (!selectedServiceId) {
+                    toast({ title: 'Error', description: 'Please select a service first', variant: 'destructive' })
+                    return
                   }
-                  setShowAddQuestionForm(true)
+                  setNewQuestion((prev) => ({
+                    ...prev,
+                    isBudgetQuestion: false,
+                    order: questions.length + 1,
+                  }))
+                  setActiveAddType('normal')
                 }}
               >
                 <Plus className="h-4 w-4 mr-2" />
                 Add Question
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  if (!selectedServiceId) {
+                    toast({ title: 'Error', description: 'Please select a service first', variant: 'destructive' })
+                    return
+                  }
+                  if (hasBudgetQuestion) {
+                    toast({ title: 'Error', description: 'Budget question already exists for this service', variant: 'destructive' })
+                    return
+                  }
+                  setNewBudgetQuestion((prev) => ({
+                    ...prev,
+                    order: questions.length + 1,
+                  }))
+                  setActiveAddType('budget')
+                }}
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add Budget Question
               </Button>
             </div>
           )}
