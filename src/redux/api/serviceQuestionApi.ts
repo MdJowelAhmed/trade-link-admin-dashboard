@@ -55,7 +55,7 @@ const serviceQuestionApi = baseApi.injectEndpoints({
     endpoints: (builder) => ({
         getServiceQuestions: builder.query<ServiceQuestionResponse, string>({
             query: (serviceId) => ({
-                url: `/serviceQuestions/services/${serviceId}`,
+                url: `/serviceQuestions/services/${serviceId}/admin`,
                 method: 'GET',
             }),
             providesTags: (_result, _error, serviceId) => [
