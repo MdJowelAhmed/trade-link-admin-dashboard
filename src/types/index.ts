@@ -600,6 +600,19 @@ export interface CustomerFormData {
 }
 
 // ==================== TradePerson Types ====================
+export enum ProfessionalDocumentType {
+  DRIVING_LICENSE = 'DRIVING_LICENSE',
+  PASSPORT = 'PASSPORT',
+  INSURANCE = 'INSURANCE',
+}
+
+export interface VerificationDocument {
+  _id: string
+  documentType: ProfessionalDocumentType
+  documentPath: string
+  uploadedAt: string
+}
+
 export interface TradePerson {
   id: string
   businessName: string
@@ -613,6 +626,7 @@ export interface TradePerson {
   avatar?: string
   galleryImages?: string[]
   walletBalance?: number
+  verificationDocuments?: VerificationDocument[]
   createdAt: string
   updatedAt: string
 }

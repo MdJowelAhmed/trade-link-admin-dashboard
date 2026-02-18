@@ -20,7 +20,7 @@ import {
 } from '@/redux/slices/tradePersonSlice'
 import { useUrlNumber, useUrlString } from '@/hooks/useUrlState'
 import { toast } from '@/utils/toast'
-import type { TradePerson, TradePersonStatus } from '@/types'
+import type { TradePerson, TradePersonStatus, ProfessionalDocumentType } from '@/types'
 import {
   useGetBonusManagementQuery,
   useUpdateBonusManagementAmountMutation,
@@ -56,6 +56,14 @@ const mapBackendProfessionalToTradePerson = (
     avatar: undefined,
     galleryImages: [],
     walletBalance: professional.walletBalance,
+    verificationDocuments: professional.professional?.verificationDocuments?.map(
+      (doc) => ({
+        _id: doc._id,
+        documentType: doc.documentType as ProfessionalDocumentType,
+        documentPath: doc.documentPath,
+        uploadedAt: doc.uploadedAt,
+      })
+    ),
     createdAt: professional.createdAt,
     updatedAt: professional.updatedAt,
   }

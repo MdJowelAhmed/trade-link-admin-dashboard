@@ -25,6 +25,12 @@ export interface BackendProfessional {
         address: string
         approveStatus: 'PENDING' | 'APPROVED' | 'REJECTED'
         services?: string[]
+        verificationDocuments?: Array<{
+            documentType: 'DRIVING_LICENSE' | 'PASSPORT' | 'INSURANCE'
+            documentPath: string
+            uploadedAt: string
+            _id: string
+        }>
     }
     walletBalance: number
 }

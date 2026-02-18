@@ -126,7 +126,7 @@ export function TradePersonTable({
                 {/* Wallet Balance Column */}
                 <td className="px-6 py-4">
                   <span className="text-sm font-semibold text-slate-800">
-                    ${(tradePerson.walletBalance ?? 0).toFixed(2)}
+                    {(tradePerson.walletBalance ?? 0).toFixed(2)}
                   </span>
                 </td>
 

@@ -1,8 +1,8 @@
-// import { Mail, Phone, MapPin, Briefcase, Building2 } from 'lucide-react'
+import { FileText, Download, ExternalLink } from 'lucide-react'
 import { ModalWrapper } from '@/components/common'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
-import type { TradePerson } from '@/types'
+import type { TradePerson, ProfessionalDocumentType } from '@/types'
 
 interface ViewTradePersonDetailsModalProps {
   open: boolean
@@ -124,6 +124,93 @@ export function ViewTradePersonDetailsModal({
             </div>
           </div>
         </div>
+
+        {/* Verification Documents Section */}
+        {tradePerson.verificationDocuments && tradePerson.verificationDocuments.length > 0 && (
+          <div>
+            <h3 className="text-sm font-medium text-gray-500 mb-4">Verification Documents:</h3>
+            <div className="space-y-3">
+              {tradePerson.verificationDocuments.map((doc) => {
+                const documentUrl = doc.documentPath.startsWith('http')
+                  ? doc.documentPath
+                  : `${import.meta.env.VITE_API_BASE_URL}${doc.documentPath.startsWith('/') ? doc.documentPath : `/${doc.documentPath}`}`
+                
+                const getDocumentTypeLabel = (type: ProfessionalDocumentType) => {
+                  switch (type) {
+                    case 'DRIVING_LICENSE':
+                      return 'Driving License'
+                    case 'PASSPORT':
+                      return 'Passport'
+                    case 'INSURANCE':
+                      return 'Insurance'
+                    default:
+                      return type
+                  }
+                }
+
+                const formatDate = (dateString: string) => {
+                  try {
+                    return new Date(dateString).toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'short',
+                      day: 'numeric',
+                    })
+                  } catch {
+                    return dateString
+                  }
+                }
+
+                return (
+                  <div
+                    key={doc._id}
+                    className="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <div className="flex-shrink-0 p-2 bg-[#2B7A78]/10 rounded-lg">
+                        <FileText className="h-5 w-5 text-[#2B7A78]" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-900 truncate">
+                          {getDocumentTypeLabel(doc.documentType)}
+                        </p>
+                        <p className="text-xs text-gray-500 mt-0.5">
+                          Uploaded: {formatDate(doc.uploadedAt)}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => window.open(documentUrl, '_blank')}
+                        className="h-8 px-3 text-xs border-[#2B7A78] text-[#2B7A78] hover:bg-[#2B7A78] hover:text-white"
+                      >
+                        <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
+                        View
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          const link = document.createElement('a')
+                          link.href = documentUrl
+                          link.download = doc.documentPath.split('/').pop() || 'document'
+                          document.body.appendChild(link)
+                          link.click()
+                          document.body.removeChild(link)
+                        }}
+                        className="h-8 px-3 text-xs border-gray-300 text-gray-700 hover:bg-gray-100"
+                      >
+                        <Download className="h-3.5 w-3.5 mr-1.5" />
+                        Download
+                      </Button>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Action Buttons */}
         {tradePerson.status === 'pending' && (
