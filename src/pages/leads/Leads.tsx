@@ -11,12 +11,11 @@ import { useAppDispatch, useAppSelector } from '@/redux/hooks'
 import { useUrlNumber, useUrlString } from '@/hooks/useUrlState'
 import { toast } from '@/utils/toast'
 import type { Lead, LeadStatus, LeadAnsweredQuestion } from '@/types'
+import { JobPostStatus } from '@/types'
 import {
-  clearFilters,
-  setFilters,
+  setLeads,
   setLeadStatus,
-  setLimit,
-  setPage,
+  setPagination,
 } from '@/redux/slices/leadSlice'
 import {
   useGetLeadsQuery,
@@ -28,8 +27,15 @@ import { ViewLeadDetailsModal } from './components/ViewLeadDetailsModal'
 
 // Map backend lead status to UI LeadStatus
 const mapBackendStatusToLeadStatus = (status: string): LeadStatus => {
-  // Treat OPEN as active, everything else as expired for now
-  return status === 'OPEN' ? 'active' : 'expired'
+  // Map backend status to JobPostStatus enum
+  const upperStatus = status.toUpperCase()
+  if (upperStatus === 'OPEN') return JobPostStatus.OPEN
+  if (upperStatus === 'CLOSED') return JobPostStatus.CLOSED
+  if (upperStatus === 'HIRED') return JobPostStatus.HIRED
+  if (upperStatus === 'COMPLETED') return JobPostStatus.COMPLETED
+  if (upperStatus === 'EXPIRED') return JobPostStatus.EXPIRED
+  // Default to OPEN if status doesn't match
+  return JobPostStatus.OPEN
 }
 
 // Safely build budget/notes from answered questions
@@ -96,17 +102,32 @@ export default function Leads() {
   const [currentPage, setCurrentPage] = useUrlNumber('page', 1)
   const [itemsPerPage, setItemsPerPage] = useUrlNumber('limit', 10)
 
-  // Redux state
-  const { filteredList, pagination } = useAppSelector((state) => state.leads)
+  // Map frontend status filter to backend status
+  const backendStatusFilter = useMemo(() => {
+    if (statusFilter === 'all') return undefined
+    return statusFilter as string
+  }, [statusFilter])
 
-  // Backend data (currently we fetch all leads and handle filtering/pagination on the client)
+  // Reset to page 1 when search or status filter changes
+  useEffect(() => {
+    if (currentPage !== 1) {
+      setCurrentPage(1)
+    }
+  }, [searchQuery, statusFilter]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Backend data - pass all params to backend
   const {
     data: leadsResponse,
     isLoading: isLeadsLoading,
     isFetching: isLeadsFetching,
     isError: isLeadsError,
     error: leadsError,
-  } = useGetLeadsQuery()
+  } = useGetLeadsQuery({
+    searchTerm: searchQuery || undefined,
+    status: backendStatusFilter,
+    page: currentPage,
+    limit: itemsPerPage,
+  })
 
   const [updateLeadStatus, { isLoading: isStatusUpdating }] =
     useUpdateLeadStatusMutation()
@@ -143,7 +164,17 @@ export default function Leads() {
         }
       })
 
-      dispatch({ type: 'leads/setLeads', payload: mappedLeads })
+      dispatch(setLeads(mappedLeads))
+      
+      // Update pagination from backend response
+      if (leadsResponse.pagination) {
+        dispatch(setPagination({
+          page: leadsResponse.pagination.page,
+          limit: leadsResponse.pagination.limit,
+          total: leadsResponse.pagination.total,
+          totalPages: leadsResponse.pagination.totalPage,
+        }))
+      }
     }
   }, [leadsResponse, dispatch])
 
@@ -164,39 +195,12 @@ export default function Leads() {
     }
   }, [isLeadsError, leadsError])
 
-  // Sync URL state with Redux filters
-  useEffect(() => {
-    dispatch(
-      setFilters({
-        search: searchQuery,
-        status: statusFilter as LeadStatus | 'all',
-      })
-    )
-  }, [searchQuery, statusFilter, dispatch])
-
-  // Sync URL pagination with Redux
-  useEffect(() => {
-    dispatch(setPage(currentPage))
-  }, [currentPage, dispatch])
-
-  useEffect(() => {
-    dispatch(setLimit(itemsPerPage))
-  }, [itemsPerPage, dispatch])
-
-  // Reset filters on unmount so other pages are not affected
-  useEffect(
-    () => () => {
-      dispatch(clearFilters())
-    },
-    [dispatch]
-  )
-
-  // Pagination
-  const totalPages = pagination.totalPages
-  const paginatedData = useMemo(() => {
-    const startIndex = (pagination.page - 1) * pagination.limit
-    return filteredList.slice(startIndex, startIndex + pagination.limit)
-  }, [filteredList, pagination.page, pagination.limit])
+  // Get pagination from Redux (synced from backend)
+  const { list: leadsList, pagination } = useAppSelector((state) => state.leads)
+  
+  // Pagination values from backend response
+  const totalPages = leadsResponse?.pagination?.totalPage || pagination.totalPages
+  const totalItems = leadsResponse?.pagination?.total || pagination.total
 
   // Handlers
   const handleView = (lead: Lead) => {
@@ -212,17 +216,35 @@ export default function Leads() {
       const { type, lead } = confirmAction
 
       if (type === 'toggle') {
-        const nextStatus: LeadStatus =
-          lead.status === 'active' ? 'expired' : 'active'
+        // Cycle through statuses: OPEN -> CLOSED -> HIRED -> COMPLETED -> EXPIRED -> OPEN
+        const statusOrder = [
+          JobPostStatus.OPEN,
+          JobPostStatus.CLOSED,
+          JobPostStatus.HIRED,
+          JobPostStatus.COMPLETED,
+          JobPostStatus.EXPIRED,
+        ]
+        const currentIndex = statusOrder.indexOf(lead.status)
+        const nextIndex = (currentIndex + 1) % statusOrder.length
+        const nextStatus: LeadStatus = statusOrder[nextIndex]
 
         // First hit the backend to toggle status
         await updateLeadStatus(lead.id).unwrap()
 
         // Then update local Redux state for instant UI feedback
         dispatch(setLeadStatus({ id: lead.id, status: nextStatus }))
+        
+        const statusLabels: Record<JobPostStatus, string> = {
+          [JobPostStatus.OPEN]: 'Open',
+          [JobPostStatus.CLOSED]: 'Closed',
+          [JobPostStatus.HIRED]: 'Hired',
+          [JobPostStatus.COMPLETED]: 'Completed',
+          [JobPostStatus.EXPIRED]: 'Expired',
+        }
+        
         toast({
           title: 'Success',
-          description: `${lead.name} is now ${nextStatus === 'active' ? 'Active' : 'Expired'}.`,
+          description: `${lead.name} status updated to ${statusLabels[nextStatus]}.`,
           variant: 'success',
         })
       }
@@ -246,12 +268,28 @@ export default function Leads() {
     const { type, lead } = confirmAction
 
     if (type === 'toggle') {
-      const nextStatus = lead.status === 'active' ? 'expired' : 'active'
+      const statusOrder = [
+        JobPostStatus.OPEN,
+        JobPostStatus.CLOSED,
+        JobPostStatus.HIRED,
+        JobPostStatus.COMPLETED,
+        JobPostStatus.EXPIRED,
+      ]
+      const currentIndex = statusOrder.indexOf(lead.status)
+      const nextIndex = (currentIndex + 1) % statusOrder.length
+      const nextStatus = statusOrder[nextIndex]
+      
+      const statusLabels: Record<JobPostStatus, string> = {
+        [JobPostStatus.OPEN]: 'Open',
+        [JobPostStatus.CLOSED]: 'Closed',
+        [JobPostStatus.HIRED]: 'Hired',
+        [JobPostStatus.COMPLETED]: 'Completed',
+        [JobPostStatus.EXPIRED]: 'Expired',
+      }
+      
       return {
         title: 'Change Status',
-        description: `Are you sure you want to change ${lead.name}'s status to ${
-          nextStatus === 'active' ? 'Active' : 'Expired'
-        }?`,
+        description: `Are you sure you want to change ${lead.name}'s status to ${statusLabels[nextStatus]}?`,
         variant: 'warning' as const,
         confirmText: 'Change Status',
       }
@@ -294,7 +332,7 @@ export default function Leads() {
 
             {/* Filter Dropdown */}
             <LeadFilterDropdown
-              value={statusFilter as LeadStatus | 'all'}
+              value={statusFilter as JobPostStatus | 'all'}
               onChange={setStatusFilter}
             />
           </div>
@@ -302,15 +340,15 @@ export default function Leads() {
 
         <CardContent className="p-0">
           {/* Table */}
-          <LeadTable leads={paginatedData} onView={handleView} />
+          <LeadTable leads={leadsList} onView={handleView} />
 
           {/* Pagination */}
           <div className="px-6 py-4 border-t border-gray-100">
             <Pagination
-              currentPage={pagination.page}
+              currentPage={currentPage}
               totalPages={totalPages}
-              totalItems={filteredList.length}
-              itemsPerPage={pagination.limit}
+              totalItems={totalItems}
+              itemsPerPage={itemsPerPage}
               onPageChange={handlePageChange}
               onItemsPerPageChange={handleItemsPerPageChange}
             />

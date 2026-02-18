@@ -1,5 +1,5 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
-import type { Lead, LeadFilters, LeadStatus, PaginationState } from '@/types'
+import type { Lead, LeadFilters, LeadStatus, JobPostStatus, PaginationState } from '@/types'
 import { DEFAULT_PAGINATION } from '@/utils/constants'
 
 interface LeadState {
@@ -32,10 +32,9 @@ const leadSlice = createSlice({
     setLeads: (state, action: PayloadAction<Lead[]>) => {
       state.list = action.payload
       state.filteredList = action.payload
-      state.pagination.total = action.payload.length
-      state.pagination.totalPages = Math.ceil(
-        action.payload.length / state.pagination.limit
-      )
+    },
+    setPagination: (state, action: PayloadAction<Partial<PaginationState>>) => {
+      state.pagination = { ...state.pagination, ...action.payload }
     },
     setFilters: (state, action: PayloadAction<Partial<LeadFilters>>) => {
       state.filters = { ...state.filters, ...action.payload }
@@ -150,6 +149,7 @@ const leadSlice = createSlice({
 
 export const {
   setLeads,
+  setPagination,
   setFilters,
   clearFilters,
   setPage,

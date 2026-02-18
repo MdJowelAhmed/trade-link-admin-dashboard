@@ -7,18 +7,21 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { cn } from '@/utils/cn'
-import type { LeadStatus } from '@/types'
+import { JobPostStatus } from '@/types'
 
 interface LeadFilterDropdownProps {
-  value: LeadStatus | 'all'
-  onChange: (value: LeadStatus | 'all') => void
+  value: JobPostStatus | 'all'
+  onChange: (value: JobPostStatus | 'all') => void
   className?: string
 }
 
 const statusFilterOptions = [
   { value: 'all', label: 'All' },
-  { value: 'active', label: 'Active' },
-  { value: 'expired', label: 'Expired' },
+  { value: JobPostStatus.OPEN, label: 'Open' },
+  { value: JobPostStatus.CLOSED, label: 'Closed' },
+  { value: JobPostStatus.HIRED, label: 'Hired' },
+  { value: JobPostStatus.COMPLETED, label: 'Completed' },
+  { value: JobPostStatus.EXPIRED, label: 'Expired' },
 ] as const
 
 export function LeadFilterDropdown({
@@ -29,7 +32,7 @@ export function LeadFilterDropdown({
   return (
     <Select
       value={value}
-      onValueChange={(val) => onChange(val as LeadStatus | 'all')}
+      onValueChange={(val) => onChange(val as JobPostStatus | 'all')}
     >
       <SelectTrigger
         className={cn(

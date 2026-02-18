@@ -520,7 +520,15 @@ export interface TransactionFilters {
 }
 
 // ==================== Lead Types ====================
-export type LeadStatus = 'active' | 'expired'
+export enum JobPostStatus {
+  OPEN = 'OPEN',
+  CLOSED = 'CLOSED',
+  HIRED = 'HIRED',
+  COMPLETED = 'COMPLETED',
+  EXPIRED = 'EXPIRED',
+}
+
+export type LeadStatus = JobPostStatus
 
 // Raw answered question info attached to a lead
 export interface LeadAnsweredQuestion {
@@ -567,7 +575,7 @@ export interface Lead {
 
 export interface LeadFilters {
   search: string
-  status: LeadStatus | 'all'
+  status: JobPostStatus | 'all'
 }
 
 // ==================== Customer Types ====================

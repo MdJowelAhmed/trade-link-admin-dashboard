@@ -1,8 +1,43 @@
 import { motion } from 'framer-motion'
 import { cn } from '@/utils/cn'
 import type { Lead } from '@/types'
+import { JobPostStatus } from '@/types'
 import { LeadActionButtons } from './LeadActionButtons'
 // import { Edit, } from 'lucide-react'
+
+const getStatusStyles = (status: JobPostStatus) => {
+  switch (status) {
+    case JobPostStatus.OPEN:
+      return 'bg-green-100 text-green-700 border-green-200'
+    case JobPostStatus.CLOSED:
+      return 'bg-gray-100 text-gray-700 border-gray-200'
+    case JobPostStatus.HIRED:
+      return 'bg-blue-100 text-blue-700 border-blue-200'
+    case JobPostStatus.COMPLETED:
+      return 'bg-purple-100 text-purple-700 border-purple-200'
+    case JobPostStatus.EXPIRED:
+      return 'bg-red-100 text-red-700 border-red-200'
+    default:
+      return 'bg-gray-100 text-gray-700 border-gray-200'
+  }
+}
+
+const getStatusLabel = (status: JobPostStatus) => {
+  switch (status) {
+    case JobPostStatus.OPEN:
+      return 'Open'
+    case JobPostStatus.CLOSED:
+      return 'Closed'
+    case JobPostStatus.HIRED:
+      return 'Hired'
+    case JobPostStatus.COMPLETED:
+      return 'Completed'
+    case JobPostStatus.EXPIRED:
+      return 'Expired'
+    default:
+      return status
+  }
+}
 
 interface LeadTableProps {
   leads: Lead[]
@@ -103,13 +138,11 @@ export function LeadTable({ leads, onView }: LeadTableProps) {
                 <td className="px-6 py-4">
                   <span
                     className={cn(
-                      'inline-flex items-center px-3 py-1 w-20 text-center rounded-full text-xs font-medium',
-                      lead.status === 'active'
-                        ? 'bg-secondary text-white px-5 py-2'
-                        : 'bg-secondary-foreground text-white px-5 py-2'
+                      'inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border',
+                      getStatusStyles(lead.status)
                     )}
                   >
-                    {lead.status === 'active' ? 'Active' : 'Expired'}
+                    {getStatusLabel(lead.status)}
                   </span>
                 </td>
 
