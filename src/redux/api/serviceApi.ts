@@ -3,7 +3,7 @@ import { baseApi } from "../baseApi"
 // Type for service query params (backend handles filtering/pagination)
 interface GetServicesParams {
     searchTerm?: string
-    status?: string
+    isActive?: boolean
     categoryId?: string
     page?: number
     limit?: number
@@ -43,7 +43,7 @@ const serviceApi = baseApi.injectEndpoints({
             query: (params) => {
                 const queryParams = new URLSearchParams()
                 if (params?.searchTerm) queryParams.append('searchTerm', params.searchTerm)
-                if (params?.status && params.status !== 'all') queryParams.append('status', params.status)
+                if (params?.isActive !== undefined) queryParams.append('isActive', params.isActive.toString())
                 if (params?.categoryId && params.categoryId !== 'all') queryParams.append('categoryId', params.categoryId)
                 if (params?.page) queryParams.append('page', params.page.toString())
                 if (params?.limit) queryParams.append('limit', params.limit.toString())

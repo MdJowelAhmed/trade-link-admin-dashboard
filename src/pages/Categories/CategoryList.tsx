@@ -65,8 +65,8 @@ export default function CategoryList() {
   )
   const activeTab = getParam('tab', 'categories')
 
-  // Convert status to uppercase for API (keep 'all' as is)
-  const statusForApi = status !== 'all' ? status.toUpperCase() : undefined
+  // Convert status to boolean for API (isActive: true for 'active', false for 'inactive', undefined for 'all')
+  const isActiveForApi = status === 'active' ? true : status === 'inactive' ? false : undefined
 
   // RTK Query - Categories (backend handles filtering/pagination)
   const {
@@ -75,7 +75,7 @@ export default function CategoryList() {
     isFetching: categoriesFetching,
   } = useGetCategoriesQuery({
     searchTerm: search || undefined,
-    status: statusForApi,
+    isActive: isActiveForApi,
     page,
     limit,
   })
@@ -89,7 +89,7 @@ export default function CategoryList() {
     activeTab === 'services'
       ? {
           searchTerm: search || undefined,
-          status: statusForApi,
+          isActive: isActiveForApi,
           categoryId: categoryId !== 'all' ? categoryId : undefined,
           page,
           limit,
