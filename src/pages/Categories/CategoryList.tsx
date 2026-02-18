@@ -56,10 +56,17 @@ export default function CategoryList() {
   const { getParam, getNumberParam, setParam, setParams } = useUrlParams()
 
   const search = getParam('search', '')
-  const status = getParam('status', 'all')
+  // Normalize status from URL (convert to lowercase for dropdown comparison)
+  const statusParam = getParam('status', 'all')
+  const status = statusParam !== 'all' ? statusParam.toLowerCase() : statusParam
+  const categoryId = getParam('categoryId', 'all')
   const page = getNumberParam('page', 1)
-  const limit = getNumberParam('limit', 12)
+  const limit = getNumberParam('limit', 20
+  )
   const activeTab = getParam('tab', 'categories')
+
+  // Convert status to uppercase for API (keep 'all' as is)
+  const statusForApi = status !== 'all' ? status.toUpperCase() : undefined
 
   // RTK Query - Categories (backend handles filtering/pagination)
   const {
@@ -68,7 +75,7 @@ export default function CategoryList() {
     isFetching: categoriesFetching,
   } = useGetCategoriesQuery({
     searchTerm: search || undefined,
-    status: status !== 'all' ? status : undefined,
+    status: statusForApi,
     page,
     limit,
   })
@@ -82,7 +89,8 @@ export default function CategoryList() {
     activeTab === 'services'
       ? {
           searchTerm: search || undefined,
-          status: status !== 'all' ? status : undefined,
+          status: statusForApi,
+          categoryId: categoryId !== 'all' ? categoryId : undefined,
           page,
           limit,
         }
@@ -165,7 +173,13 @@ export default function CategoryList() {
   }
 
   const handleStatusFilter = (value: string) => {
-    setParams({ status: value, page: 1 })
+    // Convert to uppercase for URL (except 'all')
+    const statusValue = value !== 'all' ? value.toUpperCase() : value
+    setParams({ status: statusValue, page: 1 })
+  }
+
+  const handleCategoryFilter = (value: string) => {
+    setParams({ categoryId: value, page: 1 })
   }
 
   const handlePageChange = (newPage: number) => {
@@ -177,7 +191,7 @@ export default function CategoryList() {
   }
 
   const handleTabChange = (value: string) => {
-    setParams({ tab: value, page: 1, search: '', status: 'all' })
+    setParams({ tab: value, page: 1, search: '', status: 'all', categoryId: 'all' })
   }
 
   const handleEditCategory = (category: BackendCategory) => {
@@ -297,6 +311,20 @@ export default function CategoryList() {
   // Map selected category for modals
   const selectedCategoryForModal = selectedCategory ? mapCategoryForCard(selectedCategory) : null
 
+  // Create category filter options for services tab
+  const categoryFilterOptions = useMemo(() => {
+    const options = [{ value: 'all', label: 'All Categories' }]
+    if (Array.isArray(categories) && categories.length > 0) {
+      categories.forEach((category: BackendCategory) => {
+        options.push({
+          value: category._id,
+          label: category.name,
+        })
+      })
+    }
+    return options
+  }, [categories])
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -338,12 +366,24 @@ export default function CategoryList() {
                   )
                 }
 
+                {
+                  activeTab === 'services' && (
+                    <FilterDropdown
+                      value={categoryId}
+                      options={categoryFilterOptions}
+                      onChange={handleCategoryFilter}
+                      placeholder="All Categories"
+                    />
+                  )
+                }
+
                 <FilterDropdown
                   value={status}
                   options={CATEGORY_STATUSES}
                   onChange={handleStatusFilter}
                   placeholder="All Status"
                 />
+              
 
                 <Button
                   onClick={() => {

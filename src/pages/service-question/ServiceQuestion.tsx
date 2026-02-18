@@ -82,7 +82,7 @@ const ServiceQuestion = () => {
 
   // Use RTK Query for services (filter by category when selected)
   const { data: servicesResponse, isLoading: isLoadingServices } = useGetServicesQuery(
-    selectedCategoryId ? { categoryId: selectedCategoryId } : undefined
+    selectedCategoryId ? { categoryId: selectedCategoryId, limit: 100 } : undefined
   )
 
   // Map backend services to frontend Service type

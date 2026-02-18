@@ -25,9 +25,9 @@ export const PRODUCT_STATUSES: SelectOption[] = [
 ]
 
 export const CATEGORY_STATUSES: SelectOption[] = [
-  { value: 'all', label: 'All Status' },
-  { value: 'active', label: 'Active' },
-  { value: 'inactive', label: 'Inactive' },
+  { value: 'all', label: 'ALL STATUS' },
+  { value: 'active', label: 'ACTIVE' },
+  { value: 'inactive', label: 'INACTIVE' },
 ]
 
 export const ITEMS_PER_PAGE_OPTIONS = [10, 25, 50, 100]
