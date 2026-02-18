@@ -326,7 +326,7 @@ export default function Leads() {
             <SearchInput
               value={searchQuery}
               onChange={setSearchQuery}
-              placeholder="Search here"
+              placeholder="Search by Job ID, Service Name"
               className="w-[300px]"
             />
 
