@@ -1,5 +1,5 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
-import type { Lead, LeadFilters, LeadStatus, JobPostStatus, PaginationState } from '@/types'
+import type { Lead, LeadFilters, LeadStatus, PaginationState } from '@/types'
 import { DEFAULT_PAGINATION } from '@/utils/constants'
 
 interface LeadState {
