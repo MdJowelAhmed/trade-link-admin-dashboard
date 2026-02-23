@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { ModalWrapper, FormInput, ImageUploader } from '@/components/common'
+import { ModalWrapper, FormInput, ImageUploader, FormTextarea } from '@/components/common'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
@@ -23,6 +23,7 @@ import { Separator } from '@/components/ui/separator'
 
 const categorySchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
+  description:z.string().min(5, "Description must be at least 5 characters"),
   status: z.enum(['active', 'inactive']),
 })
 
@@ -63,6 +64,7 @@ export function AddEditCategoryModal({ open, onClose, mode, category }: AddEditC
     resolver: zodResolver(categorySchema),
     defaultValues: {
       name: '',
+      description:'',
       status: 'active',
     },
   })
@@ -73,6 +75,7 @@ export function AddEditCategoryModal({ open, onClose, mode, category }: AddEditC
       if ((mode === 'edit' || mode === 'faq' || mode === 'details') && category) {
         reset({
           name: category.name,
+          description:category.description,
           status: category.status,
         })
         // Set image from category if it exists
@@ -95,6 +98,7 @@ export function AddEditCategoryModal({ open, onClose, mode, category }: AddEditC
       } else {
         reset({
           name: '',
+          description: '',
           status: 'active',
         })
         setImage(null)
@@ -126,9 +130,11 @@ export function AddEditCategoryModal({ open, onClose, mode, category }: AddEditC
       // In FAQ mode, use category data; otherwise use form data
       if (mode === 'faq' && category) {
         formData.append('name', category.name)
+        formData.append('description', category.description || '')
         formData.append('isActive', category.status === 'active' ? 'true' : 'false')
       } else {
         formData.append('name', data.name)
+        formData.append('description', data.description)
         formData.append('isActive', data.status === 'active' ? 'true' : 'false')
       }
 
@@ -310,6 +316,13 @@ export function AddEditCategoryModal({ open, onClose, mode, category }: AddEditC
               error={errors.name?.message}
               required
               {...register('name')}
+            /> 
+            <FormTextarea 
+              label='Description'
+              placeholder='Enter category description'
+              error={errors.description?.message}
+              required
+              {...register('description')}
             />
 
             <div className="flex items-center justify-between">
