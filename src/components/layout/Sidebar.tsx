@@ -19,7 +19,6 @@ import {
   ShieldCheck,
   Star,
   Gift,
-  Scale,
   Cookie,
   FileCheck,
   Code,
