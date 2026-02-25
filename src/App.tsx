@@ -39,6 +39,7 @@ import AboutUs from './pages/Settings/about/AboutUs'
 import ReviewsManagement from './pages/reviews/ReviewsManagement'
 import SignUpBonus from './pages/Settings/signupBonus/SignUpBonus'
 import BonusManagement from './pages/bonusManagement/BonusManagement'
+import { CompliancePolicySettings, CookiePolicySettings } from './pages'
 
 function App() {
   const dispatch = useAppDispatch()
@@ -124,7 +125,10 @@ function App() {
             <Route path="review" element={<ReviewSettings />} />
             <Route path="code-of-conduct" element={<CodeOfConductSettings />} />
             <Route path="signup-bonus" element={<SignUpBonus />} />
-            {/* <Route path="faq" element={<FAQ />} /> */}
+            <Route path="compliance-policy" element={<CompliancePolicySettings />} />
+            <Route path="cookie-policy" element={<CookiePolicySettings />} />
+
+          
           </Route>
         </Route>
 

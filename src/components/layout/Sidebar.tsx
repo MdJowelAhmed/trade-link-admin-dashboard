@@ -20,6 +20,9 @@ import {
   Star,
   Gift,
   Scale,
+  Cookie,
+  FileCheck,
+  Code,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
@@ -161,8 +164,18 @@ const settingsItems: NavItem[] = [
   {
     title: 'Code of Conduct',
     href: '/settings/code-of-conduct',
-    icon: Scale,
+    icon: Code,
   },
+{
+  title: 'Compliance Policy',
+  href: '/settings/compliance-policy',
+  icon: FileCheck,
+},
+{
+  title: 'Cookie Policy',
+  href: '/settings/cookie-policy',
+  icon: Cookie,
+},
   
   // {
   //   title: 'FAQ',
