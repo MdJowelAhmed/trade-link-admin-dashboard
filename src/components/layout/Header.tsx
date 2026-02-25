@@ -1,5 +1,5 @@
 import { useLocation, useNavigate } from 'react-router-dom'
-import { Menu, Bell, LogOut, User, Settings } from 'lucide-react'
+import { Menu, LogOut, User, Settings } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
@@ -14,6 +14,7 @@ import { useAppDispatch, useAppSelector } from '@/redux/hooks'
 import { toggleSidebar } from '@/redux/slices/uiSlice'
 import { logout } from '@/redux/slices/authSlice'
 import { getInitials } from '@/utils/formatters'
+import { useGetMyProfileQuery } from '@/redux/api/authApi'
 // import { Moon, Sun } from 'lucide-react'
 
 const routeTitles: Record<string, string> = {
@@ -28,6 +29,8 @@ const routeTitles: Record<string, string> = {
   '/settings/about-us': 'About Us',
   '/settings/review': 'Review Policy',
   '/settings/code-of-conduct': 'Code of Conduct',
+  '/settings/compliance-policy': 'Compliance Policy',
+  '/settings/cookie-policy': 'Cookie Policy',
 }
 
 export function Header() {
@@ -36,6 +39,22 @@ export function Header() {
   // const { theme } = useAppSelector((state) => state.ui)
   const { user } = useAppSelector((state) => state.auth)
   const location = useLocation()
+
+  const { data: profileResponse } = useGetMyProfileQuery()
+  const profile = profileResponse?.data
+
+  const baseUrl = import.meta.env.VITE_API_BASE_URL
+
+  const fullName =
+    profile?.name || (user ? `${user.firstName} ${user.lastName}` : 'Admin User')
+  const [firstNameFromProfile] = (profile?.name || '').split(' ')
+  const welcomeFirstName = firstNameFromProfile || user?.firstName || 'Admin'
+
+  const avatarUrl = profile?.profileImage
+    ? `${baseUrl}${profile.profileImage}`
+    : user?.avatar
+
+  const email = profile?.email || user?.email || 'admin@example.com'
 
   const pageTitle = routeTitles[location.pathname] || 'Dashboard'
 
@@ -60,7 +79,7 @@ export function Header() {
           <div>
             <h1 className="text-xl font-semibold text-accent">{pageTitle}</h1>
             <p className="text-sm text-accent hidden sm:block">
-              Welcome back, {user?.firstName || 'Admin'}
+              Welcome back, {welcomeFirstName}
             </p>
           </div>
         </div>
@@ -93,7 +112,7 @@ export function Header() {
           </Button> */}
 
           {/* Notifications */}
-          <DropdownMenu>
+          {/* <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="relative">
                 <Bell className="h-8 w-8 text-accent" />
@@ -108,14 +127,14 @@ export function Header() {
                 <p>No new notifications</p>
               </div>
             </DropdownMenuContent>
-          </DropdownMenu>
+          </DropdownMenu> */}
 
           {/* User menu */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-9 w-9 rounded-full">
                 <Avatar className="h-12 w-12">
-                  <AvatarImage src={user?.avatar} />
+                  <AvatarImage src={avatarUrl} className="object-cover" />
                   <AvatarFallback className="text-white bg-primary" >
                     {user ? getInitials(user.firstName, user.lastName) : 'AD'}
                   </AvatarFallback>
@@ -126,10 +145,10 @@ export function Header() {
               <DropdownMenuLabel>
                 <div className="flex flex-col space-y-1">
                   <p className="text-sm font-medium">
-                    {user ? `${user.firstName} ${user.lastName}` : 'Admin User'}
+                    {fullName}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    {user?.email || 'admin@example.com'}
+                    {email}
                   </p>
                 </div>
               </DropdownMenuLabel>
