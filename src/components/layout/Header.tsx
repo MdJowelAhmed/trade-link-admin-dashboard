@@ -19,6 +19,12 @@ import { useGetMyProfileQuery } from '@/redux/api/authApi'
 
 const routeTitles: Record<string, string> = {
   '/dashboard': 'Dashboard',
+  '/customers': 'Customers',
+  '/trade-person': 'Trade Person',
+  '/leads': 'Leads',
+  '/service-question': 'Service Question',
+  '/transactions-history': 'Transactions History',
+  '/reviews': 'User Reviews',
   '/users': 'User Management',
   '/products': 'Product Management',
   '/categories': 'Category Management',
