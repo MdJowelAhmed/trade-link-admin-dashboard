@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { CreditCard, Calendar, User, Mail, DollarSign, FileText, CheckCircle, XCircle, Clock, AlertCircle, PoundSterling } from 'lucide-react'
+import { CreditCard, Calendar, User, Mail,  FileText, CheckCircle, XCircle, Clock, AlertCircle, PoundSterling } from 'lucide-react'
 import { ModalWrapper } from '@/components/common'
 import { Separator } from '@/components/ui/separator'
 import { Card, CardContent } from '@/components/ui/card'
