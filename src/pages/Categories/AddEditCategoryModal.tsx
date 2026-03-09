@@ -351,14 +351,14 @@ export function AddEditCategoryModal({ open, onClose, mode, category }: AddEditC
               {...register('description')}
             />
             <FormTextarea 
-              label='Services Details Description 1'
-              placeholder='Enter services details description 1'
+              label='Details Page Description 1'
+              placeholder='Enter details page description 1'
               error={errors.servicesDetailsDescription1?.message}
               {...register('servicesDetailsDescription1')}
             />
             <FormTextarea 
-              label='Services Details Description 2'
-              placeholder='Enter services details description 2'
+              label='Details Page Description 2'
+              placeholder='Enter details page description 2'
               error={errors.servicesDetailsDescription2?.message}
               {...register('servicesDetailsDescription2')}
             />
