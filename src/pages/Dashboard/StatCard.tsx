@@ -1,7 +1,4 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { TrendingUp, TrendingDown } from 'lucide-react'
-import { formatPercentage } from '@/utils/formatters'
-import { cn } from '@/utils/cn'
 import { motion } from 'framer-motion'
 
 export interface StatCardProps {
@@ -14,8 +11,8 @@ export interface StatCardProps {
     background: string
 }
 
-export function StatCard({ title, value, change, icon: Icon, description, index, background }: StatCardProps) {
-    const isPositive = change >= 0
+export function StatCard({ title, value,  icon: Icon,  index, background }: StatCardProps) {
+  
 
     return (
         <motion.div
@@ -37,7 +34,7 @@ export function StatCard({ title, value, change, icon: Icon, description, index,
                 </CardHeader>
                 <CardContent>
                     <div className="text-2xl xl:text-3xl font-bold text-accent">{value}</div>
-                    <div className="flex items-center gap-2 mt-1">
+                    {/* <div className="flex items-center gap-2 mt-1">
                         <span
                             className={cn(
                                 'flex items-center text-xs font-medium',
@@ -52,7 +49,7 @@ export function StatCard({ title, value, change, icon: Icon, description, index,
                             {formatPercentage(change)}
                         </span>
                         <span className="text-xs text-muted-foreground">{description}</span>
-                    </div>
+                    </div> */}
                 </CardContent>
             </Card>
         </motion.div>
