@@ -87,7 +87,7 @@ export function TransactionTable({
                 {/* Price Column */}
                 <td className="px-6 py-4">
                   <span className="text-sm font-semibold text-slate-800">
-                    {transaction.currency || '$'}{transaction.amount.toFixed(2)}
+                    £{transaction.amount.toFixed(2)}
                   </span>
                 </td>
 

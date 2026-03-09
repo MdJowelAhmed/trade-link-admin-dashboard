@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { CreditCard, Calendar, User, Mail, DollarSign, FileText, CheckCircle, XCircle, Clock, AlertCircle } from 'lucide-react'
+import { CreditCard, Calendar, User, Mail, DollarSign, FileText, CheckCircle, XCircle, Clock, AlertCircle, PoundSterling } from 'lucide-react'
 import { ModalWrapper } from '@/components/common'
 import { Separator } from '@/components/ui/separator'
 import { Card, CardContent } from '@/components/ui/card'
@@ -147,13 +147,12 @@ export function ViewTransactionDetailsModal({
                 {/* Amount */}
                 <div className="flex items-center gap-4">
                   <div className="h-12 w-12 rounded-lg bg-green-100 flex items-center justify-center flex-shrink-0">
-                    <DollarSign className="h-6 w-6 text-green-600" />
+                    <PoundSterling className="h-6 w-6 text-green-600" />
                   </div>
                   <div className="flex-1">
                     <p className="text-xs text-gray-500 mb-1">Amount</p>
                     <p className="font-medium text-gray-900">
-                      {transaction.currency || '€'}
-                      {transaction.amount}
+                      £{transaction.amount}
                     </p>
                   </div>
                 </div>
