@@ -226,7 +226,7 @@ export function AddEditCategoryModal({ open, onClose, mode, category }: AddEditC
         onClose={onClose}
         title="Category Details"
         size="md"
-        className="bg-white"
+        className="bg-white w-full max-w-4xl"
       >
         <div className="space-y-4">
           {category.image && (
@@ -245,10 +245,10 @@ export function AddEditCategoryModal({ open, onClose, mode, category }: AddEditC
             <p className="text-sm text-muted-foreground">{category.name}</p>
           </div>
 
-          <div>
+          {/* <div>
             <Label className="text-sm font-medium mb-1 block">Slug</Label>
             <p className="text-sm text-muted-foreground">{category.slug}</p>
-          </div>
+          </div> */}
 
           {category.description && (
             <div>
@@ -271,15 +271,15 @@ export function AddEditCategoryModal({ open, onClose, mode, category }: AddEditC
             </div>
           )}
 
-          <div>
+          {/* <div>
             <Label className="text-sm font-medium mb-1 block">Status</Label>
             <p className="text-sm text-muted-foreground capitalize">{category.status}</p>
-          </div>
+          </div> */}
 
-          <div>
+          {/* <div>
             <Label className="text-sm font-medium mb-1 block">Product Count</Label>
             <p className="text-sm text-muted-foreground">{category.productCount}</p>
-          </div>
+          </div> */}
 
           {category.faqs && category.faqs.length > 0 && (
             <div>
