@@ -41,6 +41,8 @@ interface BackendCategory {
   name: string
   slug: string
   description?: string
+  servicesDetailsDescription1?: string
+  servicesDetailsDescription2?: string
   image?: string
   isActive: boolean
   serviceCount?: number
@@ -293,6 +295,8 @@ export default function CategoryList() {
     name: category.name,
     slug: category.slug,
     description: category.description,
+    servicesDetailsDescription1: category.servicesDetailsDescription1,
+    servicesDetailsDescription2: category.servicesDetailsDescription2,
     image: category.image,
     status: category.isActive ? 'active' as const : 'inactive' as const,
     productCount: category.serviceCount || 0,

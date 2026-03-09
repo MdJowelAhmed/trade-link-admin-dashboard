@@ -79,6 +79,8 @@ export interface Category {
   name: string
   slug: string
   description?: string
+  servicesDetailsDescription1?: string
+  servicesDetailsDescription2?: string
   image?: string
   parentId?: string | null
   status: CategoryStatus
@@ -98,6 +100,8 @@ export interface CategoryFilters {
 export interface CategoryFormData {
   name: string
   description?: string
+  servicesDetailsDescription1?: string
+  servicesDetailsDescription2?: string
   parentId?: string | null
   status: CategoryStatus
   image?: File | string

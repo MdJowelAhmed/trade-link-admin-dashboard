@@ -24,6 +24,8 @@ import { Separator } from '@/components/ui/separator'
 const categorySchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
   description:z.string().min(5, "Description must be at least 5 characters"),
+  servicesDetailsDescription1: z.string().optional(),
+  servicesDetailsDescription2: z.string().optional(),
   status: z.enum(['active', 'inactive']),
 })
 
@@ -65,6 +67,8 @@ export function AddEditCategoryModal({ open, onClose, mode, category }: AddEditC
     defaultValues: {
       name: '',
       description:'',
+      servicesDetailsDescription1: '',
+      servicesDetailsDescription2: '',
       status: 'active',
     },
   })
@@ -76,6 +80,8 @@ export function AddEditCategoryModal({ open, onClose, mode, category }: AddEditC
         reset({
           name: category.name,
           description:category.description,
+          servicesDetailsDescription1: category.servicesDetailsDescription1 || '',
+          servicesDetailsDescription2: category.servicesDetailsDescription2 || '',
           status: category.status,
         })
         // Set image from category if it exists
@@ -99,6 +105,8 @@ export function AddEditCategoryModal({ open, onClose, mode, category }: AddEditC
         reset({
           name: '',
           description: '',
+          servicesDetailsDescription1: '',
+          servicesDetailsDescription2: '',
           status: 'active',
         })
         setImage(null)
@@ -131,10 +139,14 @@ export function AddEditCategoryModal({ open, onClose, mode, category }: AddEditC
       if (mode === 'faq' && category) {
         formData.append('name', category.name)
         formData.append('description', category.description || '')
+        if (category.servicesDetailsDescription1) formData.append('servicesDetailsDescription1', category.servicesDetailsDescription1)
+        if (category.servicesDetailsDescription2) formData.append('servicesDetailsDescription2', category.servicesDetailsDescription2)
         formData.append('isActive', category.status === 'active' ? 'true' : 'false')
       } else {
         formData.append('name', data.name)
         formData.append('description', data.description)
+        if (data.servicesDetailsDescription1) formData.append('servicesDetailsDescription1', data.servicesDetailsDescription1)
+        if (data.servicesDetailsDescription2) formData.append('servicesDetailsDescription2', data.servicesDetailsDescription2)
         formData.append('isActive', data.status === 'active' ? 'true' : 'false')
       }
 
@@ -245,6 +257,20 @@ export function AddEditCategoryModal({ open, onClose, mode, category }: AddEditC
             </div>
           )}
 
+          {category.servicesDetailsDescription1 && (
+            <div>
+              <Label className="text-sm font-medium mb-1 block">Services Details Description 1</Label>
+              <p className="text-sm text-muted-foreground">{category.servicesDetailsDescription1}</p>
+            </div>
+          )}
+
+          {category.servicesDetailsDescription2 && (
+            <div>
+              <Label className="text-sm font-medium mb-1 block">Services Details Description 2</Label>
+              <p className="text-sm text-muted-foreground">{category.servicesDetailsDescription2}</p>
+            </div>
+          )}
+
           <div>
             <Label className="text-sm font-medium mb-1 block">Status</Label>
             <p className="text-sm text-muted-foreground capitalize">{category.status}</p>
@@ -297,7 +323,7 @@ export function AddEditCategoryModal({ open, onClose, mode, category }: AddEditC
             : 'Edit Category'
       }
       size={mode === 'faq' ? 'lg' : 'md'}
-      className="bg-white"
+      className="bg-white w-full max-w-4xl"
     >
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         {mode !== 'faq' && (
@@ -323,6 +349,18 @@ export function AddEditCategoryModal({ open, onClose, mode, category }: AddEditC
               error={errors.description?.message}
               required
               {...register('description')}
+            />
+            <FormTextarea 
+              label='Services Details Description 1'
+              placeholder='Enter services details description 1'
+              error={errors.servicesDetailsDescription1?.message}
+              {...register('servicesDetailsDescription1')}
+            />
+            <FormTextarea 
+              label='Services Details Description 2'
+              placeholder='Enter services details description 2'
+              error={errors.servicesDetailsDescription2?.message}
+              {...register('servicesDetailsDescription2')}
             />
 
             <div className="flex items-center justify-between">
