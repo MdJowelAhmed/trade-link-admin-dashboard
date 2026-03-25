@@ -40,6 +40,7 @@ import ReviewsManagement from './pages/reviews/ReviewsManagement'
 import SignUpBonus from './pages/Settings/signupBonus/SignUpBonus'
 import BonusManagement from './pages/bonusManagement/BonusManagement'
 import { CompliancePolicySettings, CookiePolicySettings } from './pages'
+import LocationContainer from './pages/location/LocationContainer'
 
 function App() {
   const dispatch = useAppDispatch()
@@ -114,6 +115,7 @@ function App() {
           <Route path="bonus-management" element={<BonusManagement />} />
           {/* Category Management */}
           <Route path="categories" element={<CategoryList />} />
+          <Route path="location" element={<LocationContainer />} />
           
           {/* Settings */}
           <Route path="settings">

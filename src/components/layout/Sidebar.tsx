@@ -22,6 +22,7 @@ import {
   Cookie,
   FileCheck,
   Code,
+  MapPin,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
@@ -93,6 +94,11 @@ const navItems: NavItem[] = [
     title: 'User Reviews',
     href: '/reviews',
     icon: Star,
+  },
+  {
+    title: 'Location',
+    href: '/location',
+    icon: MapPin,
   },
   // {
   //   title: 'Car List',
