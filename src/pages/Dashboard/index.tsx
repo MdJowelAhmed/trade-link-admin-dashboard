@@ -74,7 +74,7 @@ export default function Dashboard() {
         background: "#F4A261",
       },
       {
-        title: 'Total Earnings',
+        title: 'Gross Earnings',
         value: formatCurrency(dashboardData.totalEarnings),
         change: 0, // API doesn't provide change data
         icon: TotalRevenue,
@@ -111,12 +111,12 @@ export default function Dashboard() {
           tooltipFormatter={(value) => formatCurrency(value)}
           valueFormatter={(value) => {
             if (value >= 1000000) {
-              return `$${(value / 1000000).toFixed(1)}M`
+              return `£${(value / 1000000).toFixed(1)}M`
             }
             if (value >= 1000) {
-              return `$${(value / 1000).toFixed(0)}k`
+              return `£${(value / 1000).toFixed(0)}k`
             }
-            return `$${value}`
+            return `£${value}`
           }}
           dataKey="revenue"
         />

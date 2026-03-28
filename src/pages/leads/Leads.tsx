@@ -16,8 +16,10 @@ import {
   setLeads,
   setLeadStatus,
   setPagination,
+  deleteLead as removeLeadFromStore,
 } from '@/redux/slices/leadSlice'
 import {
+  useDeleteLeadMutation,
   useGetLeadsQuery,
   useUpdateLeadStatusMutation,
 } from '@/redux/api/leadsApi'
@@ -91,7 +93,7 @@ export default function Leads() {
   // Confirmation dialog state
   const [isConfirmOpen, setIsConfirmOpen] = useState(false)
   const [confirmAction, setConfirmAction] = useState<{
-    type: 'toggle'
+    type: 'toggle' | 'delete'
     lead: Lead
   } | null>(null)
   const [isConfirmLoading, setIsConfirmLoading] = useState(false)
@@ -131,6 +133,8 @@ export default function Leads() {
 
   const [updateLeadStatus, { isLoading: isStatusUpdating }] =
     useUpdateLeadStatusMutation()
+  const [deleteLeadApi, { isLoading: isDeletingLead }] =
+    useDeleteLeadMutation()
 
   // Sync backend leads into Redux store
   useEffect(() => {
@@ -240,7 +244,19 @@ export default function Leads() {
     try {
       const { type, lead } = confirmAction
 
-      if (type === 'toggle') {
+      if (type === 'delete') {
+        await deleteLeadApi(lead.id).unwrap()
+        dispatch(removeLeadFromStore(lead.id))
+        toast({
+          title: 'Deleted',
+          description: `Lead ${lead.leadId} was removed.`,
+          variant: 'success',
+        })
+        if (selectedLead?.id === lead.id) {
+          setIsViewModalOpen(false)
+          setSelectedLead(null)
+        }
+      } else if (type === 'toggle') {
         // Cycle through statuses: OPEN -> CLOSED -> HIRED -> COMPLETED -> EXPIRED -> OPEN
         const statusOrder = [
           JobPostStatus.OPEN,
@@ -277,9 +293,12 @@ export default function Leads() {
       setIsConfirmOpen(false)
       setConfirmAction(null)
     } catch (error) {
+      const isDelete = confirmAction?.type === 'delete'
       toast({
         title: 'Error',
-        description: 'Failed to update lead status. Please try again.',
+        description: isDelete
+          ? 'Failed to delete lead. Please try again.'
+          : 'Failed to update lead status. Please try again.',
         variant: 'destructive',
       })
     } finally {
@@ -291,6 +310,15 @@ export default function Leads() {
     if (!confirmAction) return null
 
     const { type, lead } = confirmAction
+
+    if (type === 'delete') {
+      return {
+        title: 'Delete lead',
+        description: `This will permanently delete lead ${lead.leadId} (${lead.name}). This action cannot be undone.`,
+        variant: 'danger' as const,
+        confirmText: 'Delete',
+      }
+    }
 
     if (type === 'toggle') {
       const statusOrder = [
@@ -331,6 +359,10 @@ export default function Leads() {
     setItemsPerPage(limit)
   }
 
+  const handleDeleteRequest = (lead: Lead) => {
+    setConfirmAction({ type: 'delete', lead })
+    setIsConfirmOpen(true)
+  }
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -365,7 +397,11 @@ export default function Leads() {
 
         <CardContent className="p-0">
           {/* Table */}
-          <LeadTable leads={leadsList} onView={handleView} />
+          <LeadTable
+            leads={leadsList}
+            onView={handleView}
+            onDelete={handleDeleteRequest}
+          />
 
           {/* Pagination */}
           <div className="px-6 py-4 border-t border-gray-100">
@@ -404,7 +440,10 @@ export default function Leads() {
           description={getConfirmDialogConfig()!.description}
           variant={getConfirmDialogConfig()!.variant}
           confirmText={getConfirmDialogConfig()!.confirmText}
-          isLoading={isConfirmLoading}
+          isLoading={
+            isConfirmLoading ||
+            (confirmAction.type === 'delete' && isDeletingLead)
+          }
         />
       )}
     </motion.div>

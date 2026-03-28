@@ -3,6 +3,7 @@ import { cn } from '@/utils/cn'
 import type { Lead } from '@/types'
 import { JobPostStatus } from '@/types'
 import { LeadActionButtons } from './LeadActionButtons'
+import { Trash2 } from 'lucide-react'
 // import { Edit, } from 'lucide-react'
 
 const getStatusStyles = (status: JobPostStatus) => {
@@ -42,12 +43,14 @@ const getStatusLabel = (status: JobPostStatus) => {
 interface LeadTableProps {
   leads: Lead[]
   onView: (lead: Lead) => void
+  onDelete: (lead: Lead) => void
 }
 
-export function LeadTable({ leads, onView }: LeadTableProps) {
+export function LeadTable({ leads, onView, onDelete }: LeadTableProps) {
   // const changeStatus = (lead: Lead) => {
   //   console.log(lead)
   // }
+
   return (
     <div className="w-full overflow-auto">
       <table className="w-full min-w-[900px]">
@@ -149,6 +152,14 @@ export function LeadTable({ leads, onView }: LeadTableProps) {
                 {/* Actions Column */}
                 <td className="px-6 py-4 flex items-center justify-end gap-2">
                   <LeadActionButtons lead={lead} onView={onView} />
+                  <button
+                    type="button"
+                    onClick={() => onDelete(lead)}
+                    className="rounded-md p-1.5 text-gray-500 hover:bg-red-50 hover:text-red-600"
+                    aria-label={`Delete lead ${lead.leadId}`}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
                   {/* <button  onClick={() => changeStatus(lead)}><Edit className="w-4 h-4" /> </button> */}
                 </td>
               </motion.tr>
