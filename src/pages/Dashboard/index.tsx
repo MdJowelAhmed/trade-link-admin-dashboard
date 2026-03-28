@@ -67,7 +67,7 @@ export default function Dashboard() {
       },
       {
         title: 'Total Leads',
-        value: formatCompactNumber(0), // Not provided by API
+        value: formatCompactNumber(dashboardData.totalLeads), 
         change: 0,
         icon: TotalLeads,
         description: 'Not available',

@@ -148,8 +148,15 @@ export default function Leads() {
           email: item.creator?.email ?? '',
           contact: item.creator?.phone ?? '',
           requiredService: item.service?.name ?? '',
-          // Use country code as a basic location until we have more detailed data
-          location: item.country || '',
+          location:
+            [item.area, item.region, item.country].filter(Boolean).join(', ') ||
+            item.country ||
+            '',
+          postCode: item.postcode ?? item.postCode ?? '',
+          region: item.region,
+          area: item.area,
+          customerAddress:
+            item.creator?.customer?.address?.trim() || undefined,
           status: mapBackendStatusToLeadStatus(item.status),
           avatar: undefined,
           budget,
@@ -157,10 +164,28 @@ export default function Leads() {
           answeredQuestions: item.answeredQuestions as unknown as
             | LeadAnsweredQuestion[]
             | undefined,
+          purchasedByUsers: item.purchasedByUsers?.map((u) => ({
+            _id: u._id,
+            name: u.name,
+            email: u.email,
+            phone: u.phone,
+          })),
+          hiredProfessional: item.hiredProfessional
+            ? {
+                _id: item.hiredProfessional._id,
+                name: item.hiredProfessional.name,
+                email: item.hiredProfessional.email,
+                phone: item.hiredProfessional.phone,
+              }
+            : undefined,
+          description: item.description?.trim() || undefined,
+          leadPrice:
+            typeof item.leadPrice === 'number' ? item.leadPrice : undefined,
+          isUrgent: Boolean(item.isUrgent),
           backendStatus: item.status,
           country: item.country,
           createdAt: item.createdAt,
-          updatedAt: item.updatedAt,
+          updatedAt: item.updatedAt ?? item.createdAt,
         }
       })
 

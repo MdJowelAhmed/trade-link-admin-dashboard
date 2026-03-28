@@ -545,6 +545,17 @@ export interface LeadAnsweredQuestion {
   answer?: string | string[]
 }
 
+/** Professionals who purchased access to this lead */
+export interface LeadPurchasedByUser {
+  _id: string
+  name: string
+  email: string
+  phone?: string
+}
+
+/** Professional hired for this job (when status is HIRED / COMPLETED, etc.) */
+export type LeadHiredProfessional = LeadPurchasedByUser
+
 export interface Lead {
   id: string
   /** Backend job number (e.g. JOB-000001) */
@@ -569,10 +580,28 @@ export interface Lead {
   notes?: string
   /** All answered questions for detailed view */
   answeredQuestions?: LeadAnsweredQuestion[]
+  /** Users who purchased this lead */
+  purchasedByUsers?: LeadPurchasedByUser[]
+  /** Assigned hired professional when provided by API */
+  hiredProfessional?: LeadHiredProfessional
+  /** Customer-facing job description from API */
+  description?: string
+  /** Lead listing price (admin/API) */
+  leadPrice?: number
+  /** Customer marked job as urgent */
+  isUrgent?: boolean
   /** Raw backend status (e.g. OPEN, CLOSED) */
   backendStatus?: string
-  /** Country code if provided by backend */
+  /** Country if provided by backend */
   country?: string
+  /** Postcode (UK-style) from backend */
+  postCode?: string
+  /** Region / county-level area (e.g. South East) */
+  region?: string
+  /** Town or locality (e.g. Winchester) */
+  area?: string
+  /** Creator customer street address when provided */
+  customerAddress?: string
   createdAt: string
   updatedAt: string
 }

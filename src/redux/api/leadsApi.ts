@@ -15,13 +15,20 @@ interface BackendLead {
         name: string
         email: string
         phone?: string
-        customer?: Record<string, unknown>
+        customer?: {
+            address?: string
+        }
     }
     service: {
         name: string
     }
     jobNumber: string
     country: string
+    /** API may send lowercase `postcode` */
+    postcode?: string
+    postCode?: string
+    region?: string
+    area?: string
     status: string
     answeredQuestions?: Array<{
         questionText?: string
@@ -30,8 +37,23 @@ interface BackendLead {
         answer?: string | string[]
         _id?: string
     }>
+    purchasedByUsers?: Array<{
+        _id: string
+        name: string
+        email: string
+        phone?: string
+    }>
+    hiredProfessional?: {
+        _id: string
+        name: string
+        email: string
+        phone?: string
+    }
+    description?: string
+    leadPrice?: number
+    isUrgent?: boolean
     createdAt: string
-    updatedAt: string
+    updatedAt?: string
 }
 
 // Backend response type

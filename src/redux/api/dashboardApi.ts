@@ -11,6 +11,7 @@ interface EarningsResponse extends ApiResponse<EarningsDataItem[]> {}
 
 interface DashboardSummaryData {
     totalCustomers: number;
+    totalLeads: number;
     totalProfessionals: number;
     totalEarnings: number;
 }

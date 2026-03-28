@@ -7,7 +7,7 @@
     "dev": "vite --port 3004",
     "build": "tsc && vite build",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-   "preview": "vite preview --host --open false",
+    "preview": "vite preview --host --open false",
     "start": "vite --port 3004"
   },
   "dependencies": {
@@ -27,6 +27,7 @@
     "@radix-ui/react-tabs": "^1.0.4",
     "@radix-ui/react-toast": "^1.1.5",
     "@radix-ui/react-tooltip": "^1.0.7",
+    "@react-google-maps/api": "^2.20.8",
     "@reduxjs/toolkit": "^2.0.1",
     "@tiptap/extension-color": "^3.13.0",
     "@tiptap/extension-highlight": "^3.13.0",
