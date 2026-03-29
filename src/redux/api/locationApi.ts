@@ -44,6 +44,7 @@ export interface CreateLocationPayload {
 export interface UpdateLocationPayload {
     name?: string
     isActive?: boolean
+    parentId?: string
 }
 
 const locationApi = baseApi.injectEndpoints({

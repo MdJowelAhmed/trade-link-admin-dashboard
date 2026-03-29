@@ -25,13 +25,29 @@ import { getParentSelectLabel, getParentTypeFor, LOCATION_TAB_LABELS } from '../
 import { toast } from '@/utils/toast'
 import { isFetchBaseQueryError } from '../errorUtils'
 
-const editFormSchema = z.object({
-    name: z.string().min(1, 'Name is required'),
-    isActive: z.boolean(),
-    parentId: z.string().optional(),
-})
+function buildEditSchema(editParentType: string | null) {
+    const baseSchema = z.object({
+        name: z.string().min(1, 'Name is required'),
+        isActive: z.boolean(),
+        parentId: z.string().optional(),
+    })
 
-type FormValues = z.infer<typeof editFormSchema>
+    if (!editParentType) {
+        return baseSchema
+    }
+
+    return baseSchema.superRefine((data, ctx) => {
+        if (!data.parentId || data.parentId === '') {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: 'Select a parent',
+                path: ['parentId'],
+            })
+        }
+    })
+}
+
+type FormValues = z.infer<ReturnType<typeof buildEditSchema>> | z.infer<ReturnType<typeof buildCreateSchema>>
 
 function buildCreateSchema(requiresParent: boolean) {
     return z
@@ -107,48 +123,36 @@ export function AddEditLocationModal({
 
     const editParentType =
         mode === 'edit' && location ? getParentTypeFor(location.type) : null
-    const editParentId =
-        mode === 'edit' && location && typeof location.parentId === 'string'
-            ? location.parentId
-            : null
-    const editParentNameFromObject =
-        mode === 'edit' && location && typeof location.parentId === 'object' && location.parentId
-            ? location.parentId.name ?? null
-            : null
 
     const {
         data: editParentsRes,
         isFetching: editParentsLoading,
     } = useGetLocationsQuery(
-        { type: editParentType!, page: 1, limit: PARENT_LOOKUP_LIMIT },
+        { 
+            type: editParentType!, 
+            page: 1, 
+            limit: PARENT_LOOKUP_LIMIT,
+            searchTerm: parentSearch || undefined,
+        },
         {
-            skip:
-                !open ||
-                mode !== 'edit' ||
-                !editParentType ||
-                !editParentId ||
-                Boolean(editParentNameFromObject),
+            skip: !open || mode !== 'edit' || !editParentType,
         }
     )
 
-    const editParents = editParentsRes?.data ?? []
-    const editParentNameById = useMemo(() => {
-        const map: Record<string, string> = {}
-        for (const p of editParents) {
-            map[p._id] = p.name
-        }
-        return map
-    }, [editParents])
-
-    const editParentNameResolved =
-        editParentNameFromObject ?? (editParentId ? editParentNameById[editParentId] : null)
+    const editParents = useMemo(() => editParentsRes?.data ?? [], [editParentsRes])
 
     const [createLocation, { isLoading: creating }] = useCreateLocationMutation()
     const [updateLocation, { isLoading: updating }] = useUpdateLocationMutation()
 
     const formSchema = useMemo(
-        () => (mode === 'create' ? buildCreateSchema(requiresParent) : editFormSchema),
-        [mode, requiresParent]
+        () => {
+            if (mode === 'create') {
+                return buildCreateSchema(requiresParent)
+            } else {
+                return buildEditSchema(editParentType)
+            }
+        },
+        [mode, requiresParent, editParentType]
     )
 
     const {
@@ -174,10 +178,16 @@ export function AddEditLocationModal({
         if (!open) return
         setParentSearch('')
         if (mode === 'edit' && location) {
+            let parentIdValue = ''
+            if (typeof location.parentId === 'string') {
+                parentIdValue = location.parentId
+            } else if (location.parentId && typeof location.parentId === 'object' && '_id' in location.parentId) {
+                parentIdValue = location.parentId._id
+            }
             reset({
                 name: location.name,
                 isActive: location.isActive,
-                parentId: '',
+                parentId: parentIdValue,
             })
         } else if (mode === 'create') {
             reset({
@@ -204,12 +214,16 @@ export function AddEditLocationModal({
                     variant: 'success',
                 })
             } else if (location) {
+                const updatePayload: { name: string; isActive: boolean; parentId?: string } = {
+                    name: values.name.trim(),
+                    isActive: values.isActive ?? true,
+                }
+                if (editParentType && values.parentId) {
+                    updatePayload.parentId = values.parentId
+                }
                 await updateLocation({
                     id: location._id,
-                    body: {
-                        name: values.name.trim(),
-                        isActive: values.isActive,
-                    },
+                    body: updatePayload,
                 }).unwrap()
                 toast({
                     title: 'Location updated',
@@ -307,18 +321,51 @@ export function AddEditLocationModal({
 
                 {mode === 'edit' && (
                     <>
-                        {editParentType && (
-                            <div className="rounded-2xl border border-border px-4 py-3">
-                                <div className="space-y-1">
-                                    <Label className="text-base">
-                                        Parent{editParentLabel ? ` (${editParentLabel})` : ''}
-                                    </Label>
+                        {editParentType && editParentLabel && (
+                            <div className="space-y-2">
+                                <Label>{editParentLabel}</Label>
+                                <Select
+                                    value={parentId || undefined}
+                                    onValueChange={(v) => {
+                                        setValue('parentId', v, { shouldValidate: true })
+                                        setParentSearch('')
+                                    }}
+                                    disabled={editParentsLoading}
+                                >
+                                    <SelectTrigger className="rounded-full" error={!!errors.parentId}>
+                                        <SelectValue
+                                            placeholder={
+                                                editParentsLoading
+                                                    ? `Loading ${editParentLabel.toLowerCase()}s…`
+                                                    : `Select ${editParentLabel.toLowerCase()}`
+                                            }
+                                        />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <div className="p-2">
+                                            <Input
+                                                value={parentSearch}
+                                                onChange={(e) => setParentSearch(e.target.value)}
+                                                placeholder={`Search ${editParentLabel.toLowerCase()}...`}
+                                                className="h-9 rounded-full"
+                                                onKeyDown={(e) => e.stopPropagation()}
+                                            />
+                                        </div>
+                                        {editParents.map((p) => (
+                                            <SelectItem key={p._id} value={p._id}>
+                                                {p.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                {errors.parentId && (
+                                    <p className="text-sm text-destructive">{errors.parentId.message}</p>
+                                )}
+                                {!editParentsLoading && editParents.length === 0 && (
                                     <p className="text-sm text-muted-foreground">
-                                        {editParentsLoading
-                                            ? 'Loading...'
-                                            : editParentNameResolved ?? '—'}
+                                        No {editParentLabel.toLowerCase()} available.
                                     </p>
-                                </div>
+                                )}
                             </div>
                         )}
 

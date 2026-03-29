@@ -4,8 +4,8 @@ export const LOCATION_TAB_ORDER: LocationType[] = [
     'country',
     'region',
     'county',
-    'town',
     'city',
+    'town',
 ]
 
 export const LOCATION_TAB_LABELS: Record<LocationType, string> = {
@@ -30,8 +30,8 @@ export function getParentTypeFor(child: LocationType): LocationType | null {
         country: null,
         region: 'country',
         county: 'region',
-        town: 'county',
-        city: 'town',
+        town: 'city',
+        city: 'county',
     }
     return map[child]
 }
