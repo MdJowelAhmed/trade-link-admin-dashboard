@@ -5,6 +5,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ConfirmDialog, GridSkeleton, Pagination, SearchInput } from '@/components/common'
+import { useUrlState, useUrlNumber, useUrlParams } from '@/hooks/useUrlState'
 import {
     useGetLocationsQuery,
     useDeleteLocationMutation,
@@ -22,6 +23,14 @@ import { LocationCard } from './components/LocationCard'
 import { AddEditLocationModal } from './components/AddEditLocationModal'
 import { toast } from '@/utils/toast'
 import { isFetchBaseQueryError } from './errorUtils'
+
+const VALID_LOCATION_TABS = new Set<LocationType>(LOCATION_TAB_ORDER)
+
+function parseLocationTab(value: string): LocationType {
+    return VALID_LOCATION_TABS.has(value as LocationType)
+        ? (value as LocationType)
+        : 'country'
+}
 
 function extractErrorMessage(error: unknown): string {
     if (!isFetchBaseQueryError(error)) return 'Request failed'
@@ -131,8 +140,14 @@ function LocationTypePanel({
 }
 
 export default function LocationContainer() {
-    const [activeType, setActiveType] = useState<LocationType>('country')
-    const [page, setPage] = useState(1)
+    const { setParams } = useUrlParams()
+    const [activeType] = useUrlState<LocationType>({
+        key: 'tab',
+        defaultValue: 'country',
+        parse: parseLocationTab,
+        serialize: (v) => v,
+    })
+    const [page, setPage] = useUrlNumber('page', 1)
     const [limit, setLimit] = useState(30)
     const [search, setSearch] = useState('')
 
@@ -228,8 +243,11 @@ export default function LocationContainer() {
                     <Tabs
                         value={activeType}
                         onValueChange={(v) => {
-                            setActiveType(v as LocationType)
-                            setPage(1)
+                            const next = v as LocationType
+                            setParams({
+                                tab: next === 'country' ? null : next,
+                                page: null,
+                            })
                             setSearch('')
                         }}
                         className="w-full"
