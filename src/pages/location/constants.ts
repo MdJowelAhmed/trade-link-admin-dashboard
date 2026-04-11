@@ -41,3 +41,8 @@ export function getParentSelectLabel(child: LocationType): string | null {
     if (!parent) return null
     return LOCATION_TAB_LABELS[parent]
 }
+
+/** List view: show parent filter for types that have a parent (not country/region). */
+export function locationTypeNeedsParentFilter(type: LocationType): boolean {
+    return type !== 'country' && type !== 'region'
+}

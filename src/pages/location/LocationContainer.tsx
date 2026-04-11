@@ -4,7 +4,7 @@ import { Plus } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { ConfirmDialog, GridSkeleton, Pagination, SearchInput } from '@/components/common'
+import { ConfirmDialog, FilterDropdown, GridSkeleton, Pagination, SearchInput } from '@/components/common'
 import { useUrlState, useUrlNumber, useUrlParams } from '@/hooks/useUrlState'
 import {
     useGetLocationsQuery,
@@ -18,8 +18,10 @@ import {
     LOCATION_TAB_LABELS,
     LOCATION_TAB_PLURAL,
     getParentTypeFor,
+    locationTypeNeedsParentFilter,
 } from './constants'
 import { LocationCard } from './components/LocationCard'
+import { LocationParentFilter } from './components/LocationParentFilter'
 import { AddEditLocationModal } from './components/AddEditLocationModal'
 import { toast } from '@/utils/toast'
 import { isFetchBaseQueryError } from './errorUtils'
@@ -41,11 +43,19 @@ function extractErrorMessage(error: unknown): string {
     return 'Request failed'
 }
 
+const STATUS_FILTER_OPTIONS = [
+    { value: 'all', label: 'All statuses' },
+    { value: 'true', label: 'Active' },
+    { value: 'false', label: 'Inactive' },
+] as const
+
 function LocationTypePanel({
     type,
     page,
     limit,
     search,
+    filterParentId,
+    filterIsActive,
     onPageChange,
     onItemsPerPageChange,
     onEdit,
@@ -57,6 +67,8 @@ function LocationTypePanel({
     page: number
     limit: number
     search: string
+    filterParentId: string
+    filterIsActive: 'all' | 'true' | 'false'
     onPageChange: (page: number) => void
     onItemsPerPageChange: (limit: number) => void
     onEdit: (loc: LocationEntity) => void
@@ -66,11 +78,21 @@ function LocationTypePanel({
 }) {
     const PARENT_LOOKUP_LIMIT = 1000
 
+    const searchTermForApi = search.trim() || undefined
+    const parentIdForApi =
+        locationTypeNeedsParentFilter(type) && filterParentId !== 'all'
+            ? filterParentId
+            : undefined
+    const isActiveForApi =
+        filterIsActive === 'all' ? undefined : filterIsActive === 'true'
+
     const { data, isLoading, isFetching } = useGetLocationsQuery({
         type,
         page,
         limit,
-        searchTerm: search || undefined,
+        searchTerm: searchTermForApi,
+        parentId: parentIdForApi,
+        isActive: isActiveForApi,
     })
     const locations = data?.data ?? []
 
@@ -150,6 +172,8 @@ export default function LocationContainer() {
     const [page, setPage] = useUrlNumber('page', 1)
     const [limit, setLimit] = useState(30)
     const [search, setSearch] = useState('')
+    const [filterParentId, setFilterParentId] = useState('all')
+    const [filterIsActive, setFilterIsActive] = useState<'all' | 'true' | 'false'>('all')
 
     const [createOpen, setCreateOpen] = useState(false)
     const [createTypeSnapshot, setCreateTypeSnapshot] = useState<LocationType>('country')
@@ -249,10 +273,12 @@ export default function LocationContainer() {
                                 page: null,
                             })
                             setSearch('')
+                            setFilterParentId('all')
+                            setFilterIsActive('all')
                         }}
                         className="w-full"
                     >
-                        <div className="flex flex-col gap-3 mb-6 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="flex flex-col gap-4 mb-6">
                             <TabsList className="flex h-auto min-h-12 w-full flex-wrap justify-start gap-1 rounded-2xl bg-muted/60 p-1.5 sm:w-auto">
                                 {LOCATION_TAB_ORDER.map((t) => (
                                     <TabsTrigger
@@ -265,16 +291,47 @@ export default function LocationContainer() {
                                 ))}
                             </TabsList>
 
-                            <SearchInput
-                                value={search}
-                                onChange={(val) => {
-                                    setSearch(val)
-                                    setPage(1)
-                                }}
-                                debounceMs={500}
-                                placeholder={`Search ${LOCATION_TAB_PLURAL[activeType].toLowerCase()}...`}
-                                className="w-full sm:w-80"
-                            />
+                            <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+                                <SearchInput
+                                    value={search}
+                                    onChange={(val) => {
+                                        // Leading/trailing spaces are not sent to the API (see LocationTypePanel)
+                                        setSearch(val.trim())
+                                        setPage(1)
+                                    }}
+                                    debounceMs={500}
+                                    placeholder={`Search ${LOCATION_TAB_PLURAL[activeType].toLowerCase()}...`}
+                                    className="w-full lg:max-w-md lg:flex-1"
+                                />
+
+                                <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-end lg:justify-end lg:gap-2 w-full lg:w-auto">
+                                    {locationTypeNeedsParentFilter(activeType) &&
+                                        getParentTypeFor(activeType) && (
+                                            <LocationParentFilter
+                                                key={activeType}
+                                                parentType={getParentTypeFor(activeType)!}
+                                                value={filterParentId}
+                                                onChange={(id) => {
+                                                    setFilterParentId(id)
+                                                    setPage(1)
+                                                }}
+                                            />
+                                        )}
+                                    <FilterDropdown
+                                        value={filterIsActive}
+                                        options={STATUS_FILTER_OPTIONS.map((o) => ({
+                                            value: o.value,
+                                            label: o.label,
+                                        }))}
+                                        onChange={(v) => {
+                                            setFilterIsActive(v as 'all' | 'true' | 'false')
+                                            setPage(1)
+                                        }}
+                                        placeholder="Status"
+                                        className="w-full sm:w-[170px]"
+                                    />
+                                </div>
+                            </div>
                         </div>
 
                         {LOCATION_TAB_ORDER.map((t) => (
@@ -284,6 +341,8 @@ export default function LocationContainer() {
                                     page={page}
                                     limit={limit}
                                     search={search}
+                                    filterParentId={filterParentId}
+                                    filterIsActive={filterIsActive}
                                     onPageChange={setPage}
                                     onItemsPerPageChange={(newLimit) => {
                                         setLimit(newLimit)
