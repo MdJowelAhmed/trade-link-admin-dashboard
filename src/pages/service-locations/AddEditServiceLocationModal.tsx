@@ -399,13 +399,13 @@ export function AddEditServiceLocationModal({
                     {fields.length === 0 && (
                         <p className="text-sm text-muted-foreground">No FAQ rows. Optional.</p>
                     )}
-                    <div className="space-y-3">
+                    <div className="flex flex-col gap-4">
                         {fields.map((field, index) => (
                             <div
                                 key={field.id}
-                                className="grid gap-2 sm:grid-cols-[1fr_1fr_auto] sm:items-end"
+                                className="flex flex-col gap-3 rounded-xl border border-border/80 bg-muted/20 p-4"
                             >
-                                <div className="space-y-1">
+                                <div className="flex flex-col gap-2">
                                     <Label className="text-xs">Question</Label>
                                     <Input
                                         className="rounded-full"
@@ -417,10 +417,10 @@ export function AddEditServiceLocationModal({
                                         </p>
                                     )}
                                 </div>
-                                <div className="space-y-1">
+                                <div className="flex flex-col gap-2">
                                     <Label className="text-xs">Answer</Label>
-                                    <Input
-                                        className="rounded-full"
+                                    <Textarea
+                                        className="rounded-xl min-h-[100px] resize-y"
                                         {...register(`faqOverrides.${index}.answer` as const)}
                                     />
                                     {errors.faqOverrides?.[index]?.answer && (
@@ -429,15 +429,18 @@ export function AddEditServiceLocationModal({
                                         </p>
                                     )}
                                 </div>
-                                <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="icon"
-                                    className="text-destructive shrink-0"
-                                    onClick={() => remove(index)}
-                                >
-                                    <Trash2 className="h-4 w-4" />
-                                </Button>
+                                <div className="flex justify-end">
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        className="text-destructive hover:text-destructive rounded-full"
+                                        onClick={() => remove(index)}
+                                    >
+                                        <Trash2 className="h-4 w-4 mr-1" />
+                                        Remove
+                                    </Button>
+                                </div>
                             </div>
                         ))}
                     </div>

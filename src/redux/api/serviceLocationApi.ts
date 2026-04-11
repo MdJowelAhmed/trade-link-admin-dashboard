@@ -103,7 +103,7 @@ const serviceLocationApi = baseApi.injectEndpoints({
                 if (params?.searchTerm) queryParams.append('searchTerm', params.searchTerm)
                 const qs = queryParams.toString()
                 return {
-                    url: `/service-locations`,
+                    url: `/service-locations${qs ? `?${qs}` : ''}`,
                     method: 'GET',
                 }
             },

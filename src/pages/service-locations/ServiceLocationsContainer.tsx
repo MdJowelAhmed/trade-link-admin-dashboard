@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Plus } from 'lucide-react'
+import { Plus, Check, X, Pencil, Trash2, Eye } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { ConfirmDialog, GridSkeleton, Pagination, SearchInput } from '@/components/common'
+import { Switch } from '@/components/ui/switch'
+import { ConfirmDialog, DataTable, Pagination, SearchInput } from '@/components/common'
 import { useUrlNumber } from '@/hooks/useUrlState'
+import type { TableColumn } from '@/types'
 import {
     useGetServiceLocationsQuery,
     useDeleteServiceLocationMutation,
@@ -13,10 +15,11 @@ import {
     getServiceNameFromRef,
     type ServiceLocationPage,
 } from '@/redux/api/serviceLocationApi'
-import { ServiceLocationCard } from './components/ServiceLocationCard'
 import { AddEditServiceLocationModal } from './AddEditServiceLocationModal'
+import { ServiceLocationDetailsModal } from './ServiceLocationDetailsModal'
 import { toast } from '@/utils/toast'
 import { isFetchBaseQueryError } from '@/pages/location/errorUtils'
+import { cn } from '@/utils/cn'
 
 function extractErrorMessage(error: unknown): string {
     if (!isFetchBaseQueryError(error)) return 'Request failed'
@@ -27,6 +30,16 @@ function extractErrorMessage(error: unknown): string {
     return 'Request failed'
 }
 
+function hasFaqOverrides(row: ServiceLocationPage): boolean {
+    return Array.isArray(row.faqOverrides) && row.faqOverrides.length > 0
+}
+
+function truncateText(text: string | undefined, max = 72): string {
+    const t = text?.trim() ?? ''
+    if (!t) return '—'
+    return t.length <= max ? t : `${t.slice(0, max)}…`
+}
+
 export default function ServiceLocationsContainer() {
     const [page, setPage] = useUrlNumber('page', 1)
     const [limit, setLimit] = useState(20)
@@ -35,6 +48,9 @@ export default function ServiceLocationsContainer() {
     const [createOpen, setCreateOpen] = useState(false)
     const [editOpen, setEditOpen] = useState(false)
     const [editing, setEditing] = useState<ServiceLocationPage | null>(null)
+
+    const [detailsOpen, setDetailsOpen] = useState(false)
+    const [detailsRow, setDetailsRow] = useState<ServiceLocationPage | null>(null)
 
     const [deleteOpen, setDeleteOpen] = useState(false)
     const [deleting, setDeleting] = useState<ServiceLocationPage | null>(null)
@@ -62,6 +78,11 @@ export default function ServiceLocationsContainer() {
     const openEdit = (row: ServiceLocationPage) => {
         setEditing(row)
         setEditOpen(true)
+    }
+
+    const openDetails = (row: ServiceLocationPage) => {
+        setDetailsRow(row)
+        setDetailsOpen(true)
     }
 
     const openDelete = (row: ServiceLocationPage) => {
@@ -100,6 +121,79 @@ export default function ServiceLocationsContainer() {
     const deleteDescription = deleting
         ? `Remove “${getServiceNameFromRef(deleting.serviceId) ?? deleting.slug} · ${getLocationNameFromRef(deleting.locationId) ?? 'location'}”? This cannot be undone.`
         : ''
+
+    const columns: TableColumn<ServiceLocationPage>[] = [
+        {
+            key: 'serviceId',
+            label: 'Service name',
+            render: (_, row) => (
+                <span className="font-medium">{getServiceNameFromRef(row.serviceId) ?? '—'}</span>
+            ),
+        },
+        {
+            key: 'locationId',
+            label: 'Location name',
+            render: (_, row) => (
+                <span className="font-medium">{getLocationNameFromRef(row.locationId) ?? '—'}</span>
+            ),
+        },
+        {
+            key: 'metaTitleOverride',
+            label: 'Meta title',
+            render: (_, row) => (
+                <span className="text-muted-foreground">
+                    {row.metaTitleOverride?.trim() ? row.metaTitleOverride : '—'}
+                </span>
+            ),
+        },
+        {
+            key: 'metaDescriptionOverride',
+            label: 'Meta description',
+            render: (_, row) => (
+                <span
+                    className="text-muted-foreground line-clamp-2 max-w-[280px]"
+                    title={row.metaDescriptionOverride?.trim() || undefined}
+                >
+                    {truncateText(row.metaDescriptionOverride, 120)}
+                </span>
+            ),
+        },
+        {
+            key: 'faqOverrides',
+            label: 'FAQ',
+            render: (_, row) => (
+                <div className="flex justify-center">
+                    {hasFaqOverrides(row) ? (
+                        <span
+                            className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-700"
+                            title="Has FAQ overrides"
+                        >
+                            <Check className="h-4 w-4" strokeWidth={2.5} />
+                        </span>
+                    ) : (
+                        <span
+                            className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-destructive/10 text-destructive"
+                            title="No FAQ overrides"
+                        >
+                            <X className="h-4 w-4" strokeWidth={2.5} />
+                        </span>
+                    )}
+                </div>
+            ),
+        },
+        {
+            key: 'isActive',
+            label: 'On / off',
+            render: (_, row) => (
+                <Switch
+                    checked={row.isActive}
+                    disabled={togglingId === row._id}
+                    onCheckedChange={() => onToggleStatus(row)}
+                    aria-label={row.isActive ? 'Turn off' : 'Turn on'}
+                />
+            ),
+        },
+    ]
 
     return (
         <motion.div
@@ -141,27 +235,53 @@ export default function ServiceLocationsContainer() {
                         />
                     </div>
 
-                    {isLoading || isFetching ? (
-                        <GridSkeleton count={6} itemClassName="h-56" />
-                    ) : rows.length === 0 ? (
+                    {rows.length === 0 && !isLoading && !isFetching ? (
                         <p className="text-center py-14 text-muted-foreground">
                             No service location pages yet. Add one to get started.
                         </p>
                     ) : (
                         <div className="space-y-6">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                                {rows.map((row, index) => (
-                                    <ServiceLocationCard
-                                        key={row._id}
-                                        item={row}
-                                        index={index}
-                                        isToggling={togglingId === row._id}
-                                        onEdit={openEdit}
-                                        onDelete={openDelete}
-                                        onToggleStatus={onToggleStatus}
-                                    />
-                                ))}
-                            </div>
+                            <DataTable<ServiceLocationPage>
+                                columns={columns}
+                                data={rows}
+                                isLoading={isLoading || isFetching}
+                                emptyMessage="No service location pages yet."
+                                rowKeyExtractor={(row) => row._id}
+                                actions={(row) => (
+                                    <div className="flex flex-wrap items-center justify-end gap-2">
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="sm"
+                                            className={cn('rounded-full h-8')}
+                                            onClick={() => openDetails(row)}
+                                        >
+                                            <Eye className="h-3.5 w-3.5 mr-1" />
+                                            Details
+                                        </Button>
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="sm"
+                                            className="rounded-full h-8"
+                                            onClick={() => openEdit(row)}
+                                        >
+                                            <Pencil className="h-3.5 w-3.5 mr-1" />
+                                            Edit
+                                        </Button>
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="icon"
+                                            className="h-8 w-8 rounded-full text-destructive hover:text-destructive"
+                                            onClick={() => openDelete(row)}
+                                            aria-label="Delete"
+                                        >
+                                            <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                    </div>
+                                )}
+                            />
 
                             {hasBackendPagination && totalPages > 1 && (
                                 <Pagination
@@ -196,6 +316,15 @@ export default function ServiceLocationsContainer() {
                 }}
                 mode="edit"
                 row={editing}
+            />
+
+            <ServiceLocationDetailsModal
+                open={detailsOpen}
+                onClose={() => {
+                    setDetailsOpen(false)
+                    setDetailsRow(null)
+                }}
+                row={detailsRow}
             />
 
             <ConfirmDialog

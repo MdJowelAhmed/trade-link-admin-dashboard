@@ -61,7 +61,7 @@ export function DataTable<T>({
                 </th>
               ))}
               {actions && (
-                <th className="px-4 py-3 text-right text-sm font-semibold text-accent w-[100px]">
+                <th className="px-4 py-3 text-right text-sm font-semibold text-accent min-w-[220px]">
                   Actions
                 </th>
               )}
