@@ -76,7 +76,7 @@ function LocationTypePanel({
     onToggleStatus: (loc: LocationEntity) => void
     isTogglingId: string | null
 }) {
-    const PARENT_LOOKUP_LIMIT = 1000
+    const PARENT_LOOKUP_LIMIT = 10000
 
     const searchTermForApi = search.trim() || undefined
     const parentIdForApi =
@@ -278,7 +278,7 @@ export default function LocationContainer() {
                         }}
                         className="w-full"
                     >
-                        <div className="flex flex-col gap-4 mb-6">
+                        <div className="flex   justify-between gap-4 mb-6">
                             <TabsList className="flex h-auto min-h-12 w-full flex-wrap justify-start gap-1 rounded-2xl bg-muted/60 p-1.5 sm:w-auto">
                                 {LOCATION_TAB_ORDER.map((t) => (
                                     <TabsTrigger
@@ -289,49 +289,52 @@ export default function LocationContainer() {
                                         {LOCATION_TAB_PLURAL[t]}
                                     </TabsTrigger>
                                 ))}
+
+
+                                
                             </TabsList>
-
-                            <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-                                <SearchInput
-                                    value={search}
-                                    onChange={(val) => {
-                                        // Leading/trailing spaces are not sent to the API (see LocationTypePanel)
-                                        setSearch(val.trim())
-                                        setPage(1)
-                                    }}
-                                    debounceMs={500}
-                                    placeholder={`Search ${LOCATION_TAB_PLURAL[activeType].toLowerCase()}...`}
-                                    className="w-full lg:max-w-md lg:flex-1"
-                                />
-
-                                <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-end lg:justify-end lg:gap-2 w-full lg:w-auto">
-                                    {locationTypeNeedsParentFilter(activeType) &&
-                                        getParentTypeFor(activeType) && (
-                                            <LocationParentFilter
-                                                key={activeType}
-                                                parentType={getParentTypeFor(activeType)!}
-                                                value={filterParentId}
-                                                onChange={(id) => {
-                                                    setFilterParentId(id)
-                                                    setPage(1)
-                                                }}
-                                            />
-                                        )}
-                                    <FilterDropdown
-                                        value={filterIsActive}
-                                        options={STATUS_FILTER_OPTIONS.map((o) => ({
-                                            value: o.value,
-                                            label: o.label,
-                                        }))}
-                                        onChange={(v) => {
-                                            setFilterIsActive(v as 'all' | 'true' | 'false')
+                            <div className="flex  items-center justify-end gap-x-2">
+                                    <SearchInput
+                                        value={search}
+                                        onChange={(val) => {
+                                            // Leading/trailing spaces are not sent to the API (see LocationTypePanel)
+                                            setSearch(val.trim())
                                             setPage(1)
                                         }}
-                                        placeholder="Status"
-                                        className="w-full sm:w-[170px]"
+                                        debounceMs={500}
+                                        placeholder={`Search ${LOCATION_TAB_PLURAL[activeType].toLowerCase()}...`}
+                                        className="w-full lg:max-w-md lg:flex-1"
                                     />
+
+                                    <div className="flex  gap-x-2 items-center">
+                                        {locationTypeNeedsParentFilter(activeType) &&
+                                            getParentTypeFor(activeType) && (
+                                                <LocationParentFilter
+                                                    key={activeType}
+                                                    parentType={getParentTypeFor(activeType)!}
+                                                    value={filterParentId}
+                                                    onChange={(id) => {
+                                                        setFilterParentId(id)
+                                                        setPage(1)
+                                                    }}
+                                                />
+                                            )}
+                                        <FilterDropdown
+                                            value={filterIsActive}
+                                            options={STATUS_FILTER_OPTIONS.map((o) => ({
+                                                value: o.value,
+                                                label: o.label,
+                                            }))}
+                                            onChange={(v) => {
+                                                setFilterIsActive(v as 'all' | 'true' | 'false')
+                                                setPage(1)
+                                            }}
+                                            placeholder="Status"
+                                            className="w-full sm:w-[170px]"
+                                        />
+                                    </div>
                                 </div>
-                            </div>
+
                         </div>
 
                         {LOCATION_TAB_ORDER.map((t) => (

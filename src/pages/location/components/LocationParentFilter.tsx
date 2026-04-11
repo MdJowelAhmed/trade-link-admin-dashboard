@@ -67,7 +67,7 @@ export function LocationParentFilter({
     const parentLabel = LOCATION_TAB_LABELS[parentType]
 
     return (
-        <div className="w-full min-w-[200px] max-w-[280px] space-y-1.5">
+        <div className="w-full min-w-[200px] max-w-[280px] ">
             <Label className="text-xs text-muted-foreground sr-only">{parentLabel} filter</Label>
             <Select
                 value={value}
@@ -82,6 +82,7 @@ export function LocationParentFilter({
                     onChange(id)
                 }}
                 disabled={disabled || isFetching}
+                
             >
                 <SelectTrigger className="rounded-full bg-card border-card w-full">
                     <SelectValue placeholder={`All ${parentPlural}`} />
@@ -92,7 +93,7 @@ export function LocationParentFilter({
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                             placeholder={`Search ${parentPlural.toLowerCase()}…`}
-                            className="h-9 rounded-full"
+                            className="h-9 rounded-full bg-white"
                             onKeyDown={(e) => e.stopPropagation()}
                         />
                     </div>
