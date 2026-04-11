@@ -6,6 +6,7 @@ import {
     getServiceNameFromRef,
     type ServiceLocationPage,
 } from '@/redux/api/serviceLocationApi'
+import { cn } from '@/utils/cn'
 
 interface ServiceLocationDetailsModalProps {
     open: boolean
@@ -25,56 +26,56 @@ export function ServiceLocationDetailsModal({ open, onClose, row }: ServiceLocat
             title="Service location details"
             description={row ? `/${row.slug}` : undefined}
             size="lg"
-            className="bg-white"
+            className="bg-white max-w-2xl"
         >
             {!row ? null : (
             <div className="space-y-5 pt-2 text-sm">
                 <div className="flex flex-wrap items-center gap-2">
-                    <Badge variant={row.isActive ? 'success' : 'secondary'}>
+                    <div className={cn(row.isActive ? 'bg-card text-success px-3 py-[2px] rounded-full' : 'bg-red-500 text-white     px-2 py-[2px] rounded-full')}>
                         {row.isActive ? 'Active' : 'Inactive'}
-                    </Badge>
+                    </div>
                 </div>
 
                 <div className="grid gap-4 sm:grid-cols-2">
                     <div>
-                        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                        <p className=" font-medium  uppercase tracking-wide">
                             Service name
                         </p>
-                        <p className="mt-1 font-medium text-foreground">{serviceName}</p>
+                        <p className="mt-1  text-muted-foreground">{serviceName}</p>
                     </div>
                     <div>
-                        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                        <p className=" font-medium  uppercase tracking-wide">
                             Location name
                         </p>
-                        <p className="mt-1 font-medium text-foreground">{locationName}</p>
+                        <p className="mt-1  text-muted-foreground">{locationName}</p>
                     </div>
                 </div>
 
                 <Separator />
 
                 <div>
-                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                    <p className=" font-medium  uppercase tracking-wide">
                         Meta title override
                     </p>
-                    <p className="mt-1 whitespace-pre-wrap text-foreground">
+                    <p className="mt-1 whitespace-pre-wrap text-muted-foreground">
                         {row.metaTitleOverride?.trim() ? row.metaTitleOverride : '—'}
                     </p>
                 </div>
 
                 <div>
-                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                    <p className=" font-medium  uppercase tracking-wide">
                         Meta description override
                     </p>
-                    <p className="mt-1 whitespace-pre-wrap text-foreground">
+                    <p className="mt-1 whitespace-pre-wrap text-muted-foreground">
                         {row.metaDescriptionOverride?.trim() ? row.metaDescriptionOverride : '—'}
                     </p>
                 </div>
 
                 <div>
-                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                    <p className=" font-medium  uppercase tracking-wide">
                         Local notes
                     </p>
-                    <p className="mt-1 whitespace-pre-wrap text-foreground">
+                    <p className="mt-1 whitespace-pre-wrap text-muted-foreground">
                         {row.localNotes?.trim() ? row.localNotes : '—'}
                     </p>
                 </div>
@@ -82,7 +83,7 @@ export function ServiceLocationDetailsModal({ open, onClose, row }: ServiceLocat
                 <Separator />
 
                 <div>
-                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
+                    <p className=" font-medium  uppercase tracking-wide mb-2">
                         FAQ overrides
                     </p>
                     {faqs.length === 0 ? (
@@ -94,9 +95,9 @@ export function ServiceLocationDetailsModal({ open, onClose, row }: ServiceLocat
                                     key={f._id ?? `${i}-${f.question}`}
                                     className="rounded-xl border border-border bg-muted/30 px-4 py-3"
                                 >
-                                    <p className="text-xs font-medium text-muted-foreground">Question</p>
+                                    <p className=" font-medium  text-muted-foreground">Question</p>
                                     <p className="mt-0.5 whitespace-pre-wrap">{f.question}</p>
-                                    <p className="mt-2 text-xs font-medium text-muted-foreground">Answer</p>
+                                    <p className="mt-2  font-medium text-muted-foreground ">Answer: </p>
                                     <p className="mt-0.5 whitespace-pre-wrap">{f.answer}</p>
                                 </li>
                             ))}

@@ -152,7 +152,7 @@ export default function ServiceLocationsContainer() {
                         />
                     </div>
 
-                    <div className="p-6 pt-4">
+                    <div className=" pt-4">
                         {listLoading ? (
                             <div className="px-2 py-10 text-center text-gray-500">Loading…</div>
                         ) : error ? (

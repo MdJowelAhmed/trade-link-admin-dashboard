@@ -249,7 +249,7 @@ export function AddEditServiceLocationModal({
             title={mode === 'create' ? 'Add service & location page' : 'Edit service & location page'}
             description="Link a service with a location, set SEO overrides, and optional FAQ overrides."
             size="xl"
-            className="bg-white"
+            className="bg-white max-w-2xl"
         >
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 pt-2">
                 <div className="grid gap-4 sm:grid-cols-2">
