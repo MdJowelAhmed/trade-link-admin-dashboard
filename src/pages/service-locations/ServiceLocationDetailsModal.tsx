@@ -1,5 +1,4 @@
 import { ModalWrapper } from '@/components/common'
-import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import {
     getLocationNameFromRef,

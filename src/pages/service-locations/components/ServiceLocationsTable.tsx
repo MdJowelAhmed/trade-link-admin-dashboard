@@ -138,8 +138,8 @@ export function ServiceLocationsTable({
                                             className="rounded-full h-8"
                                             onClick={() => onDetails(row)}
                                         >
-                                            <Eye className="h-3.5 w-3.5 mr-1" />
-                                            Details
+                                            <Eye className="h-5 w-5 " />
+                                            
                                         </Button>
                                         <Button
                                             type="button"
@@ -148,18 +148,18 @@ export function ServiceLocationsTable({
                                             className="rounded-full h-8"
                                             onClick={() => onEdit(row)}
                                         >
-                                            <Pencil className="h-3.5 w-3.5 mr-1" />
-                                            Edit
+                                            <Pencil className="h-5 w-5 " />
+                                            
                                         </Button>
                                         <Button
                                             type="button"
-                                            variant="ghost"
-                                            size="icon"
-                                            className="h-8 w-8 rounded-full text-destructive hover:text-destructive"
+                                            variant="outline"
+                                            size="sm"
+                                            className=" rounded-full h-8"
                                             onClick={() => onDelete(row)}
                                             aria-label="Delete"
                                         >
-                                            <Trash2 className="h-4 w-4" />
+                                            <Trash2 className="h-5 w-5 " /> 
                                         </Button>
                                     </div>
                                 </td>

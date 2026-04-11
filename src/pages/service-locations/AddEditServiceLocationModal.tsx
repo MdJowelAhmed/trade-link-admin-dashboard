@@ -29,9 +29,10 @@ import { LOCATION_TAB_LABELS, LOCATION_TAB_ORDER } from '@/pages/location/consta
 import { toast } from '@/utils/toast'
 import { isFetchBaseQueryError } from '@/pages/location/errorUtils'
 
+/** Allow empty strings so the backend always receives `""` for blank FAQ fields. */
 const faqSchema = z.object({
-    question: z.string().min(1, 'Question is required'),
-    answer: z.string().min(1, 'Answer is required'),
+    question: z.string(),
+    answer: z.string(),
 })
 
 const formSchema = z.object({
@@ -204,14 +205,15 @@ export function AddEditServiceLocationModal({
 
     const onSubmit = async (values: FormValues) => {
         const faqPayload = values.faqOverrides.map(({ question, answer }) => ({
-            question: question.trim(),
-            answer: answer.trim(),
+            question: (question ?? '').trim(),
+            answer: (answer ?? '').trim(),
         }))
         const bodyCommon = {
             metaTitleOverride: trimOrUndefined(values.metaTitleOverride),
             metaDescriptionOverride: trimOrUndefined(values.metaDescriptionOverride),
             localNotes: trimOrUndefined(values.localNotes),
-            faqOverrides: faqPayload.length ? faqPayload : undefined,
+            // Always send array; each field is explicit `""` when left blank (create + edit).
+            faqOverrides: faqPayload,
         }
         try {
             if (mode === 'create') {
