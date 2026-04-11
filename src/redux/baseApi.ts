@@ -37,6 +37,7 @@ export const baseApi = createApi({
         'BonusManagement',
         'Setting',
         'Location',
+        'ServiceLocation',
     ],
     endpoints: () => ({}),
 })

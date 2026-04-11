@@ -23,6 +23,7 @@ import {
   FileCheck,
   Code,
   MapPin,
+  Layers,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
@@ -99,6 +100,11 @@ const navItems: NavItem[] = [
     title: 'Location',
     href: '/location',
     icon: MapPin,
+  },
+  {
+    title: 'Service & locations',
+    href: '/service-locations',
+    icon: Layers,
   },
   // {
   //   title: 'Car List',

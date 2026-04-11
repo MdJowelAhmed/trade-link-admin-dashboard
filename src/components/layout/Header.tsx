@@ -28,6 +28,8 @@ const routeTitles: Record<string, string> = {
   '/users': 'User Management',
   '/products': 'Product Management',
   '/categories': 'Category Management',
+  '/location': 'Locations',
+  '/service-locations': 'Service & locations',
   '/settings/profile': 'Profile Settings',
   '/settings/password': 'Change Password',
   '/settings/terms': 'Terms & Conditions',
