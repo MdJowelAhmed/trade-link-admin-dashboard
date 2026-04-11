@@ -121,7 +121,7 @@ export default function ServiceLocationsContainer() {
         >
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight">Service & locations</h1>
+                    <h1 className="text-2xl font-bold tracking-tight">Service & Location Content</h1>
                     <p className="text-muted-foreground text-sm">
                         Manage SEO pages that combine a service with a specific place in your
                         hierarchy.
@@ -133,7 +133,7 @@ export default function ServiceLocationsContainer() {
                     onClick={() => setCreateOpen(true)}
                 >
                     <Plus className="h-4 w-4 mr-2" />
-                    Add page
+                    Service & Location Content
                 </Button>
             </div>
 

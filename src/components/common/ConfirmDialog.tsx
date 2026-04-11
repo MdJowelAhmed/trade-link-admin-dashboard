@@ -31,7 +31,7 @@ const variantConfig = {
     icon: Trash2,
     iconClass: 'text-destructive',
     bgClass: 'bg-destructive/10',
-    buttonClass: 'bg-destructive text-destructive-foreground hover:bg-destructive/90',
+    buttonClass: 'bg-red-500 text-white hover:bg-red-600',
   },
   warning: {
     icon: AlertTriangle,
