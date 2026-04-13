@@ -21,38 +21,38 @@ export function ServiceDetailsModal({ open, onClose, service }: ServiceDetailsMo
       open={open}
       onClose={onClose}
       title="Service details"
-      description="Read-only view of this service."
+      // description="Read-only view of this service."
       size="lg"
       className="bg-white"
     >
       {service ? (
         <div className="space-y-5 text-sm">
           <div>
-            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            <p className=" font-medium uppercase tracking-wide ">
               Service name
             </p>
-            <p className="mt-1 font-semibold text-slate-900">{service.name}</p>
+            <p className="mt-1 font-semibold text-3xl text-black">{service.name}</p>
           </div>
           <div>
-            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            <p className=" font-medium uppercase tracking-wide ">
               Category
             </p>
-            <p className="mt-1 text-slate-800">{service.categoryName ?? '—'}</p>
+            <p className="mt-1 text-muted-foreground">{service.categoryName ?? '—'}</p>
           </div>
           <div>
-            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            <p className=" font-medium uppercase tracking-wide ">
               Description
             </p>
-            <p className="mt-1 whitespace-pre-wrap text-slate-700">
+            <p className="mt-1 whitespace-pre-wrap text-muted-foreground">
               {description ? description : '—'}
             </p>
           </div>
           <div>
-            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            <p className=" font-medium uppercase tracking-wide ">
               Detailed description
             </p>
             {points.length > 0 ? (
-              <ul className="mt-2 list-disc space-y-2 pl-5 text-slate-700">
+              <ul className="mt-2 list-disc space-y-2 pl-5 text-muted-foreground">
                 {points.map((line, i) => (
                   <li key={`${i}-${line.slice(0, 24)}`} className="whitespace-pre-wrap">
                     {line}
