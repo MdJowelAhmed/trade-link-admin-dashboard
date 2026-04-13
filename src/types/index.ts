@@ -698,6 +698,8 @@ export interface Service {
   name: string
   categoryId: string
   categoryName?: string
+  description?: string
+  detailedDescription?: string[]
   totalQuestions: number
   status: ServiceStatus
   createdAt: string
@@ -716,6 +718,8 @@ export interface ServiceFormData {
   name: string
   categoryId: string
   status: ServiceStatus
+  description?: string
+  detailedDescription?: string[]
 }
 
 // ==================== Service Question Types ====================

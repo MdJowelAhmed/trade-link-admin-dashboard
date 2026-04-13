@@ -10,7 +10,8 @@ import {
   GridSkeleton,
 } from '@/components/common'
 import { CategoryCard } from './components/CategoryCard'
-import { ServiceCard } from './components/ServiceCard'
+import { ServicesTable } from './components/ServicesTable'
+import { ServiceDetailsModal } from './components/ServiceDetailsModal'
 import { AddEditCategoryModal } from './AddEditCategoryModal'
 import { AddEditServiceModal } from './components/AddEditServiceModal'
 import { DeleteCategoryModal } from './DeleteCategoryModal'
@@ -18,7 +19,7 @@ import { ConfirmDialog } from '@/components/common'
 import { useAppDispatch, useAppSelector } from '@/redux/hooks'
 import { setFilters, setPage, setLimit, setSelectedCategoryId } from '@/redux/slices/categorySlice'
 import { useGetCategoriesQuery } from '@/redux/api/categoriesApi'
-import { useGetServicesQuery, useDeleteServiceMutation, useUpdateServiceStatusMutation } from '@/redux/api/serviceApi'
+import { useGetServicesQuery, useDeleteServiceMutation } from '@/redux/api/serviceApi'
 import { useUrlParams } from '@/hooks/useUrlState'
 import { CATEGORY_STATUSES } from '@/utils/constants'
 import type { Service } from '@/types'
@@ -122,6 +123,8 @@ export default function CategoryList() {
         name: backendService.name,
         categoryId: backendService.categoryId._id,
         categoryName: backendService.categoryId.name,
+        description: backendService.description,
+        detailedDescription: backendService.detailedDescription,
         status: (backendService.isActive ? 'active' : 'inactive') as Service['status'],
         totalQuestions: 0, // Not provided by API, defaulting to 0
         createdAt: backendService.createdAt,
@@ -153,13 +156,14 @@ export default function CategoryList() {
   const [showAddServiceModal, setShowAddServiceModal] = useState(false)
   const [showEditServiceModal, setShowEditServiceModal] = useState(false)
   const [showDeleteServiceModal, setShowDeleteServiceModal] = useState(false)
+  const [showServiceDetailsModal, setShowServiceDetailsModal] = useState(false)
+  const [serviceForDetails, setServiceForDetails] = useState<Service | null>(null)
   const [serviceToDelete, setServiceToDelete] = useState<Service | null>(null)
   const [showCategoryDetailsModal, setShowCategoryDetailsModal] = useState(false)
   const [faqMode, setFaqMode] = useState<'edit' | 'faq' | 'details'>('edit')
 
   // RTK Query mutations for services
   const [deleteService, { isLoading: isDeletingService }] = useDeleteServiceMutation()
-  const [updateServiceStatus] = useUpdateServiceStatusMutation()
 
   // Sync URL params with Redux UI state (only for categories now)
   useEffect(() => {
@@ -217,22 +221,13 @@ export default function CategoryList() {
 
 
   const handleEditService = (service: Service) => {
-    // Find the backend service to get full data
-    const backendService = backendServices.find((s) => s._id === service.id)
-    if (backendService) {
-      const mappedService: Service = {
-        id: backendService._id,
-        name: backendService.name,
-        categoryId: backendService.categoryId._id,
-        categoryName: backendService.categoryId.name,
-        status: (backendService.isActive ? 'active' : 'inactive') as Service['status'],
-        totalQuestions: 0,
-        createdAt: backendService.createdAt,
-        updatedAt: backendService.updatedAt,
-      }
-      setSelectedService(mappedService)
-      setShowEditServiceModal(true)
-    }
+    setSelectedService(service)
+    setShowEditServiceModal(true)
+  }
+
+  const handleServiceDetails = (service: Service) => {
+    setServiceForDetails(service)
+    setShowServiceDetailsModal(true)
   }
 
   const handleDeleteService = (service: Service) => {
@@ -260,32 +255,6 @@ export default function CategoryList() {
           variant: 'destructive',
         })
       }
-    }
-  }
-
-  const handleToggleServiceStatus = async (service: Service) => {
-    try {
-      // Toggle the status: if active, make inactive; if inactive, make active
-      const newIsActive = service.status === 'active' ? false : true
-      
-      await updateServiceStatus({
-        id: service.id,
-        isActive: newIsActive,
-      }).unwrap()
-      
-      toast({
-        title: 'Status Updated',
-        description: `${service.name} status has been updated successfully.`,
-      })
-    } catch (error: unknown) {
-      const errorMessage = error && typeof error === 'object' && 'data' in error
-        ? (error as { data?: { message?: string } }).data?.message
-        : undefined
-      toast({
-        title: 'Error',
-        description: errorMessage || 'Failed to update service status.',
-        variant: 'destructive',
-      })
     }
   }
 
@@ -440,22 +409,16 @@ export default function CategoryList() {
             </TabsContent>
 
             <TabsContent value="services" className="mt-0">
-              {servicesLoading || servicesFetching ? (
-                <GridSkeleton count={8} className="grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4" itemClassName="h-32" />
-              ) : services.length > 0 ? (
-                <>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4">
-                    {services.map((service, index) => (
-                      <ServiceCard
-                        key={service.id}
-                        service={service}
-                        onEdit={() => handleEditService(service)}
-                        onDelete={() => handleDeleteService(service)}
-                        onToggleStatus={() => handleToggleServiceStatus(service)}
-                        index={index}
-                      />
-                    ))}
-                  </div>
+              <>
+                <ServicesTable
+                  services={services}
+                  isLoading={servicesLoading || servicesFetching}
+                  startIndex={(page - 1) * limit}
+                  onDetails={handleServiceDetails}
+                  onEdit={handleEditService}
+                  onDelete={handleDeleteService}
+                />
+                {!servicesLoading && !servicesFetching && services.length > 0 && (
                   <Pagination
                     currentPage={servicesMeta?.page ?? page}
                     totalPages={servicesMeta?.totalPage ?? 1}
@@ -465,12 +428,8 @@ export default function CategoryList() {
                     onItemsPerPageChange={handleLimitChange}
                     className="mt-6"
                   />
-                </>
-              ) : (
-                <div className="text-center py-12 text-muted-foreground">
-                  No services found. Try adjusting your filters.
-                </div>
-              )}
+                )}
+              </>
             </TabsContent>
           </Tabs>
         </CardContent>
@@ -542,6 +501,15 @@ export default function CategoryList() {
           service={selectedService}
         />
       )}
+
+      <ServiceDetailsModal
+        open={showServiceDetailsModal}
+        onClose={() => {
+          setShowServiceDetailsModal(false)
+          setServiceForDetails(null)
+        }}
+        service={serviceForDetails}
+      />
 
       {/* Delete Service Confirmation Dialog */}
       {serviceToDelete && (

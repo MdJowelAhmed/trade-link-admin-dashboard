@@ -17,6 +17,8 @@ interface BackendService {
         name: string
     }
     name: string
+    description?: string
+    detailedDescription?: string[]
     isActive: boolean
     createdAt: string
     updatedAt: string

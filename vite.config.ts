@@ -15,6 +15,7 @@ export default defineConfig({
     port: 4173,
     allowedHosts: [
       '76.13.255.95',
+      "10.10.7.30",
       'admin.tradelinknetwork.co.uk',
       'localhost',
     ],
