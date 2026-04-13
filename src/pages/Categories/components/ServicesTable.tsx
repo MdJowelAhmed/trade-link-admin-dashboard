@@ -40,7 +40,7 @@ export function ServicesTable({
     <div className="w-full overflow-auto rounded-xl border bg-white">
       <table className="w-full min-w-[900px] border-collapse">
         <thead>
-          <tr className="border-b bg-[#CCF3F5] text-accent">
+          <tr className="border-b bg-card text-accent">
             <th className="px-4 py-4 text-left text-sm font-semibold">SL</th>
             <th className="px-4 py-4 text-left text-sm font-semibold">Service name</th>
             <th className="px-4 py-4 text-left text-sm font-semibold">Category</th>
