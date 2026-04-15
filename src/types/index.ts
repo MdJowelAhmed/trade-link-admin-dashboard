@@ -663,7 +663,10 @@ export interface TradePerson {
   mobile: string
   location: string
   address: string
+  /** Approve workflow: pending / approved / rejected */
   status: TradePersonStatus
+  /** User account flag from API `status`: ACTIVE | INACTIVE */
+  accountStatus: 'ACTIVE' | 'INACTIVE'
   avatar?: string
   galleryImages?: string[]
   walletBalance?: number

@@ -115,6 +115,22 @@ const tradePersonSlice = createSlice({
         filteredTradePerson.updatedAt = new Date().toISOString()
       }
     },
+    setTradePersonAccountStatus: (
+      state,
+      action: PayloadAction<{ id: string; accountStatus: 'ACTIVE' | 'INACTIVE' }>
+    ) => {
+      const { id, accountStatus } = action.payload
+      const tradePerson = state.list.find((t) => t.id === id)
+      if (tradePerson) {
+        tradePerson.accountStatus = accountStatus
+        tradePerson.updatedAt = new Date().toISOString()
+      }
+      const filteredTradePerson = state.filteredList.find((t) => t.id === id)
+      if (filteredTradePerson) {
+        filteredTradePerson.accountStatus = accountStatus
+        filteredTradePerson.updatedAt = new Date().toISOString()
+      }
+    },
     approveTradePerson: (state, action: PayloadAction<string>) => {
       const tradePerson = state.list.find((t) => t.id === action.payload)
       if (tradePerson) {
@@ -200,6 +216,7 @@ export const {
   setLimit,
   setPagination,
   setTradePersonStatus,
+  setTradePersonAccountStatus,
   approveTradePerson,
   rejectTradePerson,
   updateTradePersonWallet,

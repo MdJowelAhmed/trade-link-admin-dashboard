@@ -40,7 +40,7 @@ export function BonusTable({
             <th className="px-6 py-4 text-left text-sm font-bold">Name</th>
             <th className="px-6 py-4 text-left text-sm font-bold">Email</th>
             <th className="px-6 py-4 text-left text-sm font-bold">Phone</th>
-            <th className="px-6 py-4 text-left text-sm font-bold">Wallet Balance</th>
+            <th className="px-6 py-4 text-left text-sm font-bold ">Wallet Balance</th>
             <th className="px-6 py-4 text-left text-sm font-bold">Approve Status</th>
             <th className="px-6 py-4 text-right text-sm font-bold">Action</th>
           </tr>
@@ -65,7 +65,7 @@ export function BonusTable({
                 className="hover:bg-gray-50 transition-colors"
               >
                 {/* SL Column */}
-                <td className="px-6 py-4">
+                <td className="px-6 py-4 ">
                   <span className="text-sm font-medium text-slate-700">
                     {String(startIndex + index + 1).padStart(2, '0')}
                   </span>

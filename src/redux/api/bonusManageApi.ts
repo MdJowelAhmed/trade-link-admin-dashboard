@@ -91,13 +91,26 @@ const bonusManageApi = baseApi.injectEndpoints({
             }),
             invalidatesTags: ['BonusManagement'],
         }),
+        statusUpdate: builder.mutation<
+            { success: boolean; message: string },
+            { id: string; payload: { status: 'ACTIVE' | 'INACTIVE' } }
+        >({
+            query: ({ id, payload }) => ({
+                url: `/admin/professionals/${id}`,
+                method: 'PATCH',
+                body: payload,
+            }),
+            invalidatesTags: ['BonusManagement'],
+        }),
+        
     }), 
 })
 
 export const { 
     useGetBonusManagementQuery, 
     useUpdateBonusManagementAmountMutation, 
-    useUpdateBonusManagementStatusMutation 
+    useUpdateBonusManagementStatusMutation,
+    useStatusUpdateMutation
+
 } = bonusManageApi
 
-export type { BonusManagementResponse, GetBonusManagementParams, UpdateAmountPayload, UpdateStatusPayload }

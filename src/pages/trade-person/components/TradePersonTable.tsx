@@ -9,6 +9,8 @@ interface TradePersonTableProps {
   onUpdateAmount: (tradePerson: TradePerson) => void
   onApprove: (tradePerson: TradePerson) => void
   onReject: (tradePerson: TradePerson) => void
+  onToggleAccountStatus: (tradePerson: TradePerson) => void
+  accountStatusUpdatingId?: string | null
   startIndex?: number
 }
 
@@ -18,9 +20,11 @@ export function TradePersonTable({
   onUpdateAmount,
   onApprove,
   onReject,
+  onToggleAccountStatus,
+  accountStatusUpdatingId = null,
   startIndex = 0,
 }: TradePersonTableProps) {
-  const getStatusBadge = (status: string) => {
+  const getApproveStatusBadge = (status: string) => {
     const statusConfig = {
       approved: {
         bg: 'bg-secondary',
@@ -54,6 +58,22 @@ export function TradePersonTable({
     )
   }
 
+  const getAccountStatusBadge = (accountStatus: 'ACTIVE' | 'INACTIVE') => {
+    const isActive = accountStatus === 'ACTIVE'
+    return (
+      <span
+        className={cn(
+          'inline-flex items-center justify-center px-4 py-1.5 rounded-md text-xs font-medium min-w-[90px]',
+          isActive
+            ? 'bg-emerald-100 text-emerald-800'
+            : 'bg-slate-100 text-slate-700'
+        )}
+      >
+        {accountStatus}
+      </span>
+    )
+  }
+
   return (
     <div className="w-full overflow-auto">
       <table className="w-full min-w-[900px]">
@@ -64,7 +84,8 @@ export function TradePersonTable({
             <th className="px-6 py-4 text-left text-sm font-semibold">Services</th>
             <th className="px-6 py-4 text-left text-sm font-semibold">Email</th>
             <th className="px-6 py-4 text-left text-sm font-semibold">Location</th>
-            <th className="px-6 py-4 text-left text-sm font-semibold">Wallet Balance</th>
+            <th className="px-6 py-4 text-left text-sm font-semibold whitespace-nowrap">Wallet Balance</th>
+            <th className="px-6 py-4 text-center text-sm font-semibold">Approve Status</th>
             <th className="px-6 py-4 text-center text-sm font-semibold">Status</th>
             <th className="px-6 py-4 text-right text-sm font-semibold">Action</th>
           </tr>
@@ -73,7 +94,7 @@ export function TradePersonTable({
           {tradePersons.length === 0 ? (
             <tr>
               <td
-                colSpan={8}
+                colSpan={9}
                 className="px-6 py-8 text-center text-gray-500"
               >
                 No trade persons found
@@ -130,9 +151,14 @@ export function TradePersonTable({
                   </span>
                 </td>
 
-                {/* Status Column */}
-                <td className="text-center">
-                  {getStatusBadge(tradePerson.status)}
+                {/* Approve status */}
+                <td className="text-center px-6 py-4">
+                  {getApproveStatusBadge(tradePerson.status)}
+                </td>
+
+                {/* Account status (ACTIVE / INACTIVE) */}
+                <td className="text-center px-6 py-4">
+                  {getAccountStatusBadge(tradePerson.accountStatus)}
                 </td>
 
                 {/* Actions Column */}
@@ -143,6 +169,8 @@ export function TradePersonTable({
                     onUpdateAmount={onUpdateAmount}
                     onApprove={onApprove}
                     onReject={onReject}
+                    onToggleAccountStatus={onToggleAccountStatus}
+                    isAccountStatusUpdating={accountStatusUpdatingId === tradePerson.id}
                   />
                 </td>
               </motion.tr>

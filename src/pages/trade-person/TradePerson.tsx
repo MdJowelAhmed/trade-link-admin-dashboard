@@ -14,6 +14,7 @@ import {
   setFilters,
   setLoading,
   setPagination,
+  setTradePersonAccountStatus,
   setTradePersonStatus,
   setTradePersons,
   updateTradePersonWallet,
@@ -25,6 +26,7 @@ import {
   useGetBonusManagementQuery,
   useUpdateBonusManagementAmountMutation,
   useUpdateBonusManagementStatusMutation,
+  useStatusUpdateMutation,
   type BackendProfessional,
 } from '@/redux/api/bonusManageApi'
 
@@ -53,6 +55,7 @@ const mapBackendProfessionalToTradePerson = (
     status: mapApproveStatusToTradePersonStatus(
       professional.professional?.approveStatus
     ),
+    accountStatus: professional.status,
     avatar: undefined,
     galleryImages: [],
     walletBalance: professional.walletBalance,
@@ -82,6 +85,7 @@ export default function TradePersonManagement() {
   // Status update modal state
   const [isStatusModalOpen, setIsStatusModalOpen] = useState(false)
   const [statusToUpdate, setStatusToUpdate] = useState<'APPROVED' | 'REJECTED' | null>(null)
+  const [accountStatusUpdatingId, setAccountStatusUpdatingId] = useState<string | null>(null)
 
   // URL state management
   const [searchQuery, setSearchQuery] = useUrlString('search', '')
@@ -117,6 +121,7 @@ export default function TradePersonManagement() {
     useUpdateBonusManagementAmountMutation()
   const [updateStatus, { isLoading: isStatusUpdating }] =
     useUpdateBonusManagementStatusMutation()
+  const [statusUpdate] = useStatusUpdateMutation()
 
   // Redux state (pagination is synced from API response)
   const { pagination } = useAppSelector(
@@ -218,6 +223,40 @@ export default function TradePersonManagement() {
     setSelectedTradePerson(tradePerson)
     setStatusToUpdate('REJECTED')
     setIsStatusModalOpen(true)
+  }
+
+  const handleToggleAccountStatus = async (tradePerson: TradePerson) => {
+    const nextStatus: 'ACTIVE' | 'INACTIVE' =
+      tradePerson.accountStatus === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE'
+
+    setAccountStatusUpdatingId(tradePerson.id)
+    try {
+      await statusUpdate({
+        id: tradePerson.id,
+        payload: { status: nextStatus },
+      }).unwrap()
+
+      dispatch(setTradePersonAccountStatus({ id: tradePerson.id, accountStatus: nextStatus }))
+      toast({
+        title: 'Success',
+        description: `Account status set to ${nextStatus}.`,
+        variant: 'success',
+      })
+    } catch (error: unknown) {
+      const errorMessage =
+        error && typeof error === 'object' && 'data' in error &&
+        error.data && typeof error.data === 'object' && 'message' in error.data
+          ? String(error.data.message)
+          : 'Failed to update account status. Please try again.'
+
+      toast({
+        title: 'Error',
+        description: errorMessage,
+        variant: 'destructive',
+      })
+    } finally {
+      setAccountStatusUpdatingId(null)
+    }
   }
 
   const handleConfirmAmount = async (id: string, amount: number) => {
@@ -340,6 +379,8 @@ export default function TradePersonManagement() {
                 onUpdateAmount={handleUpdateAmount}
                 onApprove={handleApprove}
                 onReject={handleReject}
+                onToggleAccountStatus={handleToggleAccountStatus}
+                accountStatusUpdatingId={accountStatusUpdatingId}
                 startIndex={startIndex}
               />
 
