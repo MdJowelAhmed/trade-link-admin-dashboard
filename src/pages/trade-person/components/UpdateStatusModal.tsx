@@ -33,7 +33,7 @@ export function UpdateStatusModal({
       title={status === 'APPROVED' ? 'Approve Trade Person' : 'Reject Trade Person'}
       description={`Are you sure you want to ${status === 'APPROVED' ? 'approve' : 'reject'} ${tradePerson.businessName}?`}
       size="md"
-      className="bg-white"
+      className="bg-white "
     >
       <div className="flex justify-end gap-2 py-4 border-t">
         <Button

@@ -225,10 +225,10 @@ export default function TradePersonManagement() {
     setIsStatusModalOpen(true)
   }
 
-  const handleToggleAccountStatus = async (tradePerson: TradePerson) => {
-    const nextStatus: 'ACTIVE' | 'INACTIVE' =
-      tradePerson.accountStatus === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE'
-
+  const handleSetAccountStatus = async (
+    tradePerson: TradePerson,
+    nextStatus: 'ACTIVE' | 'INACTIVE'
+  ) => {
     setAccountStatusUpdatingId(tradePerson.id)
     try {
       await statusUpdate({
@@ -379,7 +379,7 @@ export default function TradePersonManagement() {
                 onUpdateAmount={handleUpdateAmount}
                 onApprove={handleApprove}
                 onReject={handleReject}
-                onToggleAccountStatus={handleToggleAccountStatus}
+                onSetAccountStatus={handleSetAccountStatus}
                 accountStatusUpdatingId={accountStatusUpdatingId}
                 startIndex={startIndex}
               />

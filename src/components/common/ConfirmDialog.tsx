@@ -37,13 +37,13 @@ const variantConfig = {
     icon: AlertTriangle,
     iconClass: 'text-warning',
     bgClass: 'bg-warning/10',
-    buttonClass: 'bg-warning text-warning-foreground hover:bg-warning/90',
+    buttonClass: 'bg-red-500 text-white hover:bg-red-600',
   },
   info: {
     icon: Info,
     iconClass: 'text-primary',
     bgClass: 'bg-primary/10',
-    buttonClass: 'bg-primary text-primary-foreground hover:bg-primary/90',
+    buttonClass: 'bg-primary text-white ',
   },
 }
 

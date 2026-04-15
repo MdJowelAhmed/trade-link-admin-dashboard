@@ -9,7 +9,10 @@ interface TradePersonTableProps {
   onUpdateAmount: (tradePerson: TradePerson) => void
   onApprove: (tradePerson: TradePerson) => void
   onReject: (tradePerson: TradePerson) => void
-  onToggleAccountStatus: (tradePerson: TradePerson) => void
+  onSetAccountStatus: (
+    tradePerson: TradePerson,
+    status: 'ACTIVE' | 'INACTIVE'
+  ) => void | Promise<void>
   accountStatusUpdatingId?: string | null
   startIndex?: number
 }
@@ -20,7 +23,7 @@ export function TradePersonTable({
   onUpdateAmount,
   onApprove,
   onReject,
-  onToggleAccountStatus,
+  onSetAccountStatus,
   accountStatusUpdatingId = null,
   startIndex = 0,
 }: TradePersonTableProps) {
@@ -85,7 +88,7 @@ export function TradePersonTable({
             <th className="px-6 py-4 text-left text-sm font-semibold">Email</th>
             <th className="px-6 py-4 text-left text-sm font-semibold">Location</th>
             <th className="px-6 py-4 text-left text-sm font-semibold whitespace-nowrap">Wallet Balance</th>
-            <th className="px-6 py-4 text-center text-sm font-semibold">Approve Status</th>
+            <th className="px-6 py-4 text-center text-sm font-semibold whitespace-nowrap">Approve Status</th>
             <th className="px-6 py-4 text-center text-sm font-semibold">Status</th>
             <th className="px-6 py-4 text-right text-sm font-semibold">Action</th>
           </tr>
@@ -169,7 +172,7 @@ export function TradePersonTable({
                     onUpdateAmount={onUpdateAmount}
                     onApprove={onApprove}
                     onReject={onReject}
-                    onToggleAccountStatus={onToggleAccountStatus}
+                    onSetAccountStatus={onSetAccountStatus}
                     isAccountStatusUpdating={accountStatusUpdatingId === tradePerson.id}
                   />
                 </td>
