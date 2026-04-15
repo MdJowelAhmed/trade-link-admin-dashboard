@@ -43,11 +43,11 @@ export default function CustomersManagement() {
   const [isViewModalOpen, setIsViewModalOpen] = useState(false)
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null)
 
-  // Confirmation dialog state
+  // Confirmation dialog state (switch → pick next status, then confirm)
   const [isConfirmOpen, setIsConfirmOpen] = useState(false)
   const [confirmAction, setConfirmAction] = useState<{
-    type: 'toggle'
     customer: Customer
+    nextStatus: CustomerStatus
   } | null>(null)
 
   // URL state management
@@ -123,40 +123,38 @@ export default function CustomersManagement() {
     setIsViewModalOpen(true)
   }
 
-  const handleToggleStatus = (customer: Customer) => {
-    setConfirmAction({ type: 'toggle', customer })
+  const handleRequestStatusChange = (
+    customer: Customer,
+    nextStatus: CustomerStatus
+  ) => {
+    if (nextStatus === customer.status) return
+    setConfirmAction({ customer, nextStatus })
     setIsConfirmOpen(true)
   }
 
   const handleConfirmAction = async () => {
     if (!confirmAction) return
 
-    try {
-      const { type, customer } = confirmAction
+    const { customer, nextStatus } = confirmAction
 
-      if (type === 'toggle') {
-        const nextStatus: CustomerStatus =
-          customer.status === 'active' ? 'inactive' : 'active'
-        
-        // Convert to uppercase for API (ACTIVE/INACTIVE)
-        const apiStatus = nextStatus.toUpperCase() as 'ACTIVE' | 'INACTIVE'
-        
-        await updateCustomerStatus({ 
-          id: customer.id, 
-          status: apiStatus 
-        }).unwrap()
-        
-        dispatch(setCustomerStatus({ id: customer.id, status: nextStatus }))
-        toast({
-          title: 'Success',
-          description: `${customer.userName} is now ${nextStatus}.`,
-          variant: 'success',
-        })
-      }
+    try {
+      const apiStatus = nextStatus.toUpperCase() as 'ACTIVE' | 'INACTIVE'
+
+      await updateCustomerStatus({
+        id: customer.id,
+        status: apiStatus,
+      }).unwrap()
+
+      dispatch(setCustomerStatus({ id: customer.id, status: nextStatus }))
+      toast({
+        title: 'Success',
+        description: `${customer.userName} is now ${nextStatus}.`,
+        variant: 'success',
+      })
 
       setIsConfirmOpen(false)
       setConfirmAction(null)
-    } catch (error) {
+    } catch {
       toast({
         title: 'Error',
         description: 'Failed to update customer status. Please try again.',
@@ -168,20 +166,23 @@ export default function CustomersManagement() {
   const getConfirmDialogConfig = () => {
     if (!confirmAction) return null
 
-    const { type, customer } = confirmAction
+    const { customer, nextStatus } = confirmAction
+    const activating = nextStatus === 'active'
 
-    if (type === 'toggle') {
-      const nextStatus = customer.status === 'active' ? 'inactive' : 'active'
-      return {
-        title: 'Change Status',
-        description: `Are you sure you want to change ${customer.userName}'s status to ${nextStatus}?`,
-        variant: 'warning' as const,
-        confirmText: 'Change Status',
-      }
+    return {
+      title: activating ? 'Activate this customer?' : 'Deactivate this customer?',
+      description: activating
+        ? `${customer.userName} will be marked active and can use the platform.`
+        : `${customer.userName} will be marked inactive.`,
+      variant: activating ? ('info' as const) : ('warning' as const),
+      confirmText: activating ? 'Activate' : 'Deactivate',
     }
-
-    return null
   }
+
+  const statusSwitchLockedCustomerId =
+    confirmAction && (isConfirmOpen || isStatusUpdating)
+      ? confirmAction.customer.id
+      : null
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page)
@@ -234,7 +235,8 @@ export default function CustomersManagement() {
               <CustomerTable
                 customers={list}
                 onView={handleView}
-                onToggleStatus={handleToggleStatus}
+                onRequestStatusChange={handleRequestStatusChange}
+                statusSwitchLockedCustomerId={statusSwitchLockedCustomerId}
               />
 
               {/* Pagination */}

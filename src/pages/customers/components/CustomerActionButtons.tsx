@@ -1,18 +1,26 @@
-import { EyeOff, Lock } from 'lucide-react'
+import { Eye } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import type { Customer } from '@/types'
+import { Switch } from '@/components/ui/switch'
+import type { Customer, CustomerStatus } from '@/types'
 
 interface CustomerActionButtonsProps {
   customer: Customer
   onView: (customer: Customer) => void
-  onToggleStatus: (customer: Customer) => void
+  onRequestStatusChange: (
+    customer: Customer,
+    nextStatus: CustomerStatus
+  ) => void
+  isStatusSwitchDisabled?: boolean
 }
 
 export function CustomerActionButtons({
   customer,
   onView,
-  onToggleStatus,
+  onRequestStatusChange,
+  isStatusSwitchDisabled = false,
 }: CustomerActionButtonsProps) {
+  const isActive = customer.status === 'active'
+
   return (
     <div className="flex items-center justify-end gap-2">
       <Button
@@ -22,17 +30,27 @@ export function CustomerActionButtons({
         className="h-8 w-8 hover:bg-gray-100"
         title="View Details"
       >
-        <EyeOff className="h-4 w-4 text-gray-600" />
+        <Eye className="h-5 w-5 text-gray-600" />
       </Button>
-      <Button
-        variant="ghost"
-        size="icon-sm"
-        onClick={() => onToggleStatus(customer)}
-        className="h-8 w-8 hover:bg-red-50"
-        title={customer.status === 'active' ? 'Deactivate' : 'Activate'}
+      <div
+        className="flex items-center gap-2 pl-1"
+        title={isActive ? 'Customer is active' : 'Customer is inactive'}
       >
-        <Lock className="h-4 w-4 text-red-600" />
-      </Button>
+       
+        <Switch
+          checked={isActive}
+          disabled={isStatusSwitchDisabled}
+          onCheckedChange={(checked) =>
+            onRequestStatusChange(
+              customer,
+              checked ? 'active' : 'inactive'
+            )
+          }
+          aria-label={
+            isActive ? 'Deactivate customer' : 'Activate customer'
+          }
+        />
+      </div>
     </div>
   )
 }

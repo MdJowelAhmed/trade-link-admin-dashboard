@@ -1,18 +1,23 @@
 import { motion } from 'framer-motion'
 import { CustomerActionButtons } from './CustomerActionButtons'
 import { cn } from '@/utils/cn'
-import type { Customer } from '@/types'
+import type { Customer, CustomerStatus } from '@/types'
 
 interface CustomerTableProps {
   customers: Customer[]
   onView: (customer: Customer) => void
-  onToggleStatus: (customer: Customer) => void
+  onRequestStatusChange: (
+    customer: Customer,
+    nextStatus: CustomerStatus
+  ) => void
+  statusSwitchLockedCustomerId?: string | null
 }
 
 export function CustomerTable({
   customers,
   onView,
-  onToggleStatus,
+  onRequestStatusChange,
+  statusSwitchLockedCustomerId = null,
 }: CustomerTableProps) {
   return (
     <div className="w-full overflow-auto">
@@ -108,7 +113,10 @@ export function CustomerTable({
                   <CustomerActionButtons
                     customer={customer}
                     onView={onView}
-                    onToggleStatus={onToggleStatus}
+                    onRequestStatusChange={onRequestStatusChange}
+                    isStatusSwitchDisabled={
+                      statusSwitchLockedCustomerId === customer.id
+                    }
                   />
                 </td>
               </motion.tr>

@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { EyeOff } from 'lucide-react'
+import { Eye } from 'lucide-react'
 import { cn } from '@/utils/cn'
 import type { Transaction, Refund } from '@/types'
 import { formatDate } from '@/utils/formatters'
@@ -95,7 +95,7 @@ export function TransactionTable({
                 <td className="px-6 py-4">
                   <span
                     className={cn(
-                      'inline-flex items-center px-6 py-2 rounded-full text-sm w-28 justify-center font-medium',
+                      'inline-flex items-center px-6 py-[6px] rounded-full text-sm w-28 justify-center font-medium',
                       transaction.status === 'SUCCESS' || transaction.status === 'APPROVED'
                         ? 'bg-secondary text-white'
                         : transaction.status === 'PENDING'
@@ -116,10 +116,10 @@ export function TransactionTable({
                   <div className="flex justify-end gap-3">
                     <button
                       onClick={() => onView(transaction)}
-                      className="text-gray-400 hover:text-gray-600 transition-colors flex items-center gap-2"
+                      className=" transition-colors flex items-center gap-2"
                       aria-label="View"
                     >
-                      <EyeOff className="h-4 w-4" />
+                      <Eye className="h-5 w-5" />
                       Details
                     </button>
                     {/* <button

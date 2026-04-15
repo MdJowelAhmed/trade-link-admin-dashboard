@@ -158,7 +158,7 @@ export function LeadTable({ leads, onView, onDelete }: LeadTableProps) {
                     className="rounded-md p-1.5 text-gray-500 hover:bg-red-50 hover:text-red-600"
                     aria-label={`Delete lead ${lead.leadId}`}
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <Trash2 className="w-5 h-5" />
                   </button>
                   {/* <button  onClick={() => changeStatus(lead)}><Edit className="w-4 h-4" /> </button> */}
                 </td>
