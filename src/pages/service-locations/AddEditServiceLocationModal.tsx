@@ -431,7 +431,7 @@ export function AddEditServiceLocationModal({
                                         value={locationSearch}
                                         onChange={(e) => setLocationSearch(e.target.value)}
                                         placeholder="Search locations…"
-                                        className="h-9 rounded-full"
+                                        className="h-9 rounded-full bg-white "
                                         onKeyDown={(e) => e.stopPropagation()}
                                     />
                                 </div>
