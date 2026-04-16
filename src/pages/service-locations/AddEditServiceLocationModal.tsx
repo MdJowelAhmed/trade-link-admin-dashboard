@@ -559,11 +559,9 @@ export function AddEditServiceLocationModal({
                 </div> */}
 
                 <div className="flex justify-end gap-2 pt-2">
-                    <Button type="button" variant="outline" className="rounded-full" onClick={onClose}>
-                        Cancel
-                    </Button>
+                   
                     <Button type="submit" className="rounded-full" disabled={loading}>
-                        {loading ? 'Saving…' : mode === 'create' ? 'Create' : 'Save changes'}
+                        {loading ? 'Saving…' : mode === 'create' ? 'Create Service Location' : 'Save changes'}
                     </Button>
                 </div>
             </form>
