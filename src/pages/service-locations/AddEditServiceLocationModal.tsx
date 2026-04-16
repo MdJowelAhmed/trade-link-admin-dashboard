@@ -7,7 +7,6 @@ import { ModalWrapper } from '@/components/common'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import {
     Select,
@@ -22,8 +21,10 @@ import {
     resolveServiceLocationLocationId,
     resolveServiceLocationServiceId,
     type ServiceLocationPage,
+    type ServiceLocationServiceRef,
 } from '@/redux/api/serviceLocationApi'
 import { useGetServicesQuery, type BackendService } from '@/redux/api/serviceApi'
+import { useGetCategoriesQuery } from '@/redux/api/categoriesApi'
 import { useGetLocationsQuery, type LocationEntity, type LocationType } from '@/redux/api/locationApi'
 import { LOCATION_TAB_LABELS, LOCATION_TAB_ORDER } from '@/pages/location/constants'
 import { toast } from '@/utils/toast'
@@ -72,6 +73,14 @@ function trimOrUndefined(s: string | undefined): string | undefined {
     return t && t.length > 0 ? t : undefined
 }
 
+function resolveServiceCategoryId(ref: string | ServiceLocationServiceRef): string {
+    if (typeof ref === 'string') return ''
+    const c = ref.categoryId
+    if (!c) return ''
+    if (typeof c === 'string') return c
+    return c._id ?? ''
+}
+
 interface AddEditServiceLocationModalProps {
     open: boolean
     onClose: () => void
@@ -87,17 +96,29 @@ export function AddEditServiceLocationModal({
     mode,
     row = null,
 }: AddEditServiceLocationModalProps) {
+    const [categorySearch, setCategorySearch] = useState('')
+    const [serviceCategoryId, setServiceCategoryId] = useState('')
     const [serviceSearch, setServiceSearch] = useState('')
     const [locationSearch, setLocationSearch] = useState('')
     const [locationPickerType, setLocationPickerType] = useState<LocationType>('town')
+
+    const { data: categoriesRes, isFetching: categoriesLoading } = useGetCategoriesQuery(
+        {
+            searchTerm: categorySearch || undefined,
+            page: 1,
+            limit: LOOKUP_LIMIT,
+        },
+        { skip: !open }
+    )
 
     const { data: servicesRes, isFetching: servicesLoading } = useGetServicesQuery(
         {
             searchTerm: serviceSearch || undefined,
             page: 1,
             limit: LOOKUP_LIMIT,
+            categoryId: serviceCategoryId || undefined,
         },
-        { skip: !open }
+        { skip: !open || !serviceCategoryId }
     )
 
     const { data: locationsRes, isFetching: locationsLoading } = useGetLocationsQuery(
@@ -141,10 +162,36 @@ export function AddEditServiceLocationModal({
 
     const serviceId = watch('serviceId')
     const locationId = watch('locationId')
-    const isActive = watch('isActive')
+   
 
+    const baseCategories = categoriesRes?.data ?? []
     const baseServices = servicesRes?.data ?? []
     const baseLocations = locationsRes?.data ?? []
+
+    const categoryOptions = useMemo(() => {
+        if (mode === 'edit' && row && serviceCategoryId) {
+            const s = row.serviceId
+            if (typeof s === 'object' && s.categoryId && typeof s.categoryId === 'object') {
+                const cat = s.categoryId as { _id?: string; name?: string }
+                const id = cat._id
+                if (id && !baseCategories.some((x) => x._id === id)) {
+                    return [
+                        {
+                            _id: id,
+                            name: cat.name ?? 'Category',
+                            slug: '',
+                            isActive: true,
+                            serviceCount: 0,
+                            createdAt: '',
+                            updatedAt: '',
+                        },
+                        ...baseCategories,
+                    ]
+                }
+            }
+        }
+        return baseCategories
+    }, [mode, row, serviceCategoryId, baseCategories])
 
     const serviceOptions = useMemo(() => {
         if (mode === 'edit' && row && typeof row.serviceId === 'object') {
@@ -168,6 +215,7 @@ export function AddEditServiceLocationModal({
 
     useEffect(() => {
         if (!open) return
+        setCategorySearch('')
         setServiceSearch('')
         setLocationSearch('')
         if (mode === 'edit' && row) {
@@ -177,6 +225,7 @@ export function AddEditServiceLocationModal({
             } else {
                 setLocationPickerType('town')
             }
+            setServiceCategoryId(resolveServiceCategoryId(row.serviceId))
             reset({
                 serviceId: resolveServiceLocationServiceId(row.serviceId),
                 locationId: resolveServiceLocationLocationId(row.locationId),
@@ -191,6 +240,7 @@ export function AddEditServiceLocationModal({
             })
         } else {
             setLocationPickerType('town')
+            setServiceCategoryId('')
             reset({
                 serviceId: '',
                 locationId: '',
@@ -251,21 +301,65 @@ export function AddEditServiceLocationModal({
             title={mode === 'create' ? 'Add service & location page' : 'Edit service & location page'}
             description="Link a service with a location, set SEO overrides, and optional FAQ overrides."
             size="xl"
-            className="bg-white max-w-2xl"
+            className="bg-white max-w-3xl"
         >
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 pt-2">
                 <div className="grid gap-4 sm:grid-cols-2">
-                    <div className="space-y-2 sm:col-span-2">
+                    <div className="space-y-2">
+                        <Label>Category</Label>
+                        <Select
+                            value={serviceCategoryId || undefined}
+                            onValueChange={(v) => {
+                                setServiceCategoryId(v)
+                                setValue('serviceId', '', { shouldValidate: true })
+                                setServiceSearch('')
+                            }}
+                            disabled={categoriesLoading}
+                        >
+                            <SelectTrigger className="rounded-full">
+                                <SelectValue
+                                    placeholder={
+                                        categoriesLoading ? 'Loading categories…' : 'Select category'
+                                    }
+                                />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <div className="p-2">
+                                    <Input
+                                        value={categorySearch}
+                                        onChange={(e) => setCategorySearch(e.target.value)}
+                                        placeholder="Search categories…"
+                                        className="h-9 rounded-full"
+                                        onKeyDown={(e) => e.stopPropagation()}
+                                    />
+                                </div>
+                                {categoryOptions.map((c) => (
+                                    <SelectItem key={c._id} value={c._id}>
+                                        {c.name}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        <p className="text-xs text-muted-foreground">
+                            Choose a category first, then pick a service below.
+                        </p>
+                    </div>
+
+                    <div className="space-y-2">
                         <Label>Service</Label>
                         <Select
                             value={serviceId || undefined}
                             onValueChange={(v) => setValue('serviceId', v, { shouldValidate: true })}
-                            disabled={servicesLoading}
+                            disabled={!serviceCategoryId || servicesLoading}
                         >
                             <SelectTrigger className="rounded-full" error={!!errors.serviceId}>
                                 <SelectValue
                                     placeholder={
-                                        servicesLoading ? 'Loading services…' : 'Select service'
+                                        !serviceCategoryId
+                                            ? 'Select a category first'
+                                            : servicesLoading
+                                                ? 'Loading services…'
+                                                : 'Select service'
                                     }
                                 />
                             </SelectTrigger>
@@ -364,24 +458,26 @@ export function AddEditServiceLocationModal({
                     />
                 </div>
 
-                <div className="space-y-2">
-                    <Label htmlFor="sl-meta-desc">Meta description override</Label>
-                    <Textarea
-                        id="sl-meta-desc"
-                        className="rounded-xl min-h-[72px]"
-                        placeholder="Optional"
-                        {...register('metaDescriptionOverride')}
-                    />
-                </div>
+                <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="space-y-2">
+                        <Label htmlFor="sl-meta-desc">Meta description override</Label>
+                        <Textarea
+                            id="sl-meta-desc"
+                            className="rounded-xl min-h-[120px]"
+                            placeholder="Optional"
+                            {...register('metaDescriptionOverride')}
+                        />
+                    </div>
 
-                <div className="space-y-2">
-                    <Label htmlFor="sl-notes">Local notes</Label>
-                    <Textarea
-                        id="sl-notes"
-                        className="rounded-xl min-h-[72px]"
-                        placeholder="Optional"
-                        {...register('localNotes')}
-                    />
+                    <div className="space-y-2">
+                        <Label htmlFor="sl-notes">Local notes</Label>
+                        <Textarea
+                            id="sl-notes"
+                            className="rounded-xl min-h-[120px]"
+                            placeholder="Optional"
+                            {...register('localNotes')}
+                        />
+                    </div>
                 </div>
 
                 <div className="space-y-3 rounded-2xl border border-border p-4">
@@ -448,7 +544,7 @@ export function AddEditServiceLocationModal({
                     </div>
                 </div>
 
-                <div className="flex items-center justify-between rounded-2xl border border-border px-4 py-3">
+                {/* <div className="flex items-center justify-between rounded-2xl border border-border px-4 py-3">
                     <div>
                         <Label htmlFor="sl-active" className="text-base">
                             Active
@@ -460,7 +556,7 @@ export function AddEditServiceLocationModal({
                         checked={isActive}
                         onCheckedChange={(v) => setValue('isActive', v, { shouldValidate: true })}
                     />
-                </div>
+                </div> */}
 
                 <div className="flex justify-end gap-2 pt-2">
                     <Button type="button" variant="outline" className="rounded-full" onClick={onClose}>
