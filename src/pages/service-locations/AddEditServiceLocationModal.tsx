@@ -331,6 +331,10 @@ export function AddEditServiceLocationModal({
                                         placeholder="Search categories…"
                                         className="h-9 rounded-full"
                                         onKeyDown={(e) => e.stopPropagation()}
+                                        onPointerDownCapture={(e) => e.stopPropagation()}
+                                        onPointerDown={(e) => e.stopPropagation()}
+                                        onTouchStart={(e) => e.stopPropagation()}
+                                        onClick={(e) => e.stopPropagation()}
                                     />
                                 </div>
                                 {categoryOptions.map((c) => (
@@ -371,6 +375,10 @@ export function AddEditServiceLocationModal({
                                         placeholder="Search services…"
                                         className="h-9 rounded-full"
                                         onKeyDown={(e) => e.stopPropagation()}
+                                        onPointerDownCapture={(e) => e.stopPropagation()}
+                                        onPointerDown={(e) => e.stopPropagation()}
+                                        onTouchStart={(e) => e.stopPropagation()}
+                                        onClick={(e) => e.stopPropagation()}
                                     />
                                 </div>
                                 {serviceOptions.map((s) => (
@@ -433,6 +441,10 @@ export function AddEditServiceLocationModal({
                                         placeholder="Search locations…"
                                         className="h-9 rounded-full bg-white "
                                         onKeyDown={(e) => e.stopPropagation()}
+                                        onPointerDownCapture={(e) => e.stopPropagation()}
+                                        onPointerDown={(e) => e.stopPropagation()}
+                                        onTouchStart={(e) => e.stopPropagation()}
+                                        onClick={(e) => e.stopPropagation()}
                                     />
                                 </div>
                                 {locationOptions.map((loc) => (
