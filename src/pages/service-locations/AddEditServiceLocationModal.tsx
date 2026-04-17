@@ -25,8 +25,14 @@ import {
 } from '@/redux/api/serviceLocationApi'
 import { useGetServicesQuery, type BackendService } from '@/redux/api/serviceApi'
 import { useGetCategoriesQuery } from '@/redux/api/categoriesApi'
-import { useGetLocationsQuery, type LocationEntity, type LocationType } from '@/redux/api/locationApi'
-import { LOCATION_TAB_LABELS, LOCATION_TAB_ORDER } from '@/pages/location/constants'
+import {
+    useGetLocationsQuery,
+    useLazyGetLocationByIdQuery,
+    type LocationEntity,
+    type LocationType,
+} from '@/redux/api/locationApi'
+import { LOCATION_TAB_LABELS } from '@/pages/location/constants'
+import type { ServiceLocationLocationRef } from '@/redux/api/serviceLocationApi'
 import { toast } from '@/utils/toast'
 import { isFetchBaseQueryError } from '@/pages/location/errorUtils'
 
@@ -81,6 +87,61 @@ function resolveServiceCategoryId(ref: string | ServiceLocationServiceRef): stri
     return c._id ?? ''
 }
 
+function mergeSeedOption(list: LocationEntity[], seed?: LocationEntity | null): LocationEntity[] {
+    if (!seed) return list
+    if (list.some((x) => x._id === seed._id)) return list
+    return [seed, ...list]
+}
+
+/**
+ * Walk fully populated `parentId` objects (if API embeds parents).
+ * Stops when `parentId` is a plain id string — caller should load the rest via GET by id.
+ */
+function collectPopulatedLocationChain(leaf: ServiceLocationLocationRef | LocationEntity): {
+    ids: Partial<Record<LocationType, string>>
+    entities: Partial<Record<LocationType, LocationEntity>>
+    needsFetchFromParentId: string | null
+} {
+    const ids: Partial<Record<LocationType, string>> = {}
+    const entities: Partial<Record<LocationType, LocationEntity>> = {}
+    let node: ServiceLocationLocationRef | LocationEntity | null | undefined = leaf
+
+    while (node && typeof node === 'object' && '_id' in node && 'type' in node) {
+        const typed = node as LocationEntity
+        ids[typed.type] = typed._id
+        entities[typed.type] = typed
+        const p = typed.parentId
+        if (!p) {
+            return { ids, entities, needsFetchFromParentId: null }
+        }
+        if (typeof p === 'string') {
+            return { ids, entities, needsFetchFromParentId: p }
+        }
+        node = p as LocationEntity
+    }
+    return { ids, entities, needsFetchFromParentId: null }
+}
+
+async function loadAncestorChainById(
+    startParentId: string,
+    fetchLocation: (id: string) => Promise<{ data: LocationEntity }>,
+): Promise<{ ids: Partial<Record<LocationType, string>>; entities: Partial<Record<LocationType, LocationEntity>> }> {
+    const ids: Partial<Record<LocationType, string>> = {}
+    const entities: Partial<Record<LocationType, LocationEntity>> = {}
+    let id: string | null = startParentId
+    while (id) {
+        const res = await fetchLocation(id)
+        const loc = res.data
+        ids[loc.type] = loc._id
+        entities[loc.type] = loc
+        const p = loc.parentId
+        if (!p) break
+        const next = typeof p === 'string' ? p : (p as LocationEntity)._id
+        id = loc.type === 'country' ? null : next ?? null
+    }
+    return { ids, entities }
+}
+
 interface AddEditServiceLocationModalProps {
     open: boolean
     onClose: () => void
@@ -99,8 +160,21 @@ export function AddEditServiceLocationModal({
     const [categorySearch, setCategorySearch] = useState('')
     const [serviceCategoryId, setServiceCategoryId] = useState('')
     const [serviceSearch, setServiceSearch] = useState('')
-    const [locationSearch, setLocationSearch] = useState('')
-    const [locationPickerType, setLocationPickerType] = useState<LocationType>('town')
+    const [countrySearch, setCountrySearch] = useState('')
+    const [regionSearch, setRegionSearch] = useState('')
+    const [countySearch, setCountySearch] = useState('')
+    const [citySearch, setCitySearch] = useState('')
+    const [townSearch, setTownSearch] = useState('')
+    const [cascade, setCascade] = useState({
+        country: '',
+        region: '',
+        county: '',
+        city: '',
+        town: '',
+    })
+    const [locationSeeds, setLocationSeeds] = useState<Partial<Record<LocationType, LocationEntity>>>({})
+
+    const [getLocationById] = useLazyGetLocationByIdQuery()
 
     const { data: categoriesRes, isFetching: categoriesLoading } = useGetCategoriesQuery(
         {
@@ -121,14 +195,54 @@ export function AddEditServiceLocationModal({
         { skip: !open || !serviceCategoryId }
     )
 
-    const { data: locationsRes, isFetching: locationsLoading } = useGetLocationsQuery(
+    const { data: countriesRes, isFetching: countriesLoading } = useGetLocationsQuery(
         {
-            type: locationPickerType,
+            type: 'country',
             page: 1,
             limit: LOOKUP_LIMIT,
-            searchTerm: locationSearch || undefined,
+            searchTerm: countrySearch || undefined,
         },
         { skip: !open }
+    )
+    const { data: regionsRes, isFetching: regionsLoading } = useGetLocationsQuery(
+        {
+            type: 'region',
+            page: 1,
+            limit: LOOKUP_LIMIT,
+            parentId: cascade.country,
+            searchTerm: regionSearch || undefined,
+        },
+        { skip: !open || !cascade.country }
+    )
+    const { data: countiesRes, isFetching: countiesLoading } = useGetLocationsQuery(
+        {
+            type: 'county',
+            page: 1,
+            limit: LOOKUP_LIMIT,
+            parentId: cascade.region,
+            searchTerm: countySearch || undefined,
+        },
+        { skip: !open || !cascade.region }
+    )
+    const { data: citiesRes, isFetching: citiesLoading } = useGetLocationsQuery(
+        {
+            type: 'city',
+            page: 1,
+            limit: LOOKUP_LIMIT,
+            parentId: cascade.county,
+            searchTerm: citySearch || undefined,
+        },
+        { skip: !open || !cascade.county }
+    )
+    const { data: townsRes, isFetching: townsLoading } = useGetLocationsQuery(
+        {
+            type: 'town',
+            page: 1,
+            limit: LOOKUP_LIMIT,
+            parentId: cascade.city,
+            searchTerm: townSearch || undefined,
+        },
+        { skip: !open || !cascade.city }
     )
 
     const [createServiceLocation, { isLoading: creating }] = useCreateServiceLocationMutation()
@@ -161,12 +275,9 @@ export function AddEditServiceLocationModal({
     })
 
     const serviceId = watch('serviceId')
-    const locationId = watch('locationId')
-   
 
     const baseCategories = categoriesRes?.data ?? []
     const baseServices = servicesRes?.data ?? []
-    const baseLocations = locationsRes?.data ?? []
 
     const categoryOptions = useMemo(() => {
         if (mode === 'edit' && row && serviceCategoryId) {
@@ -202,29 +313,47 @@ export function AddEditServiceLocationModal({
         return baseServices
     }, [mode, row, baseServices])
 
-    const locationOptions = useMemo(() => {
-        if (mode === 'edit' && row && typeof row.locationId === 'object') {
-            const loc = row.locationId as LocationEntity
-            if (loc.type === locationPickerType) {
-                const exists = baseLocations.some((x) => x._id === loc._id)
-                if (!exists) return [loc, ...baseLocations]
-            }
-        }
-        return baseLocations
-    }, [mode, row, baseLocations, locationPickerType])
+    const countryOptions = useMemo(
+        () => mergeSeedOption(countriesRes?.data ?? [], locationSeeds.country),
+        [countriesRes?.data, locationSeeds.country]
+    )
+    const regionOptions = useMemo(
+        () => mergeSeedOption(regionsRes?.data ?? [], locationSeeds.region),
+        [regionsRes?.data, locationSeeds.region]
+    )
+    const countyOptions = useMemo(
+        () => mergeSeedOption(countiesRes?.data ?? [], locationSeeds.county),
+        [countiesRes?.data, locationSeeds.county]
+    )
+    const cityOptions = useMemo(
+        () => mergeSeedOption(citiesRes?.data ?? [], locationSeeds.city),
+        [citiesRes?.data, locationSeeds.city]
+    )
+    const townOptions = useMemo(
+        () => mergeSeedOption(townsRes?.data ?? [], locationSeeds.town),
+        [townsRes?.data, locationSeeds.town]
+    )
+
+    const applyCascade = (next: typeof cascade) => {
+        setCascade(next)
+        const id = next.town || next.city || next.county || next.region || next.country || ''
+        setValue('locationId', id, { shouldValidate: true })
+    }
 
     useEffect(() => {
         if (!open) return
+
         setCategorySearch('')
         setServiceSearch('')
-        setLocationSearch('')
+        setCountrySearch('')
+        setRegionSearch('')
+        setCountySearch('')
+        setCitySearch('')
+        setTownSearch('')
+
+        const emptyCascade = { country: '', region: '', county: '', city: '', town: '' }
+
         if (mode === 'edit' && row) {
-            const loc = row.locationId
-            if (typeof loc === 'object' && loc?.type) {
-                setLocationPickerType(loc.type)
-            } else {
-                setLocationPickerType('town')
-            }
             setServiceCategoryId(resolveServiceCategoryId(row.serviceId))
             reset({
                 serviceId: resolveServiceLocationServiceId(row.serviceId),
@@ -238,20 +367,68 @@ export function AddEditServiceLocationModal({
                     answer: f.answer,
                 })),
             })
-        } else {
-            setLocationPickerType('town')
-            setServiceCategoryId('')
-            reset({
-                serviceId: '',
-                locationId: '',
-                metaTitleOverride: '',
-                metaDescriptionOverride: '',
-                localNotes: '',
-                isActive: true,
-                faqOverrides: [],
+
+            const loc = row.locationId
+            if (typeof loc !== 'object' || !loc._id) {
+                setCascade(emptyCascade)
+                setLocationSeeds({})
+                return
+            }
+
+            const { ids, entities, needsFetchFromParentId } = collectPopulatedLocationChain(loc)
+            setCascade({
+                country: ids.country ?? '',
+                region: ids.region ?? '',
+                county: ids.county ?? '',
+                city: ids.city ?? '',
+                town: ids.town ?? '',
             })
+            setLocationSeeds(entities)
+
+            if (!needsFetchFromParentId) return
+
+            let cancelled = false
+            void (async () => {
+                try {
+                    const up = await loadAncestorChainById(needsFetchFromParentId, (id) =>
+                        getLocationById(id).unwrap()
+                    )
+                    if (cancelled) return
+                    setCascade((c) => ({
+                        country: up.ids.country ?? c.country,
+                        region: up.ids.region ?? c.region,
+                        county: up.ids.county ?? c.county,
+                        city: up.ids.city ?? c.city,
+                        town: up.ids.town ?? c.town,
+                    }))
+                    setLocationSeeds((s) => ({ ...up.entities, ...s }))
+                    if (row) {
+                        const leafId = resolveServiceLocationLocationId(row.locationId)
+                        setValue('locationId', leafId, { shouldValidate: true })
+                    }
+                } catch {
+                    /* Partial chain; user can re-pick if GET by id is unavailable */
+                }
+            })()
+
+            return () => {
+                cancelled = true
+            }
         }
-    }, [open, mode, row, reset])
+
+        setServiceCategoryId('')
+        setCascade(emptyCascade)
+        setLocationSeeds({})
+        reset({
+            serviceId: '',
+            locationId: '',
+            metaTitleOverride: '',
+            metaDescriptionOverride: '',
+            localNotes: '',
+            isActive: true,
+            faqOverrides: [],
+        })
+    }, [open, mode, row, reset, getLocationById])
 
     const onSubmit = async (values: FormValues) => {
         const faqPayload = values.faqOverrides.map(({ question, answer }) => ({
@@ -393,67 +570,278 @@ export function AddEditServiceLocationModal({
                         )}
                     </div>
 
-                    <div className="space-y-2">
-                        <Label>Location type</Label>
-                        <Select
-                            value={locationPickerType}
-                            onValueChange={(v) => {
-                                const next = v as LocationType
-                                setLocationPickerType(next)
-                                setValue('locationId', '', { shouldValidate: true })
-                            }}
-                        >
-                            <SelectTrigger className="rounded-full">
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {LOCATION_TAB_ORDER.map((t) => (
-                                    <SelectItem key={t} value={t}>
-                                        {LOCATION_TAB_LABELS[t]}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                        <p className="text-xs text-muted-foreground">
-                            Pick the hierarchy level, search, then select a location.
-                        </p>
-                    </div>
+                    <div className="space-y-3 sm:col-span-2">
+                        <div>
+                            <Label>Location</Label>
+                            <p className="text-xs text-muted-foreground mt-1">
+                                Select country, then region, county, city, and town as needed. Only the
+                                last level you choose is sent as the location for this page.
+                            </p>
+                        </div>
+                        <div className="grid gap-3 sm:grid-cols-2">
+                            <div className="space-y-2">
+                                <Label className="text-xs text-muted-foreground">
+                                    {LOCATION_TAB_LABELS.country}
+                                </Label>
+                                <Select
+                                    value={cascade.country || undefined}
+                                    onValueChange={(v) => {
+                                        setLocationSeeds({})
+                                        setRegionSearch('')
+                                        setCountySearch('')
+                                        setCitySearch('')
+                                        setTownSearch('')
+                                        applyCascade({
+                                            country: v,
+                                            region: '',
+                                            county: '',
+                                            city: '',
+                                            town: '',
+                                        })
+                                    }}
+                                    disabled={countriesLoading}
+                                >
+                                    <SelectTrigger
+                                        className="rounded-full"
+                                        error={!!errors.locationId}
+                                    >
+                                        <SelectValue
+                                            placeholder={
+                                                countriesLoading ? 'Loading…' : 'Select country'
+                                            }
+                                        />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <div className="p-2">
+                                            <Input
+                                                value={countrySearch}
+                                                onChange={(e) => setCountrySearch(e.target.value)}
+                                                placeholder="Search countries…"
+                                                className="h-9 rounded-full"
+                                                onKeyDown={(e) => e.stopPropagation()}
+                                                onPointerDownCapture={(e) => e.stopPropagation()}
+                                                onPointerDown={(e) => e.stopPropagation()}
+                                                onTouchStart={(e) => e.stopPropagation()}
+                                                onClick={(e) => e.stopPropagation()}
+                                            />
+                                        </div>
+                                        {countryOptions.map((loc) => (
+                                            <SelectItem key={loc._id} value={loc._id}>
+                                                {loc.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
 
-                    <div className="space-y-2">
-                        <Label>Location</Label>
-                        <Select
-                            value={locationId || undefined}
-                            onValueChange={(v) => setValue('locationId', v, { shouldValidate: true })}
-                            disabled={locationsLoading}
-                        >
-                            <SelectTrigger className="rounded-full" error={!!errors.locationId}>
-                                <SelectValue
-                                    placeholder={
-                                        locationsLoading ? 'Loading locations…' : 'Select location'
-                                    }
-                                />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <div className="p-2">
-                                    <Input
-                                        value={locationSearch}
-                                        onChange={(e) => setLocationSearch(e.target.value)}
-                                        placeholder="Search locations…"
-                                        className="h-9 rounded-full bg-white "
-                                        onKeyDown={(e) => e.stopPropagation()}
-                                        onPointerDownCapture={(e) => e.stopPropagation()}
-                                        onPointerDown={(e) => e.stopPropagation()}
-                                        onTouchStart={(e) => e.stopPropagation()}
-                                        onClick={(e) => e.stopPropagation()}
-                                    />
-                                </div>
-                                {locationOptions.map((loc) => (
-                                    <SelectItem key={loc._id} value={loc._id}>
-                                        {loc.name}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+                            <div className="space-y-2">
+                                <Label className="text-xs text-muted-foreground">
+                                    {LOCATION_TAB_LABELS.region}
+                                </Label>
+                                <Select
+                                    value={cascade.region || undefined}
+                                    onValueChange={(v) => {
+                                        setLocationSeeds({})
+                                        setCountySearch('')
+                                        setCitySearch('')
+                                        setTownSearch('')
+                                        applyCascade({
+                                            ...cascade,
+                                            region: v,
+                                            county: '',
+                                            city: '',
+                                            town: '',
+                                        })
+                                    }}
+                                    disabled={!cascade.country || regionsLoading}
+                                >
+                                    <SelectTrigger className="rounded-full">
+                                        <SelectValue
+                                            placeholder={
+                                                !cascade.country
+                                                    ? 'Select country first'
+                                                    : regionsLoading
+                                                      ? 'Loading…'
+                                                      : 'Select region'
+                                            }
+                                        />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <div className="p-2">
+                                            <Input
+                                                value={regionSearch}
+                                                onChange={(e) => setRegionSearch(e.target.value)}
+                                                placeholder="Search regions…"
+                                                className="h-9 rounded-full"
+                                                onKeyDown={(e) => e.stopPropagation()}
+                                                onPointerDownCapture={(e) => e.stopPropagation()}
+                                                onPointerDown={(e) => e.stopPropagation()}
+                                                onTouchStart={(e) => e.stopPropagation()}
+                                                onClick={(e) => e.stopPropagation()}
+                                            />
+                                        </div>
+                                        {regionOptions.map((loc) => (
+                                            <SelectItem key={loc._id} value={loc._id}>
+                                                {loc.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label className="text-xs text-muted-foreground">
+                                    {LOCATION_TAB_LABELS.county}
+                                </Label>
+                                <Select
+                                    value={cascade.county || undefined}
+                                    onValueChange={(v) => {
+                                        setLocationSeeds({})
+                                        setCitySearch('')
+                                        setTownSearch('')
+                                        applyCascade({
+                                            ...cascade,
+                                            county: v,
+                                            city: '',
+                                            town: '',
+                                        })
+                                    }}
+                                    disabled={!cascade.region || countiesLoading}
+                                >
+                                    <SelectTrigger className="rounded-full">
+                                        <SelectValue
+                                            placeholder={
+                                                !cascade.region
+                                                    ? 'Select region first'
+                                                    : countiesLoading
+                                                      ? 'Loading…'
+                                                      : 'Select county'
+                                            }
+                                        />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <div className="p-2">
+                                            <Input
+                                                value={countySearch}
+                                                onChange={(e) => setCountySearch(e.target.value)}
+                                                placeholder="Search counties…"
+                                                className="h-9 rounded-full"
+                                                onKeyDown={(e) => e.stopPropagation()}
+                                                onPointerDownCapture={(e) => e.stopPropagation()}
+                                                onPointerDown={(e) => e.stopPropagation()}
+                                                onTouchStart={(e) => e.stopPropagation()}
+                                                onClick={(e) => e.stopPropagation()}
+                                            />
+                                        </div>
+                                        {countyOptions.map((loc) => (
+                                            <SelectItem key={loc._id} value={loc._id}>
+                                                {loc.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label className="text-xs text-muted-foreground">
+                                    {LOCATION_TAB_LABELS.city}
+                                </Label>
+                                <Select
+                                    value={cascade.city || undefined}
+                                    onValueChange={(v) => {
+                                        setLocationSeeds({})
+                                        setTownSearch('')
+                                        applyCascade({
+                                            ...cascade,
+                                            city: v,
+                                            town: '',
+                                        })
+                                    }}
+                                    disabled={!cascade.county || citiesLoading}
+                                >
+                                    <SelectTrigger className="rounded-full">
+                                        <SelectValue
+                                            placeholder={
+                                                !cascade.county
+                                                    ? 'Select county first'
+                                                    : citiesLoading
+                                                      ? 'Loading…'
+                                                      : 'Select city'
+                                            }
+                                        />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <div className="p-2">
+                                            <Input
+                                                value={citySearch}
+                                                onChange={(e) => setCitySearch(e.target.value)}
+                                                placeholder="Search cities…"
+                                                className="h-9 rounded-full"
+                                                onKeyDown={(e) => e.stopPropagation()}
+                                                onPointerDownCapture={(e) => e.stopPropagation()}
+                                                onPointerDown={(e) => e.stopPropagation()}
+                                                onTouchStart={(e) => e.stopPropagation()}
+                                                onClick={(e) => e.stopPropagation()}
+                                            />
+                                        </div>
+                                        {cityOptions.map((loc) => (
+                                            <SelectItem key={loc._id} value={loc._id}>
+                                                {loc.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            <div className="space-y-2 sm:col-span-2">
+                                <Label className="text-xs text-muted-foreground">
+                                    {LOCATION_TAB_LABELS.town}
+                                </Label>
+                                <Select
+                                    value={cascade.town || undefined}
+                                    onValueChange={(v) => {
+                                        setLocationSeeds({})
+                                        applyCascade({
+                                            ...cascade,
+                                            town: v,
+                                        })
+                                    }}
+                                    disabled={!cascade.city || townsLoading}
+                                >
+                                    <SelectTrigger className="rounded-full">
+                                        <SelectValue
+                                            placeholder={
+                                                !cascade.city
+                                                    ? 'Select city first'
+                                                    : townsLoading
+                                                      ? 'Loading…'
+                                                      : 'Select town (optional)'
+                                            }
+                                        />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <div className="p-2">
+                                            <Input
+                                                value={townSearch}
+                                                onChange={(e) => setTownSearch(e.target.value)}
+                                                placeholder="Search towns…"
+                                                className="h-9 rounded-full"
+                                                onKeyDown={(e) => e.stopPropagation()}
+                                                onPointerDownCapture={(e) => e.stopPropagation()}
+                                                onPointerDown={(e) => e.stopPropagation()}
+                                                onTouchStart={(e) => e.stopPropagation()}
+                                                onClick={(e) => e.stopPropagation()}
+                                            />
+                                        </div>
+                                        {townOptions.map((loc) => (
+                                            <SelectItem key={loc._id} value={loc._id}>
+                                                {loc.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
                         {errors.locationId && (
                             <p className="text-sm text-destructive">{errors.locationId.message}</p>
                         )}

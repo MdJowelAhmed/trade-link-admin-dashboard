@@ -28,6 +28,12 @@ export interface LocationsListResponse {
     }
 }
 
+export interface LocationDetailResponse {
+    success: boolean
+    message: string
+    data: LocationEntity
+}
+
 /**
  * GET `/locations` query params (names must match backend).
  * - `searchTerm` — search box value (trimmed in the UI before send).
@@ -79,6 +85,13 @@ const locationApi = baseApi.injectEndpoints({
                 { type: 'Location', id: arg.type },
             ],
         }),
+        getLocationById: builder.query<LocationDetailResponse, string>({
+            query: (id) => ({
+                url: `/locations/${id}`,
+                method: 'GET',
+            }),
+            providesTags: (_result, _err, id) => [{ type: 'Location', id }],
+        }),
         createLocation: builder.mutation<{ success: boolean; message: string }, CreateLocationPayload>({
             query: (body) => ({
                 url: '/locations',
@@ -110,6 +123,7 @@ const locationApi = baseApi.injectEndpoints({
 
 export const {
     useGetLocationsQuery,
+    useLazyGetLocationByIdQuery,
     useCreateLocationMutation,
     useUpdateLocationMutation,
     useDeleteLocationMutation,
