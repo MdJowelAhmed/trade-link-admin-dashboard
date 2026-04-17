@@ -573,10 +573,7 @@ export function AddEditServiceLocationModal({
                     <div className="space-y-3 sm:col-span-2">
                         <div>
                             <Label>Location</Label>
-                            <p className="text-xs text-muted-foreground mt-1">
-                                Select country, then region, county, city, and town as needed. Only the
-                                last level you choose is sent as the location for this page.
-                            </p>
+                          
                         </div>
                         <div className="grid gap-3 sm:grid-cols-2">
                             <div className="space-y-2">
