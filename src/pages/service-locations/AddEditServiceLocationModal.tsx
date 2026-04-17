@@ -506,7 +506,7 @@ export function AddEditServiceLocationModal({
                                         value={categorySearch}
                                         onChange={(e) => setCategorySearch(e.target.value)}
                                         placeholder="Search categories…"
-                                        className="h-9 rounded-full"
+                                        className="h-9 rounded-full bg-white"
                                         onKeyDown={(e) => e.stopPropagation()}
                                         onPointerDownCapture={(e) => e.stopPropagation()}
                                         onPointerDown={(e) => e.stopPropagation()}
@@ -550,7 +550,7 @@ export function AddEditServiceLocationModal({
                                         value={serviceSearch}
                                         onChange={(e) => setServiceSearch(e.target.value)}
                                         placeholder="Search services…"
-                                        className="h-9 rounded-full"
+                                        className="h-9 rounded-full bg-white"
                                         onKeyDown={(e) => e.stopPropagation()}
                                         onPointerDownCapture={(e) => e.stopPropagation()}
                                         onPointerDown={(e) => e.stopPropagation()}
@@ -617,7 +617,7 @@ export function AddEditServiceLocationModal({
                                                 value={countrySearch}
                                                 onChange={(e) => setCountrySearch(e.target.value)}
                                                 placeholder="Search countries…"
-                                                className="h-9 rounded-full"
+                                                className="h-9 rounded-full bg-white"
                                                 onKeyDown={(e) => e.stopPropagation()}
                                                 onPointerDownCapture={(e) => e.stopPropagation()}
                                                 onPointerDown={(e) => e.stopPropagation()}
@@ -672,7 +672,7 @@ export function AddEditServiceLocationModal({
                                                 value={regionSearch}
                                                 onChange={(e) => setRegionSearch(e.target.value)}
                                                 placeholder="Search regions…"
-                                                className="h-9 rounded-full"
+                                                className="h-9 rounded-full bg-white"
                                                 onKeyDown={(e) => e.stopPropagation()}
                                                 onPointerDownCapture={(e) => e.stopPropagation()}
                                                 onPointerDown={(e) => e.stopPropagation()}
@@ -725,7 +725,7 @@ export function AddEditServiceLocationModal({
                                                 value={countySearch}
                                                 onChange={(e) => setCountySearch(e.target.value)}
                                                 placeholder="Search counties…"
-                                                className="h-9 rounded-full"
+                                                className="h-9 rounded-full bg-white"
                                                 onKeyDown={(e) => e.stopPropagation()}
                                                 onPointerDownCapture={(e) => e.stopPropagation()}
                                                 onPointerDown={(e) => e.stopPropagation()}
@@ -776,7 +776,7 @@ export function AddEditServiceLocationModal({
                                                 value={citySearch}
                                                 onChange={(e) => setCitySearch(e.target.value)}
                                                 placeholder="Search cities…"
-                                                className="h-9 rounded-full"
+                                                className="h-9 rounded-full bg-white"
                                                 onKeyDown={(e) => e.stopPropagation()}
                                                 onPointerDownCapture={(e) => e.stopPropagation()}
                                                 onPointerDown={(e) => e.stopPropagation()}
@@ -825,7 +825,7 @@ export function AddEditServiceLocationModal({
                                                 value={townSearch}
                                                 onChange={(e) => setTownSearch(e.target.value)}
                                                 placeholder="Search towns…"
-                                                className="h-9 rounded-full"
+                                                className="h-9 rounded-full bg-white"
                                                 onKeyDown={(e) => e.stopPropagation()}
                                                 onPointerDownCapture={(e) => e.stopPropagation()}
                                                 onPointerDown={(e) => e.stopPropagation()}
