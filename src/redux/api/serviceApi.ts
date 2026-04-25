@@ -19,6 +19,14 @@ interface BackendService {
     name: string
     description?: string
     detailedDescription?: string[]
+    faqs?: Array<{
+        _id: string
+        question: string
+        answer: string
+        isActive: boolean
+        createdAt: string
+        updatedAt: string
+    }>
     isActive: boolean
     createdAt: string
     updatedAt: string

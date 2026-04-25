@@ -125,6 +125,7 @@ export default function CategoryList() {
         categoryName: backendService.categoryId.name,
         description: backendService.description,
         detailedDescription: backendService.detailedDescription,
+        faqs: backendService.faqs,
         status: (backendService.isActive ? 'active' : 'inactive') as Service['status'],
         totalQuestions: 0, // Not provided by API, defaulting to 0
         createdAt: backendService.createdAt,

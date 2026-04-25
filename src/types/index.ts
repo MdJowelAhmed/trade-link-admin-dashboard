@@ -696,6 +696,15 @@ export interface TradePersonFormData {
 }
 
 // ==================== Service Types ====================
+export interface ServiceFAQ {
+  _id?: string
+  question: string
+  answer: string
+  isActive?: boolean
+  createdAt?: string
+  updatedAt?: string
+}
+
 export interface Service {
   id: string
   name: string
@@ -703,6 +712,7 @@ export interface Service {
   categoryName?: string
   description?: string
   detailedDescription?: string[]
+  faqs?: ServiceFAQ[]
   totalQuestions: number
   status: ServiceStatus
   createdAt: string

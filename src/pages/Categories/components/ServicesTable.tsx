@@ -26,7 +26,7 @@ function truncateText(text: string | undefined, max = 100): string {
   return t.length <= max ? t : `${t.slice(0, max)}…`
 }
 
-const COL_SPAN = 6
+const COL_SPAN = 7
 
 export function ServicesTable({
   services,
@@ -50,6 +50,7 @@ export function ServicesTable({
             <th className="px-4 py-4 text-center text-sm font-semibold">
               Detailed description
             </th>
+            <th className="px-4 py-4 text-center text-sm font-semibold">FAQs</th>
             <th className="px-4 py-4 text-right text-sm font-semibold min-w-[180px]">
               Actions
             </th>
@@ -110,6 +111,17 @@ export function ServicesTable({
                   </div>
                 </td>
                 <td className="px-4 py-3">
+                  {(service.faqs?.length ?? 0) > 0 ? (
+                    <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-700" title="Has FAQs">
+                      <Check className="h-4 w-4" strokeWidth={2.5} />
+                    </span>
+                  ) : (
+                    <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-destructive/10 text-destructive" title="No FAQs">
+                      <X className="h-4 w-4" strokeWidth={2.5} />
+                    </span>
+                  )}
+                </td>
+                <td className="px-4 py-3 text-right">
                   <div className="flex flex-wrap justify-end gap-2">
                     <Button
                       type="button"

@@ -714,7 +714,7 @@ export function AddEditServiceLocationModal({
                                 </Select>
                             </div>
 
-                            <div className="space-y-2 sm:col-span-2">
+                            <div className="space-y-2 ">
                                 <Label className="text-xs text-muted-foreground">
                                     {LOCATION_TAB_LABELS.town}
                                 </Label>

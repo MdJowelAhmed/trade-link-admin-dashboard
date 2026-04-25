@@ -12,9 +12,19 @@ function detailPoints(items: string[] | undefined): string[] {
   return items.map((s) => (typeof s === 'string' ? s.trim() : '')).filter(Boolean)
 }
 
+function normalizeFaqs(
+  faqs: Array<{ question?: string; answer?: string }> | undefined
+): Array<{ question: string; answer: string }> {
+  if (!Array.isArray(faqs)) return []
+  return faqs
+    .map((f) => ({ question: (f.question ?? '').trim(), answer: (f.answer ?? '').trim() }))
+    .filter((f) => f.question.length > 0 || f.answer.length > 0)
+}
+
 export function ServiceDetailsModal({ open, onClose, service }: ServiceDetailsModalProps) {
   const points = service ? detailPoints(service.detailedDescription) : []
   const description = service?.description?.trim()
+  const faqs = service ? normalizeFaqs(service.faqs) : []
 
   return (
     <ModalWrapper
@@ -61,6 +71,23 @@ export function ServiceDetailsModal({ open, onClose, service }: ServiceDetailsMo
               </ul>
             ) : (
               <p className="mt-1 text-muted-foreground">No points added.</p>
+            )}
+          </div>
+          <div>
+            <p className=" font-medium uppercase tracking-wide ">FAQ</p>
+            {faqs.length > 0 ? (
+              <div className="mt-3 space-y-3">
+                {faqs.map((f, i) => (
+                  <div key={`${i}-${f.question.slice(0, 24)}`} className="rounded-xl border p-4">
+                    <p className="font-medium">{f.question || '—'}</p>
+                    <p className="mt-1 whitespace-pre-wrap text-muted-foreground">
+                      {f.answer || '—'}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="mt-1 text-muted-foreground">No FAQ added.</p>
             )}
           </div>
         </div>
