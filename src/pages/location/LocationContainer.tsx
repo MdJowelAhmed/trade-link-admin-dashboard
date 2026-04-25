@@ -248,7 +248,7 @@ export default function LocationContainer() {
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight">Locations</h1>
                     <p className="text-muted-foreground text-sm">
-                        Manage countries, regions, counties, towns, and cities. Non-country types
+                        Manage countries, regions, counties, and towns. Non-country types
                         require a parent in the hierarchy.
                     </p>
                 </div>

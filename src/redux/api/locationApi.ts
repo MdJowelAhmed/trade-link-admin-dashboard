@@ -1,6 +1,6 @@
 import { baseApi } from '../baseApi'
 
-export const LOCATION_TYPES = ['country', 'region', 'county', 'town', 'city'] as const
+export const LOCATION_TYPES = ['country', 'region', 'county', 'town'] as const
 export type LocationType = (typeof LOCATION_TYPES)[number]
 
 export interface LocationEntity {

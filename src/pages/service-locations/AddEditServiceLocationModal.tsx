@@ -163,13 +163,11 @@ export function AddEditServiceLocationModal({
     const [countrySearch, setCountrySearch] = useState('')
     const [regionSearch, setRegionSearch] = useState('')
     const [countySearch, setCountySearch] = useState('')
-    const [citySearch, setCitySearch] = useState('')
     const [townSearch, setTownSearch] = useState('')
     const [cascade, setCascade] = useState({
         country: '',
         region: '',
         county: '',
-        city: '',
         town: '',
     })
     const [locationSeeds, setLocationSeeds] = useState<Partial<Record<LocationType, LocationEntity>>>({})
@@ -224,25 +222,15 @@ export function AddEditServiceLocationModal({
         },
         { skip: !open || !cascade.region }
     )
-    const { data: citiesRes, isFetching: citiesLoading } = useGetLocationsQuery(
-        {
-            type: 'city',
-            page: 1,
-            limit: LOOKUP_LIMIT,
-            parentId: cascade.county,
-            searchTerm: citySearch || undefined,
-        },
-        { skip: !open || !cascade.county }
-    )
     const { data: townsRes, isFetching: townsLoading } = useGetLocationsQuery(
         {
             type: 'town',
             page: 1,
             limit: LOOKUP_LIMIT,
-            parentId: cascade.city,
+            parentId: cascade.county,
             searchTerm: townSearch || undefined,
         },
-        { skip: !open || !cascade.city }
+        { skip: !open || !cascade.county }
     )
 
     const [createServiceLocation, { isLoading: creating }] = useCreateServiceLocationMutation()
@@ -325,10 +313,6 @@ export function AddEditServiceLocationModal({
         () => mergeSeedOption(countiesRes?.data ?? [], locationSeeds.county),
         [countiesRes?.data, locationSeeds.county]
     )
-    const cityOptions = useMemo(
-        () => mergeSeedOption(citiesRes?.data ?? [], locationSeeds.city),
-        [citiesRes?.data, locationSeeds.city]
-    )
     const townOptions = useMemo(
         () => mergeSeedOption(townsRes?.data ?? [], locationSeeds.town),
         [townsRes?.data, locationSeeds.town]
@@ -336,7 +320,7 @@ export function AddEditServiceLocationModal({
 
     const applyCascade = (next: typeof cascade) => {
         setCascade(next)
-        const id = next.town || next.city || next.county || next.region || next.country || ''
+        const id = next.town || next.county || next.region || next.country || ''
         setValue('locationId', id, { shouldValidate: true })
     }
 
@@ -348,10 +332,9 @@ export function AddEditServiceLocationModal({
         setCountrySearch('')
         setRegionSearch('')
         setCountySearch('')
-        setCitySearch('')
         setTownSearch('')
 
-        const emptyCascade = { country: '', region: '', county: '', city: '', town: '' }
+        const emptyCascade = { country: '', region: '', county: '', town: '' }
 
         if (mode === 'edit' && row) {
             setServiceCategoryId(resolveServiceCategoryId(row.serviceId))
@@ -380,7 +363,6 @@ export function AddEditServiceLocationModal({
                 country: ids.country ?? '',
                 region: ids.region ?? '',
                 county: ids.county ?? '',
-                city: ids.city ?? '',
                 town: ids.town ?? '',
             })
             setLocationSeeds(entities)
@@ -398,7 +380,6 @@ export function AddEditServiceLocationModal({
                         country: up.ids.country ?? c.country,
                         region: up.ids.region ?? c.region,
                         county: up.ids.county ?? c.county,
-                        city: up.ids.city ?? c.city,
                         town: up.ids.town ?? c.town,
                     }))
                     setLocationSeeds((s) => ({ ...up.entities, ...s }))
@@ -586,13 +567,11 @@ export function AddEditServiceLocationModal({
                                         setLocationSeeds({})
                                         setRegionSearch('')
                                         setCountySearch('')
-                                        setCitySearch('')
                                         setTownSearch('')
                                         applyCascade({
                                             country: v,
                                             region: '',
                                             county: '',
-                                            city: '',
                                             town: '',
                                         })
                                     }}
@@ -640,13 +619,11 @@ export function AddEditServiceLocationModal({
                                     onValueChange={(v) => {
                                         setLocationSeeds({})
                                         setCountySearch('')
-                                        setCitySearch('')
                                         setTownSearch('')
                                         applyCascade({
                                             ...cascade,
                                             region: v,
                                             county: '',
-                                            city: '',
                                             town: '',
                                         })
                                     }}
@@ -694,12 +671,10 @@ export function AddEditServiceLocationModal({
                                     value={cascade.county || undefined}
                                     onValueChange={(v) => {
                                         setLocationSeeds({})
-                                        setCitySearch('')
                                         setTownSearch('')
                                         applyCascade({
                                             ...cascade,
                                             county: v,
-                                            city: '',
                                             town: '',
                                         })
                                     }}
@@ -739,57 +714,6 @@ export function AddEditServiceLocationModal({
                                 </Select>
                             </div>
 
-                            <div className="space-y-2">
-                                <Label className="text-xs text-muted-foreground">
-                                    {LOCATION_TAB_LABELS.city}
-                                </Label>
-                                <Select
-                                    value={cascade.city || undefined}
-                                    onValueChange={(v) => {
-                                        setLocationSeeds({})
-                                        setTownSearch('')
-                                        applyCascade({
-                                            ...cascade,
-                                            city: v,
-                                            town: '',
-                                        })
-                                    }}
-                                    disabled={!cascade.county || citiesLoading}
-                                >
-                                    <SelectTrigger className="rounded-full">
-                                        <SelectValue
-                                            placeholder={
-                                                !cascade.county
-                                                    ? 'Select county first'
-                                                    : citiesLoading
-                                                      ? 'Loading…'
-                                                      : 'Select city'
-                                            }
-                                        />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <div className="p-2">
-                                            <Input
-                                                value={citySearch}
-                                                onChange={(e) => setCitySearch(e.target.value)}
-                                                placeholder="Search cities…"
-                                                className="h-9 rounded-full bg-white"
-                                                onKeyDown={(e) => e.stopPropagation()}
-                                                onPointerDownCapture={(e) => e.stopPropagation()}
-                                                onPointerDown={(e) => e.stopPropagation()}
-                                                onTouchStart={(e) => e.stopPropagation()}
-                                                onClick={(e) => e.stopPropagation()}
-                                            />
-                                        </div>
-                                        {cityOptions.map((loc) => (
-                                            <SelectItem key={loc._id} value={loc._id}>
-                                                {loc.name}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-
                             <div className="space-y-2 sm:col-span-2">
                                 <Label className="text-xs text-muted-foreground">
                                     {LOCATION_TAB_LABELS.town}
@@ -803,13 +727,13 @@ export function AddEditServiceLocationModal({
                                             town: v,
                                         })
                                     }}
-                                    disabled={!cascade.city || townsLoading}
+                                    disabled={!cascade.county || townsLoading}
                                 >
                                     <SelectTrigger className="rounded-full">
                                         <SelectValue
                                             placeholder={
-                                                !cascade.city
-                                                    ? 'Select city first'
+                                                !cascade.county
+                                                    ? 'Select county first'
                                                     : townsLoading
                                                       ? 'Loading…'
                                                       : 'Select town (optional)'
