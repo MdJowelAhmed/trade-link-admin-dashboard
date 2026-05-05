@@ -55,9 +55,16 @@ const reviewsApi = baseApi.injectEndpoints({
             },
             providesTags: ['Review'],
         }),
+        deleteReview: builder.mutation<{ success: boolean; message: string }, string>({
+            query: (id) => ({
+                url: `/admin/reviews/${id}`,
+                method: 'DELETE',
+            }),
+            invalidatesTags: ['Review'],
+        }),
     }),
 })
 
-export const { useGetReviewsQuery } = reviewsApi
+export const { useGetReviewsQuery, useDeleteReviewMutation } = reviewsApi
 
 export type { BackendReview, ReviewsResponse, GetReviewsParams }

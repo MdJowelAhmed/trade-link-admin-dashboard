@@ -1,33 +1,24 @@
-import { useMemo, useEffect } from 'react'
+import { useMemo, useEffect, useState } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import {
   SearchInput,
   FilterDropdown,
   Pagination,
   GridSkeleton,
+  ConfirmDialog,
 } from '@/components/common'
 import { useAppDispatch } from '@/redux/hooks'
 import { setFilters, setPage, setLimit } from '@/redux/slices/reviewsSlice'
-import { useGetReviewsQuery } from '@/redux/api/reviewsApi'
+import {
+  useGetReviewsQuery,
+  useDeleteReviewMutation,
+  type BackendReview,
+} from '@/redux/api/reviewsApi'
 import { useUrlParams } from '@/hooks/useUrlState'
 import { motion } from 'framer-motion'
-import { Star } from 'lucide-react'
-
-// Backend review type (from API response)
-interface BackendReview {
-  _id: string
-  professional: {
-    businessName: string
-  }
-  customer: {
-    name: string
-    email: string
-  }
-  rating: number
-  comment: string
-  createdAt: string
-  updatedAt: string
-}
+import { Star, Trash2 } from 'lucide-react'
+import { toast } from '@/utils/toast'
 
 // Rating filter options
 const RATING_OPTIONS = [
@@ -43,9 +34,11 @@ const RATING_OPTIONS = [
 interface ReviewCardProps {
   review: BackendReview
   index: number
+  onDeleteRequest: (review: BackendReview) => void
+  deleteDisabled?: boolean
 }
 
-function ReviewCard({ review, index }: ReviewCardProps) {
+function ReviewCard({ review, index, onDeleteRequest, deleteDisabled }: ReviewCardProps) {
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
     return date.toLocaleDateString('en-US', {
@@ -65,8 +58,8 @@ function ReviewCard({ review, index }: ReviewCardProps) {
         <CardContent className="p-6">
           <div className="space-y-4">
             {/* Header */}
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex-1 min-w-0">
                 <h3 className="font-semibold text-lg text-gray-900 dark:text-gray-100">
                   {review.customer.name}
                 </h3>
@@ -74,10 +67,22 @@ function ReviewCard({ review, index }: ReviewCardProps) {
                   {review.customer.email}
                 </p>
               </div>
-              <div className="text-right">
+              <div className="flex shrink-0 flex-col items-end gap-2">
                 <p className="text-xs text-gray-500 dark:text-gray-400">
                   {formatDate(review.createdAt)}
                 </p>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-sm"
+                  className="h-8 w-8 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                  disabled={deleteDisabled}
+                  onClick={() => onDeleteRequest(review)}
+                  aria-label={`Delete review from ${review.customer.name}`}
+                  title="Delete review"
+                >
+                  <Trash2 className="h-5 w-5" />
+                </Button>
               </div>
             </div>
 
@@ -123,6 +128,9 @@ function ReviewCard({ review, index }: ReviewCardProps) {
 
 export default function ReviewsManagement() {
   const dispatch = useAppDispatch()
+  const [reviewToDelete, setReviewToDelete] = useState<BackendReview | null>(null)
+
+  const [deleteReview, { isLoading: isDeletingReview }] = useDeleteReviewMutation()
 
   // URL-based state management
   const { getParam, getNumberParam, setParam, setParams } = useUrlParams()
@@ -136,7 +144,6 @@ export default function ReviewsManagement() {
   const {
     data: reviewsResponse,
     isLoading: reviewsLoading,
-    isFetching: reviewsFetching,
   } = useGetReviewsQuery({
     searchTerm: search || undefined,
     rating: rating !== 'all' ? rating : undefined,
@@ -174,6 +181,33 @@ export default function ReviewsManagement() {
     setParams({ limit: newLimit, page: 1 })
   }
 
+  const handleDeleteRequest = (review: BackendReview) => {
+    setReviewToDelete(review)
+  }
+
+  const handleConfirmDeleteReview = async () => {
+    if (!reviewToDelete) return
+    try {
+      await deleteReview(reviewToDelete._id).unwrap()
+      toast({
+        title: 'Review deleted',
+        description: 'The review has been removed.',
+        variant: 'success',
+      })
+      setReviewToDelete(null)
+    } catch (error: unknown) {
+      const errorMessage =
+        error && typeof error === 'object' && 'data' in error
+          ? (error as { data?: { message?: string } }).data?.message
+          : undefined
+      toast({
+        title: 'Error',
+        description: errorMessage || 'Failed to delete review.',
+        variant: 'destructive',
+      })
+    }
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -201,13 +235,19 @@ export default function ReviewsManagement() {
           </div>
 
           {/* Reviews List */}
-          {reviewsLoading || reviewsFetching ? (
+          {reviewsLoading ? (
             <GridSkeleton count={6} itemClassName="h-64" />
           ) : reviews.length > 0 ? (
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {reviews.map((review: BackendReview, index: number) => (
-                  <ReviewCard key={review._id} review={review} index={index} />
+                  <ReviewCard
+                    key={review._id}
+                    review={review}
+                    index={index}
+                    onDeleteRequest={handleDeleteRequest}
+                    deleteDisabled={isDeletingReview}
+                  />
                 ))}
               </div>
               <Pagination
@@ -227,6 +267,20 @@ export default function ReviewsManagement() {
           )}
         </CardContent>
       </Card>
+
+      {reviewToDelete && (
+        <ConfirmDialog
+          open
+          onClose={() => setReviewToDelete(null)}
+          onConfirm={handleConfirmDeleteReview}
+          title="Delete review"
+          description={`Remove this review from ${reviewToDelete.customer.name}? This cannot be undone.`}
+          confirmText="Delete"
+          cancelText="Cancel"
+          variant="danger"
+          isLoading={isDeletingReview}
+        />
+      )}
     </motion.div>
   )
 }
