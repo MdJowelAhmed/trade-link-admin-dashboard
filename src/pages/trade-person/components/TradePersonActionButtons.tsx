@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Eye, CheckCircle, Pencil, XCircle } from 'lucide-react'
+import { Eye, CheckCircle, Pencil, XCircle, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { ConfirmDialog } from '@/components/common/ConfirmDialog'
@@ -11,6 +11,8 @@ interface TradePersonActionButtonsProps {
   onUpdateAmount: (tradePerson: TradePerson) => void
   onApprove: (tradePerson: TradePerson) => void
   onReject: (tradePerson: TradePerson) => void
+  /** Parent opens confirm, then calls `DELETE /admin/professionals/:id` */
+  onDelete?: (tradePerson: TradePerson) => void
   onSetAccountStatus: (
     tradePerson: TradePerson,
     status: 'ACTIVE' | 'INACTIVE'
@@ -24,6 +26,7 @@ export function TradePersonActionButtons({
   onUpdateAmount,
   onApprove,
   onReject,
+  onDelete,
   onSetAccountStatus,
   isAccountStatusUpdating = false,
 }: TradePersonActionButtonsProps) {
@@ -103,6 +106,19 @@ export function TradePersonActionButtons({
             </Button>
           </>
         )}
+        {onDelete ? (
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            onClick={() => onDelete(tradePerson)}
+            className="h-8 w-8 text-gray-500 hover:bg-red-50 hover:text-red-600"
+            title="Delete trade person"
+            aria-label={`Delete ${tradePerson.businessName}`}
+          >
+            <Trash2 className="h-5 w-5" />
+          </Button>
+        ) : null}
       </div>
 
       <ConfirmDialog

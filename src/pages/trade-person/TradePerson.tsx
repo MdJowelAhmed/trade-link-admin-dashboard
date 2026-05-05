@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { SearchInput } from '@/components/common/SearchInput'
 import { Pagination } from '@/components/common/Pagination'
+import { ConfirmDialog } from '@/components/common/ConfirmDialog'
 import { TradePersonFilterDropdown } from './components/TradePersonFilterDropdown'
 import { TradePersonTable } from './components/TradePersonTable'
 import { ViewTradePersonDetailsModal } from './components/ViewTradePersonDetailsModal'
@@ -18,6 +19,7 @@ import {
   setTradePersonStatus,
   setTradePersons,
   updateTradePersonWallet,
+  deleteTradePerson as removeTradePersonFromStore,
 } from '@/redux/slices/tradePersonSlice'
 import { useUrlNumber, useUrlString } from '@/hooks/useUrlState'
 import { toast } from '@/utils/toast'
@@ -27,6 +29,7 @@ import {
   useUpdateBonusManagementAmountMutation,
   useUpdateBonusManagementStatusMutation,
   useStatusUpdateMutation,
+  useDeleteTradePersonMutation,
   type BackendProfessional,
 } from '@/redux/api/bonusManageApi'
 
@@ -87,6 +90,9 @@ export default function TradePersonManagement() {
   const [statusToUpdate, setStatusToUpdate] = useState<'APPROVED' | 'REJECTED' | null>(null)
   const [accountStatusUpdatingId, setAccountStatusUpdatingId] = useState<string | null>(null)
 
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false)
+  const [tradePersonToDelete, setTradePersonToDelete] = useState<TradePerson | null>(null)
+
   // URL state management
   const [searchQuery, setSearchQuery] = useUrlString('search', '')
   const [statusFilter, setStatusFilter] = useUrlString('status', 'all')
@@ -122,6 +128,8 @@ export default function TradePersonManagement() {
   const [updateStatus, { isLoading: isStatusUpdating }] =
     useUpdateBonusManagementStatusMutation()
   const [statusUpdate] = useStatusUpdateMutation()
+  const [deleteTradePersonApi, { isLoading: isDeletingTradePerson }] =
+    useDeleteTradePersonMutation()
 
   // Redux state (pagination is synced from API response)
   const { pagination } = useAppSelector(
@@ -333,6 +341,45 @@ export default function TradePersonManagement() {
     setItemsPerPage(limit)
   }
 
+  const handleDeleteRequest = (tradePerson: TradePerson) => {
+    setTradePersonToDelete(tradePerson)
+    setIsDeleteConfirmOpen(true)
+  }
+
+  const handleConfirmDelete = async () => {
+    if (!tradePersonToDelete) return
+    try {
+      await deleteTradePersonApi(tradePersonToDelete.id).unwrap()
+      dispatch(removeTradePersonFromStore(tradePersonToDelete.id))
+      toast({
+        title: 'Deleted',
+        description: `${tradePersonToDelete.businessName} was removed.`,
+        variant: 'success',
+      })
+      const deletedId = tradePersonToDelete.id
+      if (selectedTradePerson?.id === deletedId) {
+        setIsViewModalOpen(false)
+        setIsAmountModalOpen(false)
+        setIsStatusModalOpen(false)
+        setSelectedTradePerson(null)
+        setStatusToUpdate(null)
+      }
+      setIsDeleteConfirmOpen(false)
+      setTradePersonToDelete(null)
+    } catch (error: unknown) {
+      const errorMessage =
+        error && typeof error === 'object' && 'data' in error &&
+        error.data && typeof error.data === 'object' && 'message' in error.data
+          ? String(error.data.message)
+          : 'Failed to delete trade person. Please try again.'
+      toast({
+        title: 'Error',
+        description: errorMessage,
+        variant: 'destructive',
+      })
+    }
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -379,6 +426,7 @@ export default function TradePersonManagement() {
                 onUpdateAmount={handleUpdateAmount}
                 onApprove={handleApprove}
                 onReject={handleReject}
+                onDelete={handleDeleteRequest}
                 onSetAccountStatus={handleSetAccountStatus}
                 accountStatusUpdatingId={accountStatusUpdatingId}
                 startIndex={startIndex}
@@ -436,6 +484,24 @@ export default function TradePersonManagement() {
         status={statusToUpdate}
         onConfirm={handleConfirmStatus}
         isLoading={isStatusUpdating}
+      />
+
+      <ConfirmDialog
+        open={isDeleteConfirmOpen}
+        onClose={() => {
+          setIsDeleteConfirmOpen(false)
+          setTradePersonToDelete(null)
+        }}
+        onConfirm={handleConfirmDelete}
+        title="Delete trade person"
+        description={
+          tradePersonToDelete
+            ? `This will permanently delete “${tradePersonToDelete.businessName}” (${tradePersonToDelete.email}). This action cannot be undone.`
+            : ''
+        }
+        variant="danger"
+        confirmText="Delete"
+        isLoading={isDeletingTradePerson}
       />
     </motion.div>
   )

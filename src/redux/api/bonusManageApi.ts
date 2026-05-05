@@ -102,6 +102,14 @@ const bonusManageApi = baseApi.injectEndpoints({
             }),
             invalidatesTags: ['BonusManagement'],
         }),
+
+        deleteTradePerson: builder.mutation<{ success: boolean; message: string }, string>({
+            query: (id) => ({
+                url: `/admin/professionals/${id}`,
+                method: 'DELETE',
+            }),
+            invalidatesTags: ['BonusManagement'],
+        }),
         
     }), 
 })
@@ -110,7 +118,7 @@ export const {
     useGetBonusManagementQuery, 
     useUpdateBonusManagementAmountMutation, 
     useUpdateBonusManagementStatusMutation,
-    useStatusUpdateMutation
-
+    useStatusUpdateMutation,
+    useDeleteTradePersonMutation,
 } = bonusManageApi
 

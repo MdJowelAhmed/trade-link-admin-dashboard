@@ -9,6 +9,7 @@ interface TradePersonTableProps {
   onUpdateAmount: (tradePerson: TradePerson) => void
   onApprove: (tradePerson: TradePerson) => void
   onReject: (tradePerson: TradePerson) => void
+  onDelete?: (tradePerson: TradePerson) => void
   onSetAccountStatus: (
     tradePerson: TradePerson,
     status: 'ACTIVE' | 'INACTIVE'
@@ -23,6 +24,7 @@ export function TradePersonTable({
   onUpdateAmount,
   onApprove,
   onReject,
+  onDelete,
   onSetAccountStatus,
   accountStatusUpdatingId = null,
   startIndex = 0,
@@ -165,13 +167,14 @@ export function TradePersonTable({
                 </td>
 
                 {/* Actions Column */}
-                <td className="px-6 py-4">
+                <td className="px-6 py-4 text-right">
                   <TradePersonActionButtons
                     tradePerson={tradePerson}
                     onView={onView}
                     onUpdateAmount={onUpdateAmount}
                     onApprove={onApprove}
                     onReject={onReject}
+                    onDelete={onDelete}
                     onSetAccountStatus={onSetAccountStatus}
                     isAccountStatusUpdating={accountStatusUpdatingId === tradePerson.id}
                   />

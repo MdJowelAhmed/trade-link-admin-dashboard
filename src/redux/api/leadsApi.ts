@@ -105,7 +105,7 @@ const leadsApi = baseApi.injectEndpoints({
         }),
         deleteLead: builder.mutation({
             query: (id) => ({
-                url: `/jobPosts/${id}`,
+                url: `/admin/leads/${id}`,
                 method: 'DELETE',
             }),
             invalidatesTags: ['Lead'],
