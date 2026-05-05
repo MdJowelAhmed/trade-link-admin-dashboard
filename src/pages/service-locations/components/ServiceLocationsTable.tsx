@@ -39,7 +39,7 @@ export function ServiceLocationsTable({
     startIndex = 0,
 }: ServiceLocationsTableProps) {
     const colSpan = 9
-    const PREVIEW_BASE_URL = 'https://www.tradelinknetwork.co.uk/service'
+    const PREVIEW_BASE_URL = 'https://www.tradelinknetwork.co.uk/services'
 
     return (
         <div className="w-full overflow-auto">

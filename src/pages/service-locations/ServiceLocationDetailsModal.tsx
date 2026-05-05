@@ -175,14 +175,14 @@ export function ServiceLocationDetailsModal({
                             </p>
                         ) : null}
                         <ul className="mt-6 list-disc space-y-2 pl-5 text-[15px] leading-relaxed text-slate-600">
-                            <li>
+                            {/* <li>
                                 <span className="font-medium text-slate-800">Primary service:</span>{' '}
                                 {serviceName}
                             </li>
                             <li>
                                 <span className="font-medium text-slate-800">Primary location:</span>{' '}
                                 {locationName}
-                            </li>
+                            </li> */}
                             {row.metaTitleOverride?.trim() ? (
                                 <li>
                                     <span className="font-medium text-slate-800">Meta title:</span>{' '}
@@ -350,16 +350,7 @@ export function ServiceLocationDetailsModal({
                         )}
                     </PageCard>
 
-                    {(formatMaybeDate(row.createdAt) || formatMaybeDate(row.updatedAt)) && (
-                        <div className="flex flex-wrap gap-x-6 gap-y-1 border-t border-slate-200/80 pt-4 text-xs text-slate-500">
-                            {formatMaybeDate(row.createdAt) ? (
-                                <span>Created: {formatMaybeDate(row.createdAt)}</span>
-                            ) : null}
-                            {formatMaybeDate(row.updatedAt) ? (
-                                <span>Updated: {formatMaybeDate(row.updatedAt)}</span>
-                            ) : null}
-                        </div>
-                    )}
+        
                 </div>
             )}
         </ModalWrapper>
