@@ -2,7 +2,6 @@ import { motion } from 'framer-motion'
 import { Check, Eye, Pencil, Trash2, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
-import { Badge } from '@/components/ui/badge'
 import { TableRowSkeleton } from '@/components/common'
 import type { Service } from '@/types'
 

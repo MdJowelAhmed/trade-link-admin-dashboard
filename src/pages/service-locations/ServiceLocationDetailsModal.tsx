@@ -1,5 +1,4 @@
 import type { ReactNode } from 'react'
-import { ArrowRight } from 'lucide-react'
 import { ModalWrapper } from '@/components/common'
 import {
     Accordion,
@@ -46,40 +45,6 @@ function PageCard({
     )
 }
 
-function statusPill(active: boolean) {
-    return (
-        <span
-            className={cn(
-                'inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold',
-                active ? 'bg-emerald-500/15 text-emerald-700' : 'bg-red-500 text-white',
-            )}
-        >
-            {active ? 'Active' : 'Inactive'}
-        </span>
-    )
-}
-
-function sectionFlagChip(active: boolean | undefined, label: string) {
-    if (active === undefined)
-        return (
-            <span className="rounded-full border border-border bg-slate-50 px-2.5 py-0.5 text-[10px] font-medium text-muted-foreground">
-                {label}: —
-            </span>
-        )
-    return (
-        <span
-            className={cn(
-                'rounded-full border px-2.5 py-0.5 text-[10px] font-medium',
-                active
-                    ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
-                    : 'border-slate-200 bg-slate-100 text-slate-600',
-            )}
-        >
-            {label}: {active ? 'On' : 'Off'}
-        </span>
-    )
-}
-
 function RelatedLinkCard({
     title,
     description,
@@ -101,15 +66,8 @@ function RelatedLinkCard({
                 <p className="mt-1 text-sm leading-relaxed text-slate-500">{description}</p>
                 {footer ? <div className="mt-2 flex flex-wrap gap-1.5">{footer}</div> : null}
             </div>
-            {/* <ArrowRight className="h-5 w-5 shrink-0 text-slate-400" aria-hidden /> */}
         </div>
     )
-}
-
-function formatMaybeDate(iso?: string): string | null {
-    if (!iso?.trim()) return null
-    const d = new Date(iso)
-    return Number.isNaN(d.getTime()) ? iso : d.toLocaleString()
 }
 
 function relatedServiceName(entry: RelatedServiceOverrideEntry): string {
@@ -145,14 +103,6 @@ export function ServiceLocationDetailsModal({
         >
             {!row ? null : (
                 <div className="space-y-6 pt-1">
-                    {/* <div className="flex flex-wrap items-center gap-2">
-                        {statusPill(row.isActive)}
-                        {sectionFlagChip(row.isRelatedServiceActive, 'Related services')}
-                        {sectionFlagChip(row.isRelatedLocationActive, 'Related locations')}
-                        {sectionFlagChip(row.isLocalNotesActive, 'Local notes')}
-                        {sectionFlagChip(row.isFaqActive, 'FAQ')}
-                    </div> */}
-
                     <PageCard className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
                         <span>
                             <span className="font-medium text-foreground">Service:</span> {serviceName}
