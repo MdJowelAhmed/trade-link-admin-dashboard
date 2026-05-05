@@ -112,7 +112,6 @@ export default function TradePersonManagement() {
   const {
     data: professionalsResponse,
     isLoading: isProfessionalsLoading,
-    isFetching: isProfessionalsFetching,
     isError: isProfessionalsError,
     error: professionalsError,
   } = useGetBonusManagementQuery({
@@ -410,15 +409,15 @@ export default function TradePersonManagement() {
         </CardHeader>
 
         <CardContent className="p-0">
-          {/* Loading State */}
-          {(isProfessionalsLoading || isProfessionalsFetching) && (
+          {/* Only block UI on first load; refetch after delete/mutations keeps the table mounted */}
+          {isProfessionalsLoading && (
             <div className="flex items-center justify-center py-12">
               <div className="text-sm text-gray-500">Loading trade persons...</div>
             </div>
           )}
 
           {/* Table */}
-          {!isProfessionalsLoading && !isProfessionalsFetching && (
+          {!isProfessionalsLoading && (
             <>
               <TradePersonTable
                 tradePersons={tradePersonsData}

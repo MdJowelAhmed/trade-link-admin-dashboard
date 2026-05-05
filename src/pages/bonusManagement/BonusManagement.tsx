@@ -40,7 +40,6 @@ export default function BonusManagement() {
   const {
     data: professionalsResponse,
     isLoading: isProfessionalsLoading,
-    isFetching: isProfessionalsFetching,
     isError: isProfessionalsError,
     error: professionalsError,
   } = useGetBonusManagementQuery({
@@ -209,15 +208,15 @@ export default function BonusManagement() {
         </CardHeader>
 
         <CardContent className="p-0">
-          {/* Loading State */}
-          {(isProfessionalsLoading || isProfessionalsFetching) && (
+          {/* Only block UI on first load; background refetch keeps the table visible */}
+          {isProfessionalsLoading && (
             <div className="flex items-center justify-center py-12">
               <div className="text-sm text-gray-500">Loading professionals...</div>
             </div>
           )}
 
           {/* Table */}
-          {!isProfessionalsLoading && !isProfessionalsFetching && (
+          {!isProfessionalsLoading && (
             <>
               <BonusTable
                 professionals={list}
