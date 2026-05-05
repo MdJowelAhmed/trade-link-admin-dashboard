@@ -109,7 +109,7 @@ export function ViewTradePersonDetailsModal({
               <div className="pt-2">
                 <p className="text-xs uppercase tracking-wide text-slate-500">Service radius</p>
                 <p className="mt-1 font-medium text-slate-800">
-                  {profile?.serviceRadiusKm !== undefined ? `${profile.serviceRadiusKm} km` : '—'}
+                  {profile?.serviceRadiusKm !== undefined ? `${profile.serviceRadiusKm} miles` : '—'}
                 </p>
               </div>
               <div>
