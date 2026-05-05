@@ -101,7 +101,7 @@ function RelatedLinkCard({
                 <p className="mt-1 text-sm leading-relaxed text-slate-500">{description}</p>
                 {footer ? <div className="mt-2 flex flex-wrap gap-1.5">{footer}</div> : null}
             </div>
-            <ArrowRight className="h-5 w-5 shrink-0 text-slate-400" aria-hidden />
+            {/* <ArrowRight className="h-5 w-5 shrink-0 text-slate-400" aria-hidden /> */}
         </div>
     )
 }
@@ -145,15 +145,15 @@ export function ServiceLocationDetailsModal({
         >
             {!row ? null : (
                 <div className="space-y-6 pt-1">
-                    <div className="flex flex-wrap items-center gap-2">
+                    {/* <div className="flex flex-wrap items-center gap-2">
                         {statusPill(row.isActive)}
                         {sectionFlagChip(row.isRelatedServiceActive, 'Related services')}
                         {sectionFlagChip(row.isRelatedLocationActive, 'Related locations')}
                         {sectionFlagChip(row.isLocalNotesActive, 'Local notes')}
                         {sectionFlagChip(row.isFaqActive, 'FAQ')}
-                    </div>
+                    </div> */}
 
-                    <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
+                    <PageCard className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
                         <span>
                             <span className="font-medium text-foreground">Service:</span> {serviceName}
                         </span>
@@ -162,7 +162,7 @@ export function ServiceLocationDetailsModal({
                             <span className="font-medium text-foreground">Location:</span>{' '}
                             {locationName}
                         </span>
-                    </div>
+                    </PageCard>
 
                     {/* Overview card — heading + intro + bullet facts (design ref: detailed info card) */}
                     <PageCard>
@@ -221,35 +221,35 @@ export function ServiceLocationDetailsModal({
                                 {relatedServices.map((entry: RelatedServiceOverrideEntry) => {
                                     const id = resolveRelatedServiceEntryId(entry)
                                     const name = relatedServiceName(entry)
-                                    const populated = typeof entry === 'object'
-                                    const slug = populated ? entry.slug : undefined
-                                    const svcActive = populated ? entry.isActive : undefined
+                                    // const populated = typeof entry === 'object'
+                                    // const slug = populated ? entry.slug : undefined
+                                    // const svcActive = populated ? entry.isActive : undefined
                                     return (
                                         <RelatedLinkCard
                                             key={id}
                                             title={name}
                                             description={`Find ${name} support in ${locationName}.`}
-                                            footer={
-                                                <>
-                                                    {slug ? (
-                                                        <span className="rounded-md bg-slate-100 px-1.5 py-0.5 font-mono text-[10px] text-slate-600">
-                                                            {slug}
-                                                        </span>
-                                                    ) : null}
-                                                    {svcActive !== undefined ? (
-                                                        <span
-                                                            className={cn(
-                                                                'rounded-md px-1.5 py-0.5 text-[10px] font-semibold uppercase',
-                                                                svcActive
-                                                                    ? 'bg-emerald-100 text-emerald-800'
-                                                                    : 'bg-red-100 text-red-800',
-                                                            )}
-                                                        >
-                                                            {svcActive ? 'Active' : 'Inactive'}
-                                                        </span>
-                                                    ) : null}
-                                                </>
-                                            }
+                                            // footer={
+                                            //     <>
+                                            //         {slug ? (
+                                            //             <span className="rounded-md bg-slate-100 px-1.5 py-0.5 font-mono text-[10px] text-slate-600">
+                                            //                 {slug}
+                                            //             </span>
+                                            //         ) : null}
+                                            //         {svcActive !== undefined ? (
+                                            //             <span
+                                            //                 className={cn(
+                                            //                     'rounded-md px-1.5 py-0.5 text-[10px] font-semibold uppercase',
+                                            //                     svcActive
+                                            //                         ? 'bg-emerald-100 text-emerald-800'
+                                            //                         : 'bg-red-100 text-red-800',
+                                            //                 )}
+                                            //             >
+                                            //                 {svcActive ? 'Active' : 'Inactive'}
+                                            //             </span>
+                                            //         ) : null}
+                                            //     </>
+                                            // }
                                         />
                                     )
                                 })}
@@ -274,47 +274,47 @@ export function ServiceLocationDetailsModal({
                                 {relatedLocations.map((entry: RelatedLocationOverrideEntry) => {
                                     const id = resolveRelatedLocationEntryId(entry)
                                     const name = relatedLocationName(entry)
-                                    const populated = typeof entry === 'object'
-                                    const type = populated ? entry.type : undefined
-                                    const slug = populated ? entry.slug : undefined
-                                    const locActive = populated ? entry.isActive : undefined
-                                    const indexable = populated ? entry.isIndexable : undefined
+                                    // const populated = typeof entry === 'object'
+                                    // const type = populated ? entry.type : undefined
+                                    // const slug = populated ? entry.slug : undefined
+                                    // const locActive = populated ? entry.isActive : undefined
+                                    // const indexable = populated ? entry.isIndexable : undefined
                                     return (
                                         <RelatedLinkCard
                                             key={id}
                                             title={name}
                                             description={`Find ${serviceName} support in ${name}.`}
-                                            footer={
-                                                <>
-                                                    {type ? (
-                                                        <span className="rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium capitalize text-slate-600">
-                                                            {type}
-                                                        </span>
-                                                    ) : null}
-                                                    {slug ? (
-                                                        <span className="rounded-md bg-slate-100 px-1.5 py-0.5 font-mono text-[10px] text-slate-600">
-                                                            {slug}
-                                                        </span>
-                                                    ) : null}
-                                                    {locActive !== undefined ? (
-                                                        <span
-                                                            className={cn(
-                                                                'rounded-md px-1.5 py-0.5 text-[10px] font-semibold uppercase',
-                                                                locActive
-                                                                    ? 'bg-emerald-100 text-emerald-800'
-                                                                    : 'bg-red-100 text-red-800',
-                                                            )}
-                                                        >
-                                                            {locActive ? 'Active' : 'Inactive'}
-                                                        </span>
-                                                    ) : null}
-                                                    {indexable !== undefined ? (
-                                                        <span className="rounded-md bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold text-primary">
-                                                            {indexable ? 'Indexable' : 'No index'}
-                                                        </span>
-                                                    ) : null}
-                                                </>
-                                            }
+                                            // footer={
+                                            //     <>
+                                            //         {type ? (
+                                            //             <span className="rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium capitalize text-slate-600">
+                                            //                 {type}
+                                            //             </span>
+                                            //         ) : null}
+                                            //         {slug ? (
+                                            //             <span className="rounded-md bg-slate-100 px-1.5 py-0.5 font-mono text-[10px] text-slate-600">
+                                            //                 {slug}
+                                            //             </span>
+                                            //         ) : null}
+                                            //         {locActive !== undefined ? (
+                                            //             <span
+                                            //                 className={cn(
+                                            //                     'rounded-md px-1.5 py-0.5 text-[10px] font-semibold uppercase',
+                                            //                     locActive
+                                            //                         ? 'bg-emerald-100 text-emerald-800'
+                                            //                         : 'bg-red-100 text-red-800',
+                                            //                 )}
+                                            //             >
+                                            //                 {locActive ? 'Active' : 'Inactive'}
+                                            //             </span>
+                                            //         ) : null}
+                                            //         {indexable !== undefined ? (
+                                            //             <span className="rounded-md bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold text-primary">
+                                            //                 {indexable ? 'Indexable' : 'No index'}
+                                            //             </span>
+                                            //         ) : null}
+                                            //     </>
+                                            // }
                                         />
                                     )
                                 })}
@@ -342,11 +342,7 @@ export function ServiceLocationDetailsModal({
                                         </AccordionTrigger>
                                         <AccordionContent className="text-[15px] leading-relaxed text-slate-600">
                                             {f.answer}
-                                            {f._id ? (
-                                                <p className="mt-3 font-mono text-[10px] text-slate-400">
-                                                    {f._id}
-                                                </p>
-                                            ) : null}
+                                         
                                         </AccordionContent>
                                     </AccordionItem>
                                 ))}
