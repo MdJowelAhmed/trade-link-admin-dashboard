@@ -671,6 +671,22 @@ export interface TradePerson {
   galleryImages?: string[]
   walletBalance?: number
   verificationDocuments?: VerificationDocument[]
+  role?: string
+  isVerified?: boolean
+  isPhoneVerified?: boolean
+  isEmailVerified?: boolean
+  professionalProfile?: {
+    businessName?: string
+    businessImage?: string
+    serviceRadiusKm?: number
+    address?: string
+    postcode?: string
+    about?: string
+    website?: string
+    approveStatus?: 'PENDING' | 'APPROVED' | 'REJECTED'
+    ratingAvg?: number
+    totalReviews?: number
+  }
   createdAt: string
   updatedAt: string
 }

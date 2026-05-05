@@ -24,6 +24,14 @@ export interface BackendProfessional {
     professional: {
         address: string
         approveStatus: 'PENDING' | 'APPROVED' | 'REJECTED'
+        businessName?: string
+        businessImage?: string
+        serviceRadiusKm?: number
+        postcode?: string
+        about?: string
+        website?: string
+        ratingAvg?: number
+        totalReviews?: number
         services?: string[]
         verificationDocuments?: Array<{
             documentType: 'DRIVING_LICENSE' | 'PASSPORT' | 'INSURANCE'

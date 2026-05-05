@@ -1,6 +1,7 @@
-import { FileText, Download, ExternalLink } from 'lucide-react'
+import { FileText, Download, ExternalLink, Mail, Phone, MapPin, CheckCircle2, XCircle } from 'lucide-react'
 import { ModalWrapper } from '@/components/common'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import type { TradePerson, ProfessionalDocumentType } from '@/types'
 
@@ -21,120 +22,144 @@ export function ViewTradePersonDetailsModal({
 }: ViewTradePersonDetailsModalProps) {
   if (!tradePerson) return null
 
+  const profile = tradePerson.professionalProfile
+  const businessImage = profile?.businessImage
+    ? `${import.meta.env.VITE_API_BASE_URL}${profile.businessImage.startsWith('/') ? profile.businessImage : `/${profile.businessImage}`}`
+    : undefined
+
+  const infoCards = [
+    { label: 'Account status', value: tradePerson.accountStatus },
+    { label: 'Approval status', value: profile?.approveStatus || tradePerson.status.toUpperCase() },
+    { label: 'Role', value: tradePerson.role || 'PROFESSIONAL' },
+    { label: 'Wallet balance', value: `£${(tradePerson.walletBalance ?? 0).toFixed(2)}` },
+  ]
+
+  const verifyPill = (ok: boolean | undefined, label: string) => (
+    <Badge
+      variant="outline"
+      className={ok ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-red-200 bg-red-50 text-red-700'}
+    >
+      {ok ? <CheckCircle2 className="mr-1 h-3.5 w-3.5" /> : <XCircle className="mr-1 h-3.5 w-3.5" />}
+      {label}
+    </Badge>
+  )
+
   return (
     <ModalWrapper
       open={open}
       onClose={onClose}
-      title="Details"
-      size="lg"
-      className="max-w-xl bg-white"
+      title="Professional details"
+      size="xl"
+      className="max-w-4xl bg-slate-50/80"
     >
-      <div className="space-y-6">
-        {/* Profile Header */}
-        <div className="flex items-center gap-3 pb-4">
-          <Avatar className="h-12 w-12">
-            <AvatarImage src={tradePerson.avatar} alt={tradePerson.ownerName} />
-            <AvatarFallback className="text-lg bg-gray-100">
-              {tradePerson.ownerName
-                .split(' ')
-                .map((n) => n[0])
-                .join('')
-                .toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
-          <h2 className="text-lg font-semibold text-gray-900">
-            {tradePerson.ownerName}
-          </h2>
-        </div>
-
-        {/* Gallery Images */}
-        {tradePerson.galleryImages && tradePerson.galleryImages.length > 0 && (
-          <div className="flex gap-3 overflow-x-auto pb-2">
-            {tradePerson.galleryImages.map((image, index) => (
-              <div
-                key={index}
-                className="flex-shrink-0 w-28 h-20 rounded-lg overflow-hidden bg-gray-100"
-              >
-                <img
-                  src={image}
-                  alt={`Gallery ${index + 1}`}
-                  className="w-full h-full object-cover"
-                />
+      <div className="space-y-6 text-sm">
+        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-3">
+              <Avatar className="h-14 w-14 border border-slate-200">
+                <AvatarImage src={tradePerson.avatar || businessImage} alt={tradePerson.ownerName} />
+                <AvatarFallback className="text-lg bg-slate-100">
+                  {tradePerson.ownerName
+                    .split(' ')
+                    .map((n) => n[0])
+                    .join('')
+                    .toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <h2 className="text-lg font-semibold text-slate-900">{tradePerson.ownerName}</h2>
+                <p className="text-sm text-slate-500">{tradePerson.businessName || 'N/A'}</p>
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {verifyPill(tradePerson.isVerified, 'KYC Verified')}
+              {verifyPill(tradePerson.isEmailVerified, 'Email')}
+              {verifyPill(tradePerson.isPhoneVerified, 'Phone')}
+            </div>
+          </div>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {infoCards.map((item) => (
+              <div key={item.label} className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                <p className="text-xs uppercase tracking-wide text-slate-500">{item.label}</p>
+                <p className="mt-1 text-sm font-semibold text-slate-800">{item.value}</p>
               </div>
             ))}
           </div>
-        )}
+        </div>
 
-        {/* Business Info Section */}
-        <div>
-          <h3 className="text-sm font-medium text-gray-500 mb-4">Business info:</h3>
-          <div className="space-y-4">
-            {/* Business Name */}
-            <div className="flex items-start justify-between">
-              <span className="text-sm text-gray-600">Business Name</span>
-              <span className="text-sm font-medium text-gray-900 text-right">
-                {tradePerson.services[0] || 'N/A'}
-              </span>
-            </div>
-
-            {/* Services */}
-            <div className="flex items-start justify-between">
-              <span className="text-sm text-gray-600">Services</span>
-              <div className="text-right">
-                {tradePerson.services.map((service, index) => (
-                  <span
-                    key={index}
-                    className="text-sm font-medium text-[#2B7A78] hover:underline cursor-pointer"
-                  >
-                    {service}
-                    {index < tradePerson.services.length - 1 && ', '}
-                  </span>
-                ))}
+        <div className="grid gap-6 lg:grid-cols-2">
+          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+            <h3 className="text-base font-semibold text-slate-900">Contact & Business</h3>
+            <div className="mt-4 space-y-3 text-slate-700">
+              <div className="flex items-start gap-2">
+                <Mail className="mt-0.5 h-4 w-4 text-slate-400" />
+                <span>{tradePerson.email || '—'}</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <Phone className="mt-0.5 h-4 w-4 text-slate-400" />
+                <span>{tradePerson.mobile || '—'}</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <MapPin className="mt-0.5 h-4 w-4 text-slate-400" />
+                <span>
+                  {profile?.address || tradePerson.address || '—'}
+                  {profile?.postcode ? `, ${profile.postcode}` : ''}
+                </span>
+              </div>
+              <div className="pt-2">
+                <p className="text-xs uppercase tracking-wide text-slate-500">Service radius</p>
+                <p className="mt-1 font-medium text-slate-800">
+                  {profile?.serviceRadiusKm !== undefined ? `${profile.serviceRadiusKm} km` : '—'}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs uppercase tracking-wide text-slate-500">Website</p>
+                <p className="mt-1 break-all font-medium text-slate-800">{profile?.website || '—'}</p>
               </div>
             </div>
+          </div>
 
-            {/* Address */}
-            <div className="flex items-start justify-between">
-              <span className="text-sm text-gray-600">Address</span>
-              <span className="text-sm font-medium text-gray-900 text-right max-w-[60%]">
-                {tradePerson.address}
-              </span>
+          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+            <h3 className="text-base font-semibold text-slate-900">Services</h3>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {tradePerson.services.length === 0 ? (
+                <p className="text-sm text-slate-500">No services listed.</p>
+              ) : (
+                tradePerson.services.map((service, index) => (
+                  <Badge key={`${service}-${index}`} variant="outline" className="bg-slate-50 text-slate-700 border-slate-200">
+                    {service}
+                  </Badge>
+                ))
+              )}
+            </div>
+            <div className="mt-5">
+              <p className="text-xs uppercase tracking-wide text-slate-500">About</p>
+              <p className="mt-1 whitespace-pre-wrap text-sm text-slate-700">
+                {profile?.about || 'No description provided.'}
+              </p>
+            </div>
+            <div className="mt-5 grid grid-cols-2 gap-3">
+              <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                <p className="text-xs uppercase tracking-wide text-slate-500">Rating</p>
+                <p className="mt-1 text-base font-semibold text-slate-800">{profile?.ratingAvg ?? 0}</p>
+              </div>
+              <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                <p className="text-xs uppercase tracking-wide text-slate-500">Total reviews</p>
+                <p className="mt-1 text-base font-semibold text-slate-800">{profile?.totalReviews ?? 0}</p>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Others Info Section */}
-        <div>
-          <h3 className="text-sm font-medium text-gray-500 mb-4">Others info:</h3>
-          <div className="space-y-4">
-            {/* Email */}
-            <div className="flex items-start justify-between">
-              <span className="text-sm text-gray-600">E-mail</span>
-              <span className="text-sm font-medium text-[#2B7A78] text-right">
-                {tradePerson.email}
-              </span>
-            </div>
-
-            {/* Mobile */}
-            <div className="flex items-start justify-between">
-              <span className="text-sm text-gray-600">Mobile</span>
-              <span className="text-sm font-medium text-gray-900 text-right">
-                {tradePerson.mobile}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Verification Documents Section */}
         {tradePerson.verificationDocuments && tradePerson.verificationDocuments.length > 0 && (
-          <div>
-            <h3 className="text-sm font-medium text-gray-500 mb-4">Verification Documents:</h3>
-            <div className="space-y-3">
+          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+            <h3 className="text-base font-semibold text-slate-900">Verification documents</h3>
+            <div className="mt-4 space-y-3">
               {tradePerson.verificationDocuments.map((doc) => {
                 const documentUrl = doc.documentPath.startsWith('http')
                   ? doc.documentPath
                   : `${import.meta.env.VITE_API_BASE_URL}${doc.documentPath.startsWith('/') ? doc.documentPath : `/${doc.documentPath}`}`
-                
+
                 const getDocumentTypeLabel = (type: ProfessionalDocumentType) => {
                   switch (type) {
                     case 'DRIVING_LICENSE':
@@ -150,7 +175,7 @@ export function ViewTradePersonDetailsModal({
 
                 const formatDate = (dateString: string) => {
                   try {
-                    return new Date(dateString).toLocaleDateString('en-US', {
+                    return new Date(dateString).toLocaleDateString('en-GB', {
                       year: 'numeric',
                       month: 'short',
                       day: 'numeric',
@@ -163,29 +188,25 @@ export function ViewTradePersonDetailsModal({
                 return (
                   <div
                     key={doc._id}
-                    className="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                    className="flex flex-col gap-3 rounded-lg border border-slate-200 bg-slate-50 p-4 sm:flex-row sm:items-center sm:justify-between"
                   >
-                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                      <div className="flex-shrink-0 p-2 bg-[#2B7A78]/10 rounded-lg">
-                        <FileText className="h-5 w-5 text-[#2B7A78]" />
+                    <div className="flex items-center gap-3">
+                      <div className="rounded-lg bg-primary/10 p-2">
+                        <FileText className="h-5 w-5 text-primary" />
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-900 truncate">
-                          {getDocumentTypeLabel(doc.documentType)}
-                        </p>
-                        <p className="text-xs text-gray-500 mt-0.5">
-                          Uploaded: {formatDate(doc.uploadedAt)}
-                        </p>
+                      <div>
+                        <p className="font-medium text-slate-900">{getDocumentTypeLabel(doc.documentType)}</p>
+                        <p className="text-xs text-slate-500">Uploaded: {formatDate(doc.uploadedAt)}</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2 flex-shrink-0">
+                    <div className="flex items-center gap-2">
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => window.open(documentUrl, '_blank')}
-                        className="h-8 px-3 text-xs border-[#2B7A78] text-[#2B7A78] hover:bg-[#2B7A78] hover:text-white"
+                        className="h-8 border-primary/30 text-primary hover:bg-primary hover:text-white"
                       >
-                        <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
+                        <ExternalLink className="mr-1.5 h-3.5 w-3.5" />
                         View
                       </Button>
                       <Button
@@ -199,9 +220,9 @@ export function ViewTradePersonDetailsModal({
                           link.click()
                           document.body.removeChild(link)
                         }}
-                        className="h-8 px-3 text-xs border-gray-300 text-gray-700 hover:bg-gray-100"
+                        className="h-8"
                       >
-                        <Download className="h-3.5 w-3.5 mr-1.5" />
+                        <Download className="mr-1.5 h-3.5 w-3.5" />
                         Download
                       </Button>
                     </div>
@@ -212,19 +233,18 @@ export function ViewTradePersonDetailsModal({
           </div>
         )}
 
-        {/* Action Buttons */}
         {tradePerson.status === 'pending' && (
-          <div className="flex items-center justify-center gap-4 pt-4">
+          <div className="flex items-center justify-end gap-3 pt-2">
             <Button
               variant="outline"
               onClick={() => onReject(tradePerson)}
-              className="px-8 py-2 border-[#E74C3C] text-[#E74C3C] hover:bg-[#E74C3C] hover:text-white rounded-full min-w-[120px]"
+              className="rounded-full border-red-300 text-red-600 hover:bg-red-600 hover:text-white"
             >
               Reject
             </Button>
             <Button
               onClick={() => onApprove(tradePerson)}
-              className="px-8 py-2 bg-[#1B3A4B] hover:bg-[#152d3a] text-white rounded-full min-w-[120px]"
+              className="rounded-full bg-primary text-white hover:bg-primary/90"
             >
               Approve
             </Button>

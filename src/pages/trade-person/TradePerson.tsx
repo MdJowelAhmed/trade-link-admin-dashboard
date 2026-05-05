@@ -48,7 +48,7 @@ const mapBackendProfessionalToTradePerson = (
 
   return {
     id: professional._id,
-    businessName: professional.name,
+    businessName: professional.professional?.businessName || professional.name,
     ownerName: professional.name,
     services: professional.professional?.services ?? [],
     email: professional.email,
@@ -62,6 +62,22 @@ const mapBackendProfessionalToTradePerson = (
     avatar: undefined,
     galleryImages: [],
     walletBalance: professional.walletBalance,
+    role: professional.role,
+    isVerified: professional.isVerified,
+    isPhoneVerified: professional.isPhoneVerified,
+    isEmailVerified: professional.isEmailVerified,
+    professionalProfile: {
+      businessName: professional.professional?.businessName,
+      businessImage: professional.professional?.businessImage,
+      serviceRadiusKm: professional.professional?.serviceRadiusKm,
+      address: professional.professional?.address,
+      postcode: professional.professional?.postcode,
+      about: professional.professional?.about,
+      website: professional.professional?.website,
+      approveStatus: professional.professional?.approveStatus,
+      ratingAvg: professional.professional?.ratingAvg,
+      totalReviews: professional.professional?.totalReviews,
+    },
     verificationDocuments: professional.professional?.verificationDocuments?.map(
       (doc) => ({
         _id: doc._id,
