@@ -164,6 +164,11 @@ export default function CategoryList() {
   const [serviceForDetails, setServiceForDetails] = useState<Service | null>(null)
   const [serviceToDelete, setServiceToDelete] = useState<Service | null>(null)
   const [statusUpdatingServiceId, setStatusUpdatingServiceId] = useState<string | null>(null)
+  /** Pending PATCH `{ isActive }` until user confirms in `ConfirmDialog` */
+  const [serviceStatusConfirm, setServiceStatusConfirm] = useState<{
+    service: Service
+    nextActive: boolean
+  } | null>(null)
   const [showCategoryDetailsModal, setShowCategoryDetailsModal] = useState(false)
   const [faqMode, setFaqMode] = useState<'edit' | 'faq' | 'details'>('edit')
 
@@ -264,17 +269,24 @@ export default function CategoryList() {
     }
   }
 
-  const handleToggleServiceActive = async (service: Service, isActive: boolean) => {
+  const handleToggleServiceActiveRequest = (service: Service, isActive: boolean) => {
     const currentlyActive = service.status === 'active'
     if (currentlyActive === isActive) return
+    setServiceStatusConfirm({ service, nextActive: isActive })
+  }
+
+  const handleConfirmServiceStatus = async () => {
+    if (!serviceStatusConfirm) return
+    const { service, nextActive } = serviceStatusConfirm
     setStatusUpdatingServiceId(service.id)
     try {
-      await updateServiceStatus({ id: service.id, isActive }).unwrap()
+      await updateServiceStatus({ id: service.id, isActive: nextActive }).unwrap()
       toast({
         title: 'Status updated',
-        description: `${service.name} is now ${isActive ? 'active' : 'inactive'}.`,
+        description: `${service.name} is now ${nextActive ? 'active' : 'inactive'}.`,
         variant: 'success',
       })
+      setServiceStatusConfirm(null)
     } catch (error: unknown) {
       const errorMessage =
         error && typeof error === 'object' && 'data' in error
@@ -449,7 +461,7 @@ export default function CategoryList() {
                   onDetails={handleServiceDetails}
                   onEdit={handleEditService}
                   onDelete={handleDeleteService}
-                  onToggleActive={handleToggleServiceActive}
+                  onToggleActive={handleToggleServiceActiveRequest}
                   statusUpdatingId={statusUpdatingServiceId}
                 />
                 {!servicesLoading && services.length > 0 && (
@@ -560,6 +572,29 @@ export default function CategoryList() {
           cancelText="Cancel"
           variant="danger"
           isLoading={isDeletingService}
+        />
+      )}
+
+      {/* Service active/inactive — confirm before PATCH */}
+      {serviceStatusConfirm && (
+        <ConfirmDialog
+          open
+          onClose={() => setServiceStatusConfirm(null)}
+          onConfirm={handleConfirmServiceStatus}
+          title={
+            serviceStatusConfirm.nextActive
+              ? 'Activate this service?'
+              : 'Deactivate this service?'
+          }
+          description={
+            serviceStatusConfirm.nextActive
+              ? `"${serviceStatusConfirm.service.name}" will be visible and available as an active service.`
+              : `"${serviceStatusConfirm.service.name}" will be set to inactive and may be hidden from customers.`
+          }
+          confirmText={serviceStatusConfirm.nextActive ? 'Activate' : 'Deactivate'}
+          cancelText="Cancel"
+          variant={serviceStatusConfirm.nextActive ? 'info' : 'warning'}
+          isLoading={statusUpdatingServiceId === serviceStatusConfirm.service.id}
         />
       )}
     </motion.div>

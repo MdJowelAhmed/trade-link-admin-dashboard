@@ -13,7 +13,7 @@ export interface ServicesTableProps {
   onDetails: (service: Service) => void
   onEdit: (service: Service) => void
   onDelete: (service: Service) => void
-  /** PATCH `{ isActive }` via `updateServiceStatus` */
+  /** User toggled status — parent should confirm (e.g. `ConfirmDialog`) then PATCH `isActive` */
   onToggleActive?: (service: Service, isActive: boolean) => void | Promise<void>
   statusUpdatingId?: string | null
 }
