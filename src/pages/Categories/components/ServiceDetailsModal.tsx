@@ -50,6 +50,12 @@ export function ServiceDetailsModal({ open, onClose, service }: ServiceDetailsMo
             <p className="mt-1 text-muted-foreground">{service.categoryName ?? '—'}</p>
           </div>
           <div>
+            <p className=" font-medium uppercase tracking-wide ">Status</p>
+            <p className="mt-1 text-muted-foreground">
+              {service.status === 'active' ? 'Active' : 'Inactive'}
+            </p>
+          </div>
+          <div>
             <p className=" font-medium uppercase tracking-wide ">
               Description
             </p>

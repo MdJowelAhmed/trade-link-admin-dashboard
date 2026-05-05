@@ -1,6 +1,8 @@
 import { motion } from 'framer-motion'
 import { Check, Eye, Pencil, Trash2, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Switch } from '@/components/ui/switch'
+import { Badge } from '@/components/ui/badge'
 import { TableRowSkeleton } from '@/components/common'
 import type { Service } from '@/types'
 
@@ -11,6 +13,9 @@ export interface ServicesTableProps {
   onDetails: (service: Service) => void
   onEdit: (service: Service) => void
   onDelete: (service: Service) => void
+  /** PATCH `{ isActive }` via `updateServiceStatus` */
+  onToggleActive?: (service: Service, isActive: boolean) => void | Promise<void>
+  statusUpdatingId?: string | null
 }
 
 function hasDetailedDescriptionLines(items: string[] | undefined): boolean {
@@ -26,7 +31,7 @@ function truncateText(text: string | undefined, max = 100): string {
   return t.length <= max ? t : `${t.slice(0, max)}…`
 }
 
-const COL_SPAN = 7
+const COL_SPAN = 8
 
 export function ServicesTable({
   services,
@@ -35,6 +40,8 @@ export function ServicesTable({
   onDetails,
   onEdit,
   onDelete,
+  onToggleActive,
+  statusUpdatingId = null,
 }: ServicesTableProps) {
   return (
     <div className="w-full overflow-auto rounded-xl border bg-white">
@@ -51,6 +58,9 @@ export function ServicesTable({
               Detailed description
             </th>
             <th className="px-4 py-4 text-center text-sm font-semibold">FAQs</th>
+            <th className="px-4 py-4 text-center text-sm font-semibold whitespace-nowrap">
+              Status
+            </th>
             <th className="px-4 py-4 text-right text-sm font-semibold min-w-[180px]">
               Actions
             </th>
@@ -120,6 +130,23 @@ export function ServicesTable({
                       <X className="h-4 w-4" strokeWidth={2.5} />
                     </span>
                   )}
+                </td>
+                <td className="px-4 py-3">
+                  <div className="flex flex-col items-center justify-center gap-2 sm:flex-row sm:gap-3">
+                    {/* <Badge variant={service.status === 'active' ? 'success' : 'outline'}>
+                      {service.status === 'active' ? 'Active' : 'Inactive'}
+                    </Badge> */}
+                    {onToggleActive ? (
+                      <Switch
+                        checked={service.status === 'active'}
+                        disabled={statusUpdatingId === service.id}
+                        onCheckedChange={(checked) => onToggleActive(service, checked)}
+                        aria-label={
+                          service.status === 'active' ? 'Deactivate service' : 'Activate service'
+                        }
+                      />
+                    ) : null}
+                  </div>
                 </td>
                 <td className="px-4 py-3 text-right">
                   <div className="flex flex-wrap justify-end gap-2">

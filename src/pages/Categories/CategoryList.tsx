@@ -19,7 +19,11 @@ import { ConfirmDialog } from '@/components/common'
 import { useAppDispatch, useAppSelector } from '@/redux/hooks'
 import { setFilters, setPage, setLimit, setSelectedCategoryId } from '@/redux/slices/categorySlice'
 import { useGetCategoriesQuery } from '@/redux/api/categoriesApi'
-import { useGetServicesQuery, useDeleteServiceMutation } from '@/redux/api/serviceApi'
+import {
+  useGetServicesQuery,
+  useDeleteServiceMutation,
+  useUpdateServiceStatusMutation,
+} from '@/redux/api/serviceApi'
 import { useUrlParams } from '@/hooks/useUrlState'
 import { CATEGORY_STATUSES } from '@/utils/constants'
 import type { Service } from '@/types'
@@ -87,7 +91,6 @@ export default function CategoryList() {
   const {
     data: servicesResponse,
     isLoading: servicesLoading,
-    isFetching: servicesFetching,
   } = useGetServicesQuery(
     activeTab === 'services'
       ? {
@@ -160,11 +163,13 @@ export default function CategoryList() {
   const [showServiceDetailsModal, setShowServiceDetailsModal] = useState(false)
   const [serviceForDetails, setServiceForDetails] = useState<Service | null>(null)
   const [serviceToDelete, setServiceToDelete] = useState<Service | null>(null)
+  const [statusUpdatingServiceId, setStatusUpdatingServiceId] = useState<string | null>(null)
   const [showCategoryDetailsModal, setShowCategoryDetailsModal] = useState(false)
   const [faqMode, setFaqMode] = useState<'edit' | 'faq' | 'details'>('edit')
 
   // RTK Query mutations for services
   const [deleteService, { isLoading: isDeletingService }] = useDeleteServiceMutation()
+  const [updateServiceStatus] = useUpdateServiceStatusMutation()
 
   // Sync URL params with Redux UI state (only for categories now)
   useEffect(() => {
@@ -256,6 +261,32 @@ export default function CategoryList() {
           variant: 'destructive',
         })
       }
+    }
+  }
+
+  const handleToggleServiceActive = async (service: Service, isActive: boolean) => {
+    const currentlyActive = service.status === 'active'
+    if (currentlyActive === isActive) return
+    setStatusUpdatingServiceId(service.id)
+    try {
+      await updateServiceStatus({ id: service.id, isActive }).unwrap()
+      toast({
+        title: 'Status updated',
+        description: `${service.name} is now ${isActive ? 'active' : 'inactive'}.`,
+        variant: 'success',
+      })
+    } catch (error: unknown) {
+      const errorMessage =
+        error && typeof error === 'object' && 'data' in error
+          ? (error as { data?: { message?: string } }).data?.message
+          : undefined
+      toast({
+        title: 'Error',
+        description: errorMessage || 'Failed to update service status.',
+        variant: 'destructive',
+      })
+    } finally {
+      setStatusUpdatingServiceId(null)
     }
   }
 
@@ -413,13 +444,15 @@ export default function CategoryList() {
               <>
                 <ServicesTable
                   services={services}
-                  isLoading={servicesLoading || servicesFetching}
+                  isLoading={servicesLoading}
                   startIndex={(page - 1) * limit}
                   onDetails={handleServiceDetails}
                   onEdit={handleEditService}
                   onDelete={handleDeleteService}
+                  onToggleActive={handleToggleServiceActive}
+                  statusUpdatingId={statusUpdatingServiceId}
                 />
-                {!servicesLoading && !servicesFetching && services.length > 0 && (
+                {!servicesLoading && services.length > 0 && (
                   <Pagination
                     currentPage={servicesMeta?.page ?? page}
                     totalPages={servicesMeta?.totalPage ?? 1}
