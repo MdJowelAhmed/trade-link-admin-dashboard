@@ -2,8 +2,9 @@ import { useEffect, useMemo, useState } from 'react'
 import { useFieldArray, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Plus, Trash2 } from 'lucide-react'
+import { ChevronDown, Plus, Trash2, X } from 'lucide-react'
 import { ModalWrapper } from '@/components/common'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -16,8 +17,16 @@ import {
     SelectValue,
 } from '@/components/ui/select'
 import {
+    DropdownMenu,
+    DropdownMenuCheckboxItem,
+    DropdownMenuContent,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import {
     useCreateServiceLocationMutation,
     useUpdateServiceLocationMutation,
+    resolveRelatedLocationEntryId,
+    resolveRelatedServiceEntryId,
     resolveServiceLocationLocationId,
     resolveServiceLocationServiceId,
     type ServiceLocationPage,
@@ -34,6 +43,7 @@ import {
 import { LOCATION_TAB_LABELS } from '@/pages/location/constants'
 import type { ServiceLocationLocationRef } from '@/redux/api/serviceLocationApi'
 import { toast } from '@/utils/toast'
+import { cn } from '@/utils/cn'
 import { isFetchBaseQueryError } from '@/pages/location/errorUtils'
 
 /** Allow empty strings so the backend always receives `""` for blank FAQ fields. */
@@ -45,6 +55,10 @@ const faqSchema = z.object({
 const formSchema = z.object({
     serviceId: z.string().min(1, 'Select a service'),
     locationId: z.string().min(1, 'Select a location'),
+    headingOverride: z.string().optional(),
+    subDescriptionOverride: z.string().optional(),
+    relatedServicesOverride: z.array(z.string()).default([]),
+    relatedLocationsOverride: z.array(z.string()).default([]),
     metaTitleOverride: z.string().optional(),
     metaDescriptionOverride: z.string().optional(),
     localNotes: z.string().optional(),
@@ -91,6 +105,28 @@ function mergeSeedOption(list: LocationEntity[], seed?: LocationEntity | null): 
     if (!seed) return list
     if (list.some((x) => x._id === seed._id)) return list
     return [seed, ...list]
+}
+
+/**
+ * Related locations: same level as the deepest selected node — regions under
+ * country, counties under region, towns under county (siblings when town is selected).
+ */
+function getRelatedLocationListQuery(cascade: {
+    country: string
+    region: string
+    county: string
+    town: string
+}): { type: LocationType; parentId: string } | null {
+    if (cascade.county) {
+        return { type: 'town', parentId: cascade.county }
+    }
+    if (cascade.region) {
+        return { type: 'county', parentId: cascade.region }
+    }
+    if (cascade.country) {
+        return { type: 'region', parentId: cascade.country }
+    }
+    return null
 }
 
 /**
@@ -164,6 +200,8 @@ export function AddEditServiceLocationModal({
     const [regionSearch, setRegionSearch] = useState('')
     const [countySearch, setCountySearch] = useState('')
     const [townSearch, setTownSearch] = useState('')
+    const [relatedServicesSearch, setRelatedServicesSearch] = useState('')
+    const [relatedLocationsSearch, setRelatedLocationsSearch] = useState('')
     const [cascade, setCascade] = useState({
         country: '',
         region: '',
@@ -233,6 +271,19 @@ export function AddEditServiceLocationModal({
         { skip: !open || !cascade.county }
     )
 
+    const relatedLocQuery = useMemo(() => getRelatedLocationListQuery(cascade), [cascade])
+
+    const { data: relatedLocRes, isFetching: relatedLocLoading } = useGetLocationsQuery(
+        {
+            type: relatedLocQuery?.type ?? 'country',
+            page: 1,
+            limit: LOOKUP_LIMIT,
+            parentId: relatedLocQuery?.parentId,
+            searchTerm: relatedLocationsSearch || undefined,
+        },
+        { skip: !open || !relatedLocQuery }
+    )
+
     const [createServiceLocation, { isLoading: creating }] = useCreateServiceLocationMutation()
     const [updateServiceLocation, { isLoading: updating }] = useUpdateServiceLocationMutation()
 
@@ -249,6 +300,10 @@ export function AddEditServiceLocationModal({
         defaultValues: {
             serviceId: '',
             locationId: '',
+            headingOverride: '',
+            subDescriptionOverride: '',
+            relatedServicesOverride: [],
+            relatedLocationsOverride: [],
             metaTitleOverride: '',
             metaDescriptionOverride: '',
             localNotes: '',
@@ -263,6 +318,9 @@ export function AddEditServiceLocationModal({
     })
 
     const serviceId = watch('serviceId')
+    const locationId = watch('locationId')
+    const relatedServicesSel = watch('relatedServicesOverride') ?? []
+    const relatedLocationsSel = watch('relatedLocationsOverride') ?? []
 
     const baseCategories = categoriesRes?.data ?? []
     const baseServices = servicesRes?.data ?? []
@@ -318,6 +376,67 @@ export function AddEditServiceLocationModal({
         [townsRes?.data, locationSeeds.town]
     )
 
+    const relatedLocationOptions = relatedLocRes?.data ?? []
+
+    const relatedLocationDescription = useMemo(() => {
+        if (!relatedLocQuery) {
+            return 'Pick at least a country to choose related locations at the next level.'
+        }
+        if (relatedLocQuery.type === 'region') {
+            return 'Regions under the selected country.'
+        }
+        if (relatedLocQuery.type === 'county') {
+            return 'Counties under the selected region.'
+        }
+        return 'Towns under the selected county (sibling towns when a town is the selected location).'
+    }, [relatedLocQuery])
+
+    const relatedServiceOptionsFiltered = useMemo(() => {
+        const q = relatedServicesSearch.trim().toLowerCase()
+        const base = serviceOptions.filter((s) => s._id !== serviceId)
+        if (!q) return base
+        return base.filter((s) => s.name.toLowerCase().includes(q))
+    }, [serviceOptions, serviceId, relatedServicesSearch])
+
+    const relatedLocationOptionsFiltered = useMemo(() => {
+        const q = relatedLocationsSearch.trim().toLowerCase()
+        const base = relatedLocationOptions.filter((loc) => loc._id !== locationId)
+        if (!q) return base
+        return base.filter((loc) => loc.name.toLowerCase().includes(q))
+    }, [relatedLocationOptions, locationId, relatedLocationsSearch])
+
+    const locationNameById = useMemo(() => {
+        const m = new Map<string, string>()
+        for (const loc of [
+            ...countryOptions,
+            ...regionOptions,
+            ...countyOptions,
+            ...townOptions,
+            ...relatedLocationOptions,
+        ]) {
+            m.set(loc._id, loc.name)
+        }
+        return m
+    }, [countryOptions, regionOptions, countyOptions, townOptions, relatedLocationOptions])
+
+    const selectedRelatedServicesDisplay = useMemo(
+        () =>
+            relatedServicesSel.map((id) => ({
+                id,
+                name: serviceOptions.find((s) => s._id === id)?.name ?? id,
+            })),
+        [relatedServicesSel, serviceOptions],
+    )
+
+    const selectedRelatedLocationsDisplay = useMemo(
+        () =>
+            relatedLocationsSel.map((id) => ({
+                id,
+                name: locationNameById.get(id) ?? id,
+            })),
+        [relatedLocationsSel, locationNameById],
+    )
+
     const applyCascade = (next: typeof cascade) => {
         setCascade(next)
         const id = next.town || next.county || next.region || next.country || ''
@@ -333,6 +452,8 @@ export function AddEditServiceLocationModal({
         setRegionSearch('')
         setCountySearch('')
         setTownSearch('')
+        setRelatedServicesSearch('')
+        setRelatedLocationsSearch('')
 
         const emptyCascade = { country: '', region: '', county: '', town: '' }
 
@@ -341,6 +462,14 @@ export function AddEditServiceLocationModal({
             reset({
                 serviceId: resolveServiceLocationServiceId(row.serviceId),
                 locationId: resolveServiceLocationLocationId(row.locationId),
+                headingOverride: row.headingOverride ?? '',
+                subDescriptionOverride: row.subDescriptionOverride ?? '',
+                relatedServicesOverride: (row.relatedServicesOverride ?? []).map(
+                    resolveRelatedServiceEntryId,
+                ),
+                relatedLocationsOverride: (row.relatedLocationsOverride ?? []).map(
+                    resolveRelatedLocationEntryId,
+                ),
                 metaTitleOverride: row.metaTitleOverride ?? '',
                 metaDescriptionOverride: row.metaDescriptionOverride ?? '',
                 localNotes: row.localNotes ?? '',
@@ -403,6 +532,10 @@ export function AddEditServiceLocationModal({
         reset({
             serviceId: '',
             locationId: '',
+            headingOverride: '',
+            subDescriptionOverride: '',
+            relatedServicesOverride: [],
+            relatedLocationsOverride: [],
             metaTitleOverride: '',
             metaDescriptionOverride: '',
             localNotes: '',
@@ -416,7 +549,13 @@ export function AddEditServiceLocationModal({
             question: (question ?? '').trim(),
             answer: (answer ?? '').trim(),
         }))
+        const relServices = values.relatedServicesOverride ?? []
+        const relLocations = values.relatedLocationsOverride ?? []
         const bodyCommon = {
+            headingOverride: trimOrUndefined(values.headingOverride),
+            subDescriptionOverride: trimOrUndefined(values.subDescriptionOverride),
+            relatedServicesOverride: relServices.length ? relServices : undefined,
+            relatedLocationsOverride: relLocations.length ? relLocations : undefined,
             metaTitleOverride: trimOrUndefined(values.metaTitleOverride),
             metaDescriptionOverride: trimOrUndefined(values.metaDescriptionOverride),
             localNotes: trimOrUndefined(values.localNotes),
@@ -470,6 +609,7 @@ export function AddEditServiceLocationModal({
                             onValueChange={(v) => {
                                 setServiceCategoryId(v)
                                 setValue('serviceId', '', { shouldValidate: true })
+                                setValue('relatedServicesOverride', [], { shouldDirty: true })
                                 setServiceSearch('')
                             }}
                             disabled={categoriesLoading}
@@ -766,6 +906,251 @@ export function AddEditServiceLocationModal({
                         {errors.locationId && (
                             <p className="text-sm text-destructive">{errors.locationId.message}</p>
                         )}
+                    </div>
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="space-y-2 sm:col-span-2">
+                        <Label htmlFor="sl-heading-override">Heading override</Label>
+                        <Input
+                            id="sl-heading-override"
+                            className="rounded-full"
+                            placeholder="Optional page heading"
+                            {...register('headingOverride')}
+                        />
+                    </div>
+                    <div className="space-y-2 sm:col-span-2">
+                        <Label htmlFor="sl-sub-desc-override">Sub-description override</Label>
+                        <Textarea
+                            id="sl-sub-desc-override"
+                            className="rounded-xl min-h-[88px]"
+                            placeholder="Optional supporting text below the heading"
+                            {...register('subDescriptionOverride')}
+                        />
+                    </div>
+
+                    <div className="space-y-2 sm:col-span-2">
+                        <Label>Related services</Label>
+                        <p className="text-xs text-muted-foreground">
+                            Other services in the same category as the main service (multiple select).
+                        </p>
+                        <DropdownMenu
+                            onOpenChange={(next) => {
+                                if (!next) setRelatedServicesSearch('')
+                            }}
+                        >
+                            <DropdownMenuTrigger asChild>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    className="h-11 w-full justify-between rounded-full border border-input bg-card px-3 py-2 font-normal text-accent shadow-none hover:bg-card"
+                                    disabled={!serviceCategoryId}
+                                >
+                                    <span className="truncate">
+                                        {!serviceCategoryId
+                                            ? 'Select a category first'
+                                            : relatedServicesSel.length === 0
+                                              ? 'Choose related services…'
+                                              : `${relatedServicesSel.length} service${relatedServicesSel.length === 1 ? '' : 's'} selected`}
+                                    </span>
+                                    <ChevronDown className="h-4 w-4 shrink-0 opacity-60" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent
+                                align="start"
+                                className={cn(
+                                    'w-[var(--radix-dropdown-menu-trigger-width)] max-h-72 overflow-hidden p-0',
+                                    'border bg-card text-accent shadow-md',
+                                )}
+                            >
+                                <div className="border-b border-border bg-card p-2">
+                                    <Input
+                                        value={relatedServicesSearch}
+                                        onChange={(e) => setRelatedServicesSearch(e.target.value)}
+                                        placeholder="Search services…"
+                                        className="h-9 rounded-full bg-white"
+                                        onKeyDown={(e) => e.stopPropagation()}
+                                    />
+                                </div>
+                                <div className="max-h-52 overflow-y-auto p-1">
+                                    {servicesLoading ? (
+                                        <p className="px-2 py-3 text-sm text-muted-foreground">
+                                            Loading services…
+                                        </p>
+                                    ) : relatedServiceOptionsFiltered.length === 0 ? (
+                                        <p className="px-2 py-3 text-sm text-muted-foreground">
+                                            No services match.
+                                        </p>
+                                    ) : (
+                                        relatedServiceOptionsFiltered.map((s) => (
+                                            <DropdownMenuCheckboxItem
+                                                key={s._id}
+                                                className="rounded-md focus:bg-secondary focus:text-white data-[state=checked]:bg-secondary/15"
+                                                checked={relatedServicesSel.includes(s._id)}
+                                                onCheckedChange={() => {
+                                                    const next = relatedServicesSel.includes(s._id)
+                                                        ? relatedServicesSel.filter((id) => id !== s._id)
+                                                        : [...relatedServicesSel, s._id]
+                                                    setValue('relatedServicesOverride', next, {
+                                                        shouldDirty: true,
+                                                        shouldValidate: true,
+                                                    })
+                                                }}
+                                                onSelect={(e) => e.preventDefault()}
+                                            >
+                                                {s.name}
+                                            </DropdownMenuCheckboxItem>
+                                        ))
+                                    )}
+                                </div>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                        {relatedServicesSel.length > 0 ? (
+                            <div className="mt-2 rounded-xl border border-border bg-muted/20 px-3 py-2.5">
+                                <p className="text-xs font-medium text-muted-foreground mb-2">
+                                    Selected services
+                                </p>
+                                <div className="flex flex-wrap gap-2">
+                                    {selectedRelatedServicesDisplay.map(({ id, name }) => (
+                                        <Badge
+                                            key={id}
+                                            variant="outline"
+                                            className="max-w-full gap-1 pl-2.5 pr-1 py-1 font-normal"
+                                        >
+                                            <span className="truncate" title={name}>
+                                                {name}
+                                            </span>
+                                            <button
+                                                type="button"
+                                                className="rounded-full p-0.5 text-muted-foreground hover:bg-muted hover:text-foreground shrink-0"
+                                                aria-label={`Remove ${name}`}
+                                                onClick={() =>
+                                                    setValue(
+                                                        'relatedServicesOverride',
+                                                        relatedServicesSel.filter((x) => x !== id),
+                                                        { shouldDirty: true, shouldValidate: true },
+                                                    )
+                                                }
+                                            >
+                                                <X className="h-3.5 w-3.5" />
+                                            </button>
+                                        </Badge>
+                                    ))}
+                                </div>
+                            </div>
+                        ) : null}
+                    </div>
+
+                    <div className="space-y-2 sm:col-span-2">
+                        <Label>Related locations</Label>
+                        <p className="text-xs text-muted-foreground">{relatedLocationDescription}</p>
+                        <DropdownMenu
+                            onOpenChange={(next) => {
+                                if (!next) setRelatedLocationsSearch('')
+                            }}
+                        >
+                            <DropdownMenuTrigger asChild>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    className="h-11 w-full justify-between rounded-full border border-input bg-card px-3 py-2 font-normal text-accent shadow-none hover:bg-card"
+                                    disabled={!relatedLocQuery}
+                                >
+                                    <span className="truncate">
+                                        {!relatedLocQuery
+                                            ? 'Select location hierarchy first'
+                                            : relatedLocLoading
+                                              ? 'Loading locations…'
+                                              : relatedLocationsSel.length === 0
+                                                ? 'Choose related locations…'
+                                                : `${relatedLocationsSel.length} location${relatedLocationsSel.length === 1 ? '' : 's'} selected`}
+                                    </span>
+                                    <ChevronDown className="h-4 w-4 shrink-0 opacity-60" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent
+                                align="start"
+                                className={cn(
+                                    'w-[var(--radix-dropdown-menu-trigger-width)] max-h-72 overflow-hidden p-0',
+                                    'border bg-card text-accent shadow-md',
+                                )}
+                            >
+                                <div className="border-b border-border bg-card p-2">
+                                    <Input
+                                        value={relatedLocationsSearch}
+                                        onChange={(e) => setRelatedLocationsSearch(e.target.value)}
+                                        placeholder="Search locations…"
+                                        className="h-9 rounded-full bg-white"
+                                        onKeyDown={(e) => e.stopPropagation()}
+                                    />
+                                </div>
+                                <div className="max-h-52 overflow-y-auto p-1">
+                                    {!relatedLocQuery ? null : relatedLocLoading ? (
+                                        <p className="px-2 py-3 text-sm text-muted-foreground">
+                                            Loading locations…
+                                        </p>
+                                    ) : relatedLocationOptionsFiltered.length === 0 ? (
+                                        <p className="px-2 py-3 text-sm text-muted-foreground">
+                                            No locations match.
+                                        </p>
+                                    ) : (
+                                        relatedLocationOptionsFiltered.map((loc) => (
+                                            <DropdownMenuCheckboxItem
+                                                key={loc._id}
+                                                className="rounded-md focus:bg-secondary focus:text-white data-[state=checked]:bg-secondary/15"
+                                                checked={relatedLocationsSel.includes(loc._id)}
+                                                onCheckedChange={() => {
+                                                    const next = relatedLocationsSel.includes(loc._id)
+                                                        ? relatedLocationsSel.filter((id) => id !== loc._id)
+                                                        : [...relatedLocationsSel, loc._id]
+                                                    setValue('relatedLocationsOverride', next, {
+                                                        shouldDirty: true,
+                                                        shouldValidate: true,
+                                                    })
+                                                }}
+                                                onSelect={(e) => e.preventDefault()}
+                                            >
+                                                {loc.name}
+                                            </DropdownMenuCheckboxItem>
+                                        ))
+                                    )}
+                                </div>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                        {relatedLocationsSel.length > 0 ? (
+                            <div className="mt-2 rounded-xl border border-border bg-muted/20 px-3 py-2.5">
+                                <p className="text-xs font-medium text-muted-foreground mb-2">
+                                    Selected locations
+                                </p>
+                                <div className="flex flex-wrap gap-2">
+                                    {selectedRelatedLocationsDisplay.map(({ id, name }) => (
+                                        <Badge
+                                            key={id}
+                                            variant="outline"
+                                            className="max-w-full gap-1 pl-2.5 pr-1 py-1 font-normal"
+                                        >
+                                            <span className="truncate" title={name}>
+                                                {name}
+                                            </span>
+                                            <button
+                                                type="button"
+                                                className="rounded-full p-0.5 text-muted-foreground hover:bg-muted hover:text-foreground shrink-0"
+                                                aria-label={`Remove ${name}`}
+                                                onClick={() =>
+                                                    setValue(
+                                                        'relatedLocationsOverride',
+                                                        relatedLocationsSel.filter((x) => x !== id),
+                                                        { shouldDirty: true, shouldValidate: true },
+                                                    )
+                                                }
+                                            >
+                                                <X className="h-3.5 w-3.5" />
+                                            </button>
+                                        </Badge>
+                                    ))}
+                                </div>
+                            </div>
+                        ) : null}
                     </div>
                 </div>
 

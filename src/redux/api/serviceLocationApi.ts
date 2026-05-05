@@ -35,15 +35,29 @@ export interface ServiceLocationFaqOverride {
     _id?: string
 }
 
+/** List/detail may return ids only or populated service docs */
+export type RelatedServiceOverrideEntry = string | ServiceLocationServiceRef
+
+/** List/detail may return ids only or populated location docs */
+export type RelatedLocationOverrideEntry = string | ServiceLocationLocationRef
+
 export interface ServiceLocationPage {
     _id: string
     serviceId: string | ServiceLocationServiceRef
     locationId: string | ServiceLocationLocationRef
+    headingOverride?: string
+    subDescriptionOverride?: string
+    relatedServicesOverride?: RelatedServiceOverrideEntry[]
+    relatedLocationsOverride?: RelatedLocationOverrideEntry[]
     metaTitleOverride?: string
     metaDescriptionOverride?: string
     localNotes?: string
     faqOverrides?: ServiceLocationFaqOverride[]
     isActive: boolean
+    isRelatedServiceActive?: boolean
+    isRelatedLocationActive?: boolean
+    isLocalNotesActive?: boolean
+    isFaqActive?: boolean
     createdAt: string
     updatedAt: string
     slug: string
@@ -76,6 +90,10 @@ export interface FaqOverrideInput {
 export interface CreateServiceLocationPayload {
     serviceId: string
     locationId: string
+    headingOverride?: string
+    subDescriptionOverride?: string
+    relatedServicesOverride?: string[]
+    relatedLocationsOverride?: string[]
     metaTitleOverride?: string
     metaDescriptionOverride?: string
     localNotes?: string
@@ -86,6 +104,10 @@ export interface CreateServiceLocationPayload {
 export interface UpdateServiceLocationPayload {
     serviceId?: string
     locationId?: string
+    headingOverride?: string
+    subDescriptionOverride?: string
+    relatedServicesOverride?: string[]
+    relatedLocationsOverride?: string[]
     metaTitleOverride?: string
     metaDescriptionOverride?: string
     localNotes?: string
@@ -170,4 +192,12 @@ export function getLocationNameFromRef(
     ref: string | ServiceLocationLocationRef
 ): string | undefined {
     return typeof ref === 'object' ? ref.name : undefined
+}
+
+export function resolveRelatedServiceEntryId(entry: RelatedServiceOverrideEntry): string {
+    return typeof entry === 'string' ? entry : entry._id
+}
+
+export function resolveRelatedLocationEntryId(entry: RelatedLocationOverrideEntry): string {
+    return typeof entry === 'string' ? entry : entry._id
 }
