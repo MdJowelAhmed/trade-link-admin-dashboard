@@ -38,11 +38,12 @@ export function ServiceLocationsTable({
     togglingId,
     startIndex = 0,
 }: ServiceLocationsTableProps) {
-    const colSpan = 8
+    const colSpan = 9
+    const PREVIEW_BASE_URL = 'https://www.tradelinknetwork.co.uk/service'
 
     return (
         <div className="w-full overflow-auto">
-            <table className="w-full min-w-[1100px]">
+            <table className="w-full min-w-[1220px]">
                 <thead>
                     <tr className="bg-card">
                         <th className="px-6 py-4 text-left text-sm font-bold">SL</th>
@@ -50,6 +51,7 @@ export function ServiceLocationsTable({
                         <th className="px-6 py-4 text-left text-sm font-bold">Location name</th>
                         <th className="px-6 py-4 text-left text-sm font-bold">Meta title</th>
                         <th className="px-6 py-4 text-left text-sm font-bold">Meta description</th>
+                        <th className="px-6 py-4 text-left text-sm font-bold">Preview URL</th>
                         <th className="px-6 py-4 text-center text-sm font-bold">FAQ</th>
                         <th className="px-6 py-4 text-left text-sm font-bold">Status</th>
                         <th className="px-6 py-4 text-right text-sm font-bold">Action</th>
@@ -103,6 +105,16 @@ export function ServiceLocationsTable({
                                     </span>
                                 </td>
                                 <td className="px-6 py-4">
+                                    <a
+                                        href={`${PREVIEW_BASE_URL}/${row.slug}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-sm font-medium text-primary underline underline-offset-2 hover:text-primary/80"
+                                    >
+                                        Preview
+                                    </a>
+                                </td>
+                                <td className="px-6 py-4">
                                     <div className="flex justify-center">
                                         {hasFaqOverrides(row) ? (
                                             <span
@@ -129,7 +141,7 @@ export function ServiceLocationsTable({
                                         aria-label={row.isActive ? 'Turn off' : 'Turn on'}
                                     />
                                 </td>
-                                <td className="px-6 py-4">
+                                <td className="px-6 py-4 w-60">
                                     <div className="flex flex-wrap justify-end gap-2">
                                         <Button
                                             type="button"
