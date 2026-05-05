@@ -51,7 +51,7 @@ export function ServiceLocationsTable({
                         <th className="px-6 py-4 text-left text-sm font-bold">Location name</th>
                         <th className="px-6 py-4 text-left text-sm font-bold">Meta title</th>
                         <th className="px-6 py-4 text-left text-sm font-bold">Meta description</th>
-                        <th className="px-6 py-4 text-left text-sm font-bold">Preview URL</th>
+                        <th className="px-6 py-4 text-left text-sm font-bold">Live URL</th>
                         <th className="px-6 py-4 text-center text-sm font-bold">FAQ</th>
                         <th className="px-6 py-4 text-left text-sm font-bold">Status</th>
                         <th className="px-6 py-4 text-right text-sm font-bold">Action</th>
@@ -111,7 +111,7 @@ export function ServiceLocationsTable({
                                         rel="noopener noreferrer"
                                         className="text-sm font-medium text-primary underline underline-offset-2 hover:text-primary/80"
                                     >
-                                        Preview
+                                        LiveURL
                                     </a>
                                 </td>
                                 <td className="px-6 py-4">

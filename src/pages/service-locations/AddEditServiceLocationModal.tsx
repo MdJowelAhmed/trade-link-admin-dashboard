@@ -108,23 +108,26 @@ function mergeSeedOption(list: LocationEntity[], seed?: LocationEntity | null): 
 }
 
 /**
- * Related locations: same level as the deepest selected node — regions under
- * country, counties under region, towns under county (siblings when town is selected).
+ * Related locations should stay in the same level as the deepest selected node.
+ * Example: county selected => show other counties under the same region (not towns).
  */
 function getRelatedLocationListQuery(cascade: {
     country: string
     region: string
     county: string
     town: string
-}): { type: LocationType; parentId: string } | null {
+}): { type: LocationType; parentId?: string } | null {
+    if (cascade.town) {
+        return { type: 'town', parentId: cascade.county || undefined }
+    }
     if (cascade.county) {
-        return { type: 'town', parentId: cascade.county }
+        return { type: 'county', parentId: cascade.region || undefined }
     }
     if (cascade.region) {
-        return { type: 'county', parentId: cascade.region }
+        return { type: 'region', parentId: cascade.country || undefined }
     }
     if (cascade.country) {
-        return { type: 'region', parentId: cascade.country }
+        return { type: 'country' }
     }
     return null
 }
@@ -382,13 +385,10 @@ export function AddEditServiceLocationModal({
         if (!relatedLocQuery) {
             return 'Pick at least a country to choose related locations at the next level.'
         }
-        if (relatedLocQuery.type === 'region') {
-            return 'Regions under the selected country.'
-        }
-        if (relatedLocQuery.type === 'county') {
-            return 'Counties under the selected region.'
-        }
-        return 'Towns under the selected county (sibling towns when a town is the selected location).'
+        if (relatedLocQuery.type === 'country') return 'Other countries.'
+        if (relatedLocQuery.type === 'region') return 'Other regions under the selected country.'
+        if (relatedLocQuery.type === 'county') return 'Other counties under the selected region.'
+        return 'Other towns under the selected county.'
     }, [relatedLocQuery])
 
     const relatedServiceOptionsFiltered = useMemo(() => {
