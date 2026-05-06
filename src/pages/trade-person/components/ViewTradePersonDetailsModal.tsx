@@ -53,7 +53,7 @@ export function ViewTradePersonDetailsModal({
       className="max-w-4xl bg-slate-50/80"
     >
       <div className="space-y-6 text-sm">
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+        <div className="rounded-xl  border-slate-border200 bg-white p-5 shadow-sm sm:p-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-3">
               <Avatar className="h-14 w-14 border border-slate-200">

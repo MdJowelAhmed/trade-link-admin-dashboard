@@ -99,6 +99,10 @@ export interface CreateServiceLocationPayload {
     localNotes?: string
     faqOverrides?: FaqOverrideInput[]
     isActive?: boolean
+    isRelatedServiceActive?: boolean
+    isRelatedLocationActive?: boolean
+    isLocalNotesActive?: boolean
+    isFaqActive?: boolean
 }
 
 export interface UpdateServiceLocationPayload {
@@ -113,6 +117,10 @@ export interface UpdateServiceLocationPayload {
     localNotes?: string
     faqOverrides?: FaqOverrideInput[]
     isActive?: boolean
+    isRelatedServiceActive?: boolean
+    isRelatedLocationActive?: boolean
+    isLocalNotesActive?: boolean
+    isFaqActive?: boolean
 }
 
 const serviceLocationApi = baseApi.injectEndpoints({

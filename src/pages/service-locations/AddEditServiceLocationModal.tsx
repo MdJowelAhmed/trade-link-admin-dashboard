@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { Switch } from '@/components/ui/switch'
 import {
     Select,
     SelectContent,
@@ -63,6 +64,10 @@ const formSchema = z.object({
     metaDescriptionOverride: z.string().optional(),
     localNotes: z.string().optional(),
     isActive: z.boolean(),
+    isRelatedServiceActive: z.boolean(),
+    isRelatedLocationActive: z.boolean(),
+    isLocalNotesActive: z.boolean(),
+    isFaqActive: z.boolean(),
     faqOverrides: z.array(faqSchema),
 })
 
@@ -311,6 +316,10 @@ export function AddEditServiceLocationModal({
             metaDescriptionOverride: '',
             localNotes: '',
             isActive: true,
+            isRelatedServiceActive: true,
+            isRelatedLocationActive: true,
+            isLocalNotesActive: true,
+            isFaqActive: true,
             faqOverrides: [],
         },
     })
@@ -324,6 +333,10 @@ export function AddEditServiceLocationModal({
     const locationId = watch('locationId')
     const relatedServicesSel = watch('relatedServicesOverride') ?? []
     const relatedLocationsSel = watch('relatedLocationsOverride') ?? []
+    const isRelatedServiceActive = watch('isRelatedServiceActive')
+    const isRelatedLocationActive = watch('isRelatedLocationActive')
+    const isLocalNotesActive = watch('isLocalNotesActive')
+    const isFaqActive = watch('isFaqActive')
 
     const baseCategories = categoriesRes?.data ?? []
     const baseServices = servicesRes?.data ?? []
@@ -474,6 +487,10 @@ export function AddEditServiceLocationModal({
                 metaDescriptionOverride: row.metaDescriptionOverride ?? '',
                 localNotes: row.localNotes ?? '',
                 isActive: row.isActive,
+                isRelatedServiceActive: row.isRelatedServiceActive ?? true,
+                isRelatedLocationActive: row.isRelatedLocationActive ?? true,
+                isLocalNotesActive: row.isLocalNotesActive ?? true,
+                isFaqActive: row.isFaqActive ?? true,
                 faqOverrides: (row.faqOverrides ?? []).map((f) => ({
                     question: f.question,
                     answer: f.answer,
@@ -540,6 +557,10 @@ export function AddEditServiceLocationModal({
             metaDescriptionOverride: '',
             localNotes: '',
             isActive: true,
+            isRelatedServiceActive: true,
+            isRelatedLocationActive: true,
+            isLocalNotesActive: true,
+            isFaqActive: true,
             faqOverrides: [],
         })
     }, [open, mode, row, reset, getLocationById])
@@ -561,6 +582,10 @@ export function AddEditServiceLocationModal({
             localNotes: trimOrUndefined(values.localNotes),
             // Always send array; each field is explicit `""` when left blank (create + edit).
             faqOverrides: faqPayload,
+            isRelatedServiceActive: values.isRelatedServiceActive,
+            isRelatedLocationActive: values.isRelatedLocationActive,
+            isLocalNotesActive: values.isLocalNotesActive,
+            isFaqActive: values.isFaqActive,
         }
         try {
             if (mode === 'create') {
@@ -930,7 +955,22 @@ export function AddEditServiceLocationModal({
                     </div>
 
                     <div className="space-y-2 sm:col-span-2">
-                        <Label>Related services</Label>
+                        <div className="flex items-center justify-between gap-3">
+                            <Label htmlFor="sl-related-services-active" className="text-base font-medium">
+                                Related services
+                            </Label>
+                            <Switch
+                                id="sl-related-services-active"
+                                checked={isRelatedServiceActive}
+                                onCheckedChange={(v) =>
+                                    setValue('isRelatedServiceActive', v, {
+                                        shouldDirty: true,
+                                        shouldValidate: true,
+                                    })
+                                }
+                                aria-label="Show related services on public page"
+                            />
+                        </div>
                         <p className="text-xs text-muted-foreground">
                             Other services in the same category as the main service (multiple select).
                         </p>
@@ -1042,7 +1082,22 @@ export function AddEditServiceLocationModal({
                     </div>
 
                     <div className="space-y-2 sm:col-span-2">
-                        <Label>Related locations</Label>
+                        <div className="flex items-center justify-between gap-3">
+                            <Label htmlFor="sl-related-locations-active" className="text-base font-medium">
+                                Related locations
+                            </Label>
+                            <Switch
+                                id="sl-related-locations-active"
+                                checked={isRelatedLocationActive}
+                                onCheckedChange={(v) =>
+                                    setValue('isRelatedLocationActive', v, {
+                                        shouldDirty: true,
+                                        shouldValidate: true,
+                                    })
+                                }
+                                aria-label="Show related locations on public page"
+                            />
+                        </div>
                         <p className="text-xs text-muted-foreground">{relatedLocationDescription}</p>
                         <DropdownMenu
                             onOpenChange={(next) => {
@@ -1176,7 +1231,22 @@ export function AddEditServiceLocationModal({
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="sl-notes">Local notes</Label>
+                        <div className="flex items-center justify-between gap-3">
+                            <Label htmlFor="sl-notes" className="shrink-0">
+                                Local notes
+                            </Label>
+                            <Switch
+                                id="sl-local-notes-active"
+                                checked={isLocalNotesActive}
+                                onCheckedChange={(v) =>
+                                    setValue('isLocalNotesActive', v, {
+                                        shouldDirty: true,
+                                        shouldValidate: true,
+                                    })
+                                }
+                                aria-label="Show local notes on public page"
+                            />
+                        </div>
                         <Textarea
                             id="sl-notes"
                             className="rounded-xl min-h-[120px]"
@@ -1187,18 +1257,30 @@ export function AddEditServiceLocationModal({
                 </div>
 
                 <div className="space-y-3 rounded-2xl border border-border p-4">
-                    <div className="flex items-center justify-between gap-2">
-                        <Label>FAQ overrides</Label>
-                        <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            className="rounded-full"
-                            onClick={() => append({ question: '', answer: '' })}
-                        >
-                            <Plus className="h-4 w-4 mr-1" />
-                            Add FAQ
-                        </Button>
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                        <Label htmlFor="sl-faq-active" className="text-base font-medium">
+                            FAQ overrides
+                        </Label>
+                        <div className="flex items-center gap-3">
+                            <Switch
+                                id="sl-faq-active"
+                                checked={isFaqActive}
+                                onCheckedChange={(v) =>
+                                    setValue('isFaqActive', v, { shouldDirty: true, shouldValidate: true })
+                                }
+                                aria-label="Show FAQ overrides on public page"
+                            />
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                className="rounded-full"
+                                onClick={() => append({ question: '', answer: '' })}
+                            >
+                                <Plus className="h-4 w-4 mr-1" />
+                                Add FAQ
+                            </Button>
+                        </div>
                     </div>
                     {fields.length === 0 && (
                         <p className="text-sm text-muted-foreground">No FAQ rows. Optional.</p>
