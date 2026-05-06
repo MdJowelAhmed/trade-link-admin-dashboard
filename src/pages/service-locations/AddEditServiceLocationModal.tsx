@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useFieldArray, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { ChevronDown, Plus, Trash2, X } from 'lucide-react'
+import { ChevronDown, Loader2, Plus, Trash2, X } from 'lucide-react'
 import { ModalWrapper } from '@/components/common'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -33,16 +33,16 @@ import {
     type ServiceLocationPage,
     type ServiceLocationServiceRef,
 } from '@/redux/api/serviceLocationApi'
-import { useGetServicesQuery, type BackendService } from '@/redux/api/serviceApi'
+import { useGetServicesQuery, useLazyGetServiceByIdQuery, type BackendService } from '@/redux/api/serviceApi'
 import { useGetCategoriesQuery } from '@/redux/api/categoriesApi'
 import {
     useGetLocationsQuery,
     useLazyGetLocationByIdQuery,
     type LocationEntity,
     type LocationType,
+    type LocationDetailResponse,
 } from '@/redux/api/locationApi'
 import { LOCATION_TAB_LABELS } from '@/pages/location/constants'
-import type { ServiceLocationLocationRef } from '@/redux/api/serviceLocationApi'
 import { toast } from '@/utils/toast'
 import { cn } from '@/utils/cn'
 import { isFetchBaseQueryError } from '@/pages/location/errorUtils'
@@ -137,55 +137,6 @@ function getRelatedLocationListQuery(cascade: {
     return null
 }
 
-/**
- * Walk fully populated `parentId` objects (if API embeds parents).
- * Stops when `parentId` is a plain id string — caller should load the rest via GET by id.
- */
-function collectPopulatedLocationChain(leaf: ServiceLocationLocationRef | LocationEntity): {
-    ids: Partial<Record<LocationType, string>>
-    entities: Partial<Record<LocationType, LocationEntity>>
-    needsFetchFromParentId: string | null
-} {
-    const ids: Partial<Record<LocationType, string>> = {}
-    const entities: Partial<Record<LocationType, LocationEntity>> = {}
-    let node: ServiceLocationLocationRef | LocationEntity | null | undefined = leaf
-
-    while (node && typeof node === 'object' && '_id' in node && 'type' in node) {
-        const typed = node as LocationEntity
-        ids[typed.type] = typed._id
-        entities[typed.type] = typed
-        const p = typed.parentId
-        if (!p) {
-            return { ids, entities, needsFetchFromParentId: null }
-        }
-        if (typeof p === 'string') {
-            return { ids, entities, needsFetchFromParentId: p }
-        }
-        node = p as LocationEntity
-    }
-    return { ids, entities, needsFetchFromParentId: null }
-}
-
-async function loadAncestorChainById(
-    startParentId: string,
-    fetchLocation: (id: string) => Promise<{ data: LocationEntity }>,
-): Promise<{ ids: Partial<Record<LocationType, string>>; entities: Partial<Record<LocationType, LocationEntity>> }> {
-    const ids: Partial<Record<LocationType, string>> = {}
-    const entities: Partial<Record<LocationType, LocationEntity>> = {}
-    let id: string | null = startParentId
-    while (id) {
-        const res = await fetchLocation(id)
-        const loc = res.data
-        ids[loc.type] = loc._id
-        entities[loc.type] = loc
-        const p = loc.parentId
-        if (!p) break
-        const next = typeof p === 'string' ? p : (p as LocationEntity)._id
-        id = loc.type === 'country' ? null : next ?? null
-    }
-    return { ids, entities }
-}
-
 interface AddEditServiceLocationModalProps {
     open: boolean
     onClose: () => void
@@ -193,7 +144,7 @@ interface AddEditServiceLocationModalProps {
     row?: ServiceLocationPage | null
 }
 
-const LOOKUP_LIMIT = 50
+const LOOKUP_LIMIT = 5000
 
 export function AddEditServiceLocationModal({
     open,
@@ -217,12 +168,19 @@ export function AddEditServiceLocationModal({
         town: '',
     })
     const [locationSeeds, setLocationSeeds] = useState<Partial<Record<LocationType, LocationEntity>>>({})
+    const [prefillLoading, setPrefillLoading] = useState(false)
+    const [prefillServiceSeed, setPrefillServiceSeed] = useState<BackendService | null>(null)
+    const [prefillCategorySeed, setPrefillCategorySeed] = useState<{ _id: string; name: string } | null>(
+        null
+    )
 
     const [getLocationById] = useLazyGetLocationByIdQuery()
+    const [getServiceById] = useLazyGetServiceByIdQuery()
 
     const { data: categoriesRes, isFetching: categoriesLoading } = useGetCategoriesQuery(
         {
             searchTerm: categorySearch || undefined,
+            isActive: true,
             page: 1,
             limit: LOOKUP_LIMIT,
         },
@@ -232,6 +190,7 @@ export function AddEditServiceLocationModal({
     const { data: servicesRes, isFetching: servicesLoading } = useGetServicesQuery(
         {
             searchTerm: serviceSearch || undefined,
+            activeServices: true,
             page: 1,
             limit: LOOKUP_LIMIT,
             categoryId: serviceCategoryId || undefined,
@@ -242,6 +201,7 @@ export function AddEditServiceLocationModal({
     const { data: countriesRes, isFetching: countriesLoading } = useGetLocationsQuery(
         {
             type: 'country',
+            isActive: true,
             page: 1,
             limit: LOOKUP_LIMIT,
             searchTerm: countrySearch || undefined,
@@ -251,6 +211,7 @@ export function AddEditServiceLocationModal({
     const { data: regionsRes, isFetching: regionsLoading } = useGetLocationsQuery(
         {
             type: 'region',
+            isActive: true,
             page: 1,
             limit: LOOKUP_LIMIT,
             parentId: cascade.country,
@@ -261,6 +222,7 @@ export function AddEditServiceLocationModal({
     const { data: countiesRes, isFetching: countiesLoading } = useGetLocationsQuery(
         {
             type: 'county',
+            isActive: true,
             page: 1,
             limit: LOOKUP_LIMIT,
             parentId: cascade.region,
@@ -271,6 +233,7 @@ export function AddEditServiceLocationModal({
     const { data: townsRes, isFetching: townsLoading } = useGetLocationsQuery(
         {
             type: 'town',
+            isActive: true,
             page: 1,
             limit: LOOKUP_LIMIT,
             parentId: cascade.county,
@@ -284,6 +247,7 @@ export function AddEditServiceLocationModal({
     const { data: relatedLocRes, isFetching: relatedLocLoading } = useGetLocationsQuery(
         {
             type: relatedLocQuery?.type ?? 'country',
+            isActive: true,
             page: 1,
             limit: LOOKUP_LIMIT,
             parentId: relatedLocQuery?.parentId,
@@ -342,6 +306,20 @@ export function AddEditServiceLocationModal({
     const baseServices = servicesRes?.data ?? []
 
     const categoryOptions = useMemo(() => {
+        if (prefillCategorySeed && !baseCategories.some((x) => x._id === prefillCategorySeed._id)) {
+            return [
+                {
+                    _id: prefillCategorySeed._id,
+                    name: prefillCategorySeed.name,
+                    slug: '',
+                    isActive: true,
+                    serviceCount: 0,
+                    createdAt: '',
+                    updatedAt: '',
+                },
+                ...baseCategories,
+            ]
+        }
         if (mode === 'edit' && row && serviceCategoryId) {
             const s = row.serviceId
             if (typeof s === 'object' && s.categoryId && typeof s.categoryId === 'object') {
@@ -364,16 +342,19 @@ export function AddEditServiceLocationModal({
             }
         }
         return baseCategories
-    }, [mode, row, serviceCategoryId, baseCategories])
+    }, [mode, row, serviceCategoryId, baseCategories, prefillCategorySeed])
 
     const serviceOptions = useMemo(() => {
+        if (prefillServiceSeed && !baseServices.some((x) => x._id === prefillServiceSeed._id)) {
+            return [prefillServiceSeed, ...baseServices]
+        }
         if (mode === 'edit' && row && typeof row.serviceId === 'object') {
             const s = row.serviceId as BackendService
             const exists = baseServices.some((x) => x._id === s._id)
             if (!exists) return [s, ...baseServices]
         }
         return baseServices
-    }, [mode, row, baseServices])
+    }, [mode, row, baseServices, prefillServiceSeed])
 
     const countryOptions = useMemo(
         () => mergeSeedOption(countriesRes?.data ?? [], locationSeeds.country),
@@ -470,8 +451,40 @@ export function AddEditServiceLocationModal({
 
         const emptyCascade = { country: '', region: '', county: '', town: '' }
 
+        // In edit mode, wait for `row` to exist before resetting to avoid a blank-first-open race.
+        if (mode === 'edit' && !row) {
+            setPrefillLoading(true)
+            return
+        }
+
         if (mode === 'edit' && row) {
-            setServiceCategoryId(resolveServiceCategoryId(row.serviceId))
+            // ── Step 1: Synchronous seeds ─────────────────────────────────────
+            // If serviceId is a populated object we can seed category + service
+            // immediately so the first render already shows the correct labels.
+            const svcRef = row.serviceId
+            const isPopulatedSvc =
+                typeof svcRef === 'object' && svcRef !== null && '_id' in svcRef
+
+            if (isPopulatedSvc) {
+                const svc = svcRef as BackendService
+                setPrefillServiceSeed(svc)
+                const cat = svc.categoryId
+                if (cat?._id && cat?.name) {
+                    setPrefillCategorySeed({ _id: cat._id, name: cat.name })
+                    setServiceCategoryId(cat._id)
+                } else {
+                    setPrefillCategorySeed(null)
+                    setServiceCategoryId(resolveServiceCategoryId(svcRef))
+                }
+            } else {
+                // String id – we can't resolve anything yet; seeds stay null
+                // until the async block fetches and sets them.
+                setPrefillServiceSeed(null)
+                setPrefillCategorySeed(null)
+                setServiceCategoryId(resolveServiceCategoryId(svcRef))
+            }
+
+            // ── Step 2: Reset form values (synchronous) ───────────────────────
             reset({
                 serviceId: resolveServiceLocationServiceId(row.serviceId),
                 locationId: resolveServiceLocationLocationId(row.locationId),
@@ -497,44 +510,82 @@ export function AddEditServiceLocationModal({
                 })),
             })
 
-            const loc = row.locationId
-            if (typeof loc !== 'object' || !loc._id) {
-                setCascade(emptyCascade)
-                setLocationSeeds({})
-                return
-            }
-
-            const { ids, entities, needsFetchFromParentId } = collectPopulatedLocationChain(loc)
-            setCascade({
-                country: ids.country ?? '',
-                region: ids.region ?? '',
-                county: ids.county ?? '',
-                town: ids.town ?? '',
-            })
-            setLocationSeeds(entities)
-
-            if (!needsFetchFromParentId) return
-
+            // ── Step 3: Async – fetch missing data (service id / location chain)
             let cancelled = false
             void (async () => {
+                setPrefillLoading(true)
                 try {
-                    const up = await loadAncestorChainById(needsFetchFromParentId, (id) =>
-                        getLocationById(id).unwrap()
-                    )
-                    if (cancelled) return
-                    setCascade((c) => ({
-                        country: up.ids.country ?? c.country,
-                        region: up.ids.region ?? c.region,
-                        county: up.ids.county ?? c.county,
-                        town: up.ids.town ?? c.town,
-                    }))
-                    setLocationSeeds((s) => ({ ...up.entities, ...s }))
-                    if (row) {
-                        const leafId = resolveServiceLocationLocationId(row.locationId)
-                        setValue('locationId', leafId, { shouldValidate: true })
+                    // If serviceId was a plain string, fetch the service now.
+                    if (!isPopulatedSvc) {
+                        const svcId = resolveServiceLocationServiceId(row.serviceId)
+                        if (svcId) {
+                            const svcRes = (await getServiceById(svcId).unwrap()) as {
+                                data?: BackendService
+                            }
+                            const svcData = svcRes?.data
+                            if (!cancelled && svcData) {
+                                setPrefillServiceSeed(svcData)
+                                const cat = svcData.categoryId
+                                if (cat?._id && cat?.name) {
+                                    setPrefillCategorySeed({ _id: cat._id, name: cat.name })
+                                    setServiceCategoryId(cat._id)
+                                }
+                            }
+                        }
                     }
+
+                    // Always walk the full ancestor chain for location cascade.
+                    const loc = row.locationId
+                    const leafId: string =
+                        typeof loc === 'string'
+                            ? loc
+                            : typeof loc === 'object' && loc !== null && '_id' in loc
+                              ? (loc as LocationEntity)._id
+                              : resolveServiceLocationLocationId(row.locationId)
+
+                    if (!leafId) {
+                        setCascade(emptyCascade)
+                        setLocationSeeds({})
+                        return
+                    }
+
+                    const ids: Partial<Record<LocationType, string>> = {}
+                    const entities: Partial<Record<LocationType, LocationEntity>> = {}
+                    let currentId: string | null = leafId
+
+                    while (currentId) {
+                        const res = (await getLocationById(
+                            currentId,
+                        ).unwrap()) as LocationDetailResponse
+                        const node: LocationEntity = res.data
+                        ids[node.type] = node._id
+                        entities[node.type] = node
+                        if (node.type === 'country') break
+                        const p = node.parentId
+                        currentId =
+                            typeof p === 'string'
+                                ? p
+                                : p && typeof p === 'object' && '_id' in p
+                                  ? (p as LocationEntity)._id
+                                  : null
+                    }
+
+                    if (cancelled) return
+
+                    setCascade({
+                        country: ids.country ?? '',
+                        region: ids.region ?? '',
+                        county: ids.county ?? '',
+                        town: ids.town ?? '',
+                    })
+                    setLocationSeeds(entities)
+                    setValue('locationId', leafId, { shouldValidate: true })
                 } catch {
-                    /* Partial chain; user can re-pick if GET by id is unavailable */
+                    if (cancelled) return
+                    setCascade(emptyCascade)
+                    setLocationSeeds({})
+                } finally {
+                    if (!cancelled) setPrefillLoading(false)
                 }
             })()
 
@@ -544,6 +595,8 @@ export function AddEditServiceLocationModal({
         }
 
         setServiceCategoryId('')
+        setPrefillServiceSeed(null)
+        setPrefillCategorySeed(null)
         setCascade(emptyCascade)
         setLocationSeeds({})
         reset({
@@ -563,7 +616,7 @@ export function AddEditServiceLocationModal({
             isFaqActive: true,
             faqOverrides: [],
         })
-    }, [open, mode, row, reset, getLocationById])
+    }, [open, mode, row, reset, getLocationById, getServiceById])
 
     const onSubmit = async (values: FormValues) => {
         const faqPayload = values.faqOverrides.map(({ question, answer }) => ({
@@ -626,6 +679,12 @@ export function AddEditServiceLocationModal({
             className="bg-white max-w-3xl"
         >
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 pt-2">
+                {prefillLoading && mode === 'edit' && (
+                    <div className="flex items-center gap-2 rounded-lg border border-border bg-muted/30 px-3 py-2 text-sm text-muted-foreground">
+                        <Loader2 className="h-4 w-4 animate-spin shrink-0" />
+                        <span>Loading saved data, please wait…</span>
+                    </div>
+                )}
                 <div className="grid gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
                         <Label>Category</Label>
@@ -637,7 +696,7 @@ export function AddEditServiceLocationModal({
                                 setValue('relatedServicesOverride', [], { shouldDirty: true })
                                 setServiceSearch('')
                             }}
-                            disabled={categoriesLoading}
+                            disabled={categoriesLoading || prefillLoading}
                         >
                             <SelectTrigger className="rounded-full">
                                 <SelectValue
@@ -677,7 +736,7 @@ export function AddEditServiceLocationModal({
                         <Select
                             value={serviceId || undefined}
                             onValueChange={(v) => setValue('serviceId', v, { shouldValidate: true })}
-                            disabled={!serviceCategoryId || servicesLoading}
+                            disabled={!serviceCategoryId || servicesLoading || prefillLoading}
                         >
                             <SelectTrigger className="rounded-full" error={!!errors.serviceId}>
                                 <SelectValue
@@ -719,7 +778,6 @@ export function AddEditServiceLocationModal({
                     <div className="space-y-3 sm:col-span-2">
                         <div>
                             <Label>Location</Label>
-                          
                         </div>
                         <div className="grid gap-3 sm:grid-cols-2">
                             <div className="space-y-2">
@@ -740,7 +798,7 @@ export function AddEditServiceLocationModal({
                                             town: '',
                                         })
                                     }}
-                                    disabled={countriesLoading}
+                                    disabled={countriesLoading || prefillLoading}
                                 >
                                     <SelectTrigger
                                         className="rounded-full"
@@ -792,7 +850,7 @@ export function AddEditServiceLocationModal({
                                             town: '',
                                         })
                                     }}
-                                    disabled={!cascade.country || regionsLoading}
+                                    disabled={!cascade.country || regionsLoading || prefillLoading}
                                 >
                                     <SelectTrigger className="rounded-full">
                                         <SelectValue
@@ -843,7 +901,7 @@ export function AddEditServiceLocationModal({
                                             town: '',
                                         })
                                     }}
-                                    disabled={!cascade.region || countiesLoading}
+                                    disabled={!cascade.region || countiesLoading || prefillLoading}
                                 >
                                     <SelectTrigger className="rounded-full">
                                         <SelectValue
@@ -892,7 +950,7 @@ export function AddEditServiceLocationModal({
                                             town: v,
                                         })
                                     }}
-                                    disabled={!cascade.county || townsLoading}
+                                    disabled={!cascade.county || townsLoading || prefillLoading}
                                 >
                                     <SelectTrigger className="rounded-full">
                                         <SelectValue

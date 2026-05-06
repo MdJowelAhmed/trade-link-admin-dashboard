@@ -4,6 +4,12 @@ import { baseApi } from "../baseApi"
 interface GetServicesParams {
     searchTerm?: string
     isActive?: boolean
+    /**
+     * Backend filter: return only active services.
+     * Accept both spellings to avoid breaking older callers.
+     */
+    activeServices?: boolean
+    activeservices?: boolean
     categoryId?: string
     page?: number
     limit?: number
@@ -54,6 +60,11 @@ const serviceApi = baseApi.injectEndpoints({
                 const queryParams = new URLSearchParams()
                 if (params?.searchTerm) queryParams.append('searchTerm', params.searchTerm)
                 if (params?.isActive !== undefined) queryParams.append('isActive', params.isActive.toString())
+                const activeServices = params?.activeServices ?? params?.activeservices
+                if (activeServices !== undefined) {
+                    // Backend expects `activeservices`
+                    queryParams.append('activeservices', activeServices.toString())
+                }
                 if (params?.categoryId && params.categoryId !== 'all') queryParams.append('categoryId', params.categoryId)
                 if (params?.page) queryParams.append('page', params.page.toString())
                 if (params?.limit) queryParams.append('limit', params.limit.toString())
@@ -113,6 +124,7 @@ const serviceApi = baseApi.injectEndpoints({
 export const { 
     useGetServicesQuery, 
     useGetServiceByIdQuery,
+    useLazyGetServiceByIdQuery,
     useAddServiceMutation, 
     useUpdateServiceMutation, 
     useDeleteServiceMutation, 
