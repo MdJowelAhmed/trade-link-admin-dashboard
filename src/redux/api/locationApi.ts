@@ -11,6 +11,8 @@ export interface LocationEntity {
     parentId: string | LocationEntity | null
     isActive: boolean
     isIndexable: boolean
+    latitude?: number
+    longitude?: number
     createdAt: string
     updatedAt: string
     __v?: number
@@ -53,12 +55,16 @@ export interface CreateLocationPayload {
     name: string
     type: LocationType
     parentId?: string
+    latitude?: number
+    longitude?: number
 }
 
 export interface UpdateLocationPayload {
     name?: string
     isActive?: boolean
     parentId?: string
+    latitude?: number
+    longitude?: number
 }
 
 const locationApi = baseApi.injectEndpoints({

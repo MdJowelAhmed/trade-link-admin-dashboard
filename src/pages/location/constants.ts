@@ -21,6 +21,11 @@ export const LOCATION_TAB_PLURAL: Record<LocationType, string> = {
     town: 'Towns',
 }
 
+/** Region, county, and town may store map coordinates; country does not. */
+export function locationTypeHasCoordinates(type: LocationType): boolean {
+    return type !== 'country'
+}
+
 /** Parent type required when creating this location type (country has none). */
 export function getParentTypeFor(child: LocationType): LocationType | null {
     const map: Record<LocationType, LocationType | null> = {

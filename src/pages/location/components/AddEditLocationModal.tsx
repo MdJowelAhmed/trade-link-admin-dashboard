@@ -21,40 +21,118 @@ import {
     type LocationEntity,
     type LocationType,
 } from '@/redux/api/locationApi'
-import { getParentSelectLabel, getParentTypeFor, LOCATION_TAB_LABELS } from '../constants'
+import {
+    getParentSelectLabel,
+    getParentTypeFor,
+    LOCATION_TAB_LABELS,
+    locationTypeHasCoordinates,
+} from '../constants'
 import { toast } from '@/utils/toast'
 import { isFetchBaseQueryError } from '../errorUtils'
 
-function buildEditSchema(editParentType: string | null) {
-    const baseSchema = z.object({
-        name: z.string().min(1, 'Name is required'),
-        isActive: z.boolean(),
-        parentId: z.string().optional(),
-    })
-
-    if (!editParentType) {
-        return baseSchema
-    }
-
-    return baseSchema.superRefine((data, ctx) => {
-        if (!data.parentId || data.parentId === '') {
-            ctx.addIssue({
-                code: z.ZodIssueCode.custom,
-                message: 'Select a parent',
-                path: ['parentId'],
-            })
-        }
-    })
+/** Normalize HTML input to number | undefined; invalid numeric input becomes NaN for validation. */
+function coordSetValueAs(v: unknown): number | undefined {
+    if (v === '' || v === null || v === undefined) return undefined
+    const n = typeof v === 'number' ? v : parseFloat(String(v).trim())
+    if (!Number.isFinite(n)) return Number.NaN
+    return n
 }
 
-type FormValues = z.infer<ReturnType<typeof buildEditSchema>> | z.infer<ReturnType<typeof buildCreateSchema>>
+function refineCoordinates(
+    data: { latitude?: unknown; longitude?: unknown },
+    ctx: z.RefinementCtx
+) {
+    const parse = (key: 'latitude' | 'longitude', raw: unknown): number | undefined => {
+        if (raw === '' || raw === undefined || raw === null) return undefined
+        if (typeof raw === 'number') {
+            if (Number.isNaN(raw)) {
+                ctx.addIssue({
+                    code: z.ZodIssueCode.custom,
+                    message: 'Enter a valid number',
+                    path: [key],
+                })
+                return undefined
+            }
+            return raw
+        }
+        const n = parseFloat(String(raw).trim())
+        if (!Number.isFinite(n)) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: 'Enter a valid number',
+                path: [key],
+            })
+            return undefined
+        }
+        return n
+    }
 
-function buildCreateSchema(requiresParent: boolean) {
+    const lat = parse('latitude', data.latitude)
+    const lng = parse('longitude', data.longitude)
+
+    if (lat !== undefined) {
+        if (lat < -90 || lat > 90) {
+            const inLongitudeRange = lat >= -180 && lat <= 180
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                path: ['latitude'],
+                message: inLongitudeRange
+                    ? 'This value is outside the latitude range (-90 to 90). You may have entered longitude in the latitude field.'
+                    : 'Latitude must be between -90 and 90.',
+            })
+        }
+    }
+
+    if (lng !== undefined && (lng < -180 || lng > 180)) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['longitude'],
+            message: 'Longitude must be between -180 and 180.',
+        })
+    }
+}
+
+function buildEditSchema(editParentType: string | null, includeCoordinates: boolean) {
+    return z
+        .object({
+            name: z.string().min(1, 'Name is required'),
+            isActive: z.boolean(),
+            parentId: z.string().optional(),
+            ...(includeCoordinates
+                ? { latitude: z.any().optional(), longitude: z.any().optional() }
+                : {}),
+        })
+        .superRefine((data, ctx) => {
+            if (editParentType && (!data.parentId || data.parentId === '')) {
+                ctx.addIssue({
+                    code: z.ZodIssueCode.custom,
+                    message: 'Select a parent',
+                    path: ['parentId'],
+                })
+            }
+            if (includeCoordinates) {
+                refineCoordinates(data, ctx)
+            }
+        })
+}
+
+type LocationModalFormValues = {
+    name: string
+    parentId?: string
+    isActive?: boolean
+    latitude?: number
+    longitude?: number
+}
+
+function buildCreateSchema(requiresParent: boolean, includeCoordinates: boolean) {
     return z
         .object({
             name: z.string().min(1, 'Name is required'),
             parentId: z.string().optional(),
             isActive: z.boolean().optional(),
+            ...(includeCoordinates
+                ? { latitude: z.any().optional(), longitude: z.any().optional() }
+                : {}),
         })
         .superRefine((data, ctx) => {
             if (requiresParent && (!data.parentId || data.parentId === '')) {
@@ -63,6 +141,9 @@ function buildCreateSchema(requiresParent: boolean) {
                     message: 'Select a parent',
                     path: ['parentId'],
                 })
+            }
+            if (includeCoordinates) {
+                refineCoordinates(data, ctx)
             }
         })
 }
@@ -124,6 +205,11 @@ export function AddEditLocationModal({
     const editParentType =
         mode === 'edit' && location ? getParentTypeFor(location.type) : null
 
+    const includeCoordinates =
+        mode === 'create'
+            ? locationTypeHasCoordinates(createType)
+            : Boolean(location && locationTypeHasCoordinates(location.type))
+
     const {
         data: editParentsRes,
         isFetching: editParentsLoading,
@@ -147,12 +233,11 @@ export function AddEditLocationModal({
     const formSchema = useMemo(
         () => {
             if (mode === 'create') {
-                return buildCreateSchema(requiresParent)
-            } else {
-                return buildEditSchema(editParentType)
+                return buildCreateSchema(requiresParent, includeCoordinates)
             }
+            return buildEditSchema(editParentType, includeCoordinates)
         },
-        [mode, requiresParent, editParentType]
+        [mode, requiresParent, includeCoordinates, editParentType]
     )
 
     const {
@@ -162,12 +247,14 @@ export function AddEditLocationModal({
         setValue,
         watch,
         formState: { errors },
-    } = useForm<FormValues>({
-        resolver: zodResolver(formSchema as z.ZodType<FormValues>),
+    } = useForm<LocationModalFormValues>({
+        resolver: zodResolver(formSchema as z.ZodType<LocationModalFormValues>),
         defaultValues: {
             name: '',
             parentId: '',
             isActive: true,
+            latitude: undefined,
+            longitude: undefined,
         },
     })
 
@@ -188,25 +275,49 @@ export function AddEditLocationModal({
                 name: location.name,
                 isActive: location.isActive,
                 parentId: parentIdValue,
+                latitude: location.latitude,
+                longitude: location.longitude,
             })
         } else if (mode === 'create') {
             reset({
                 name: '',
                 parentId: '',
                 isActive: true,
+                latitude: undefined,
+                longitude: undefined,
             })
         }
     }, [open, mode, location, reset])
 
-    const onSubmit = async (values: FormValues) => {
+    const onSubmit = async (values: LocationModalFormValues) => {
         try {
             if (mode === 'create') {
-                const payload: { name: string; type: LocationType; parentId?: string } = {
+                const payload: {
+                    name: string
+                    type: LocationType
+                    parentId?: string
+                    latitude?: number
+                    longitude?: number
+                } = {
                     name: values.name.trim(),
                     type: createType,
                 }
                 if (requiresParent && values.parentId) {
                     payload.parentId = values.parentId
+                }
+                if (includeCoordinates) {
+                    if (
+                        values.latitude !== undefined &&
+                        !Number.isNaN(values.latitude)
+                    ) {
+                        payload.latitude = values.latitude
+                    }
+                    if (
+                        values.longitude !== undefined &&
+                        !Number.isNaN(values.longitude)
+                    ) {
+                        payload.longitude = values.longitude
+                    }
                 }
                 await createLocation(payload).unwrap()
                 toast({
@@ -214,12 +325,32 @@ export function AddEditLocationModal({
                     variant: 'success',
                 })
             } else if (location) {
-                const updatePayload: { name: string; isActive: boolean; parentId?: string } = {
+                const updatePayload: {
+                    name: string
+                    isActive: boolean
+                    parentId?: string
+                    latitude?: number
+                    longitude?: number
+                } = {
                     name: values.name.trim(),
                     isActive: values.isActive ?? true,
                 }
                 if (editParentType && values.parentId) {
                     updatePayload.parentId = values.parentId
+                }
+                if (includeCoordinates) {
+                    if (
+                        values.latitude !== undefined &&
+                        !Number.isNaN(values.latitude)
+                    ) {
+                        updatePayload.latitude = values.latitude
+                    }
+                    if (
+                        values.longitude !== undefined &&
+                        !Number.isNaN(values.longitude)
+                    ) {
+                        updatePayload.longitude = values.longitude
+                    }
                 }
                 await updateLocation({
                     id: location._id,
@@ -253,7 +384,11 @@ export function AddEditLocationModal({
                 mode === 'create' && createType === 'country'
                     ? 'Countries do not require a parent.'
                     : mode === 'create' && parentLabel
-                      ? `Select a ${parentLabel.toLowerCase()} as parent.`
+                      ? `Select a ${parentLabel.toLowerCase()} as parent.${
+                            includeCoordinates
+                                ? ' Optional coordinates must use the correct latitude and longitude fields.'
+                                : ''
+                        }`
                       : 'Update name and active status.'
             }
             size="md"
@@ -319,6 +454,50 @@ export function AddEditLocationModal({
                     </div>
                 )}
 
+                {mode === 'create' && includeCoordinates && (
+                    <div className="space-y-3">
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                            <div className="space-y-2">
+                                <Label htmlFor="loc-latitude">Latitude (optional)</Label>
+                                <Input
+                                    id="loc-latitude"
+                                    type="text"
+                                    inputMode="decimal"
+                                    placeholder="Enter Latitude"
+                                    className="rounded-full"
+                                    {...register('latitude', { setValueAs: coordSetValueAs })}
+                                />
+                                {errors.latitude && (
+                                    <p className="text-sm text-destructive">
+                                        {errors.latitude.message}
+                                    </p>
+                                )}
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="loc-longitude">Longitude (optional)</Label>
+                                <Input
+                                    id="loc-longitude"
+                                    type="text"
+                                    inputMode="decimal"
+                                    placeholder="Enter Longitude"
+                                    className="rounded-full"
+                                    {...register('longitude', { setValueAs: coordSetValueAs })}
+                                />
+                                {errors.longitude && (
+                                    <p className="text-sm text-destructive">
+                                        {errors.longitude.message}
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+                        {/* <p className="text-xs text-muted-foreground">
+                            Use latitude for north–south (-90 to 90) and longitude for east–west
+                            (-180 to 180). Values outside those ranges on a field suggest the
+                            other field was used by mistake.
+                        </p> */}
+                    </div>
+                )}
+
                 {mode === 'edit' && (
                     <>
                         {editParentType && editParentLabel && (
@@ -366,6 +545,53 @@ export function AddEditLocationModal({
                                         No {editParentLabel.toLowerCase()} available.
                                     </p>
                                 )}
+                            </div>
+                        )}
+
+                        {includeCoordinates && (
+                            <div className="space-y-3">
+                                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="loc-edit-latitude">Latitude (optional)</Label>
+                                        <Input
+                                            id="loc-edit-latitude"
+                                            type="text"
+                                            inputMode="decimal"
+                                            placeholder="Enter Latitude"
+                                            className="rounded-full"
+                                            {...register('latitude', {
+                                                setValueAs: coordSetValueAs,
+                                            })}
+                                        />
+                                        {errors.latitude && (
+                                            <p className="text-sm text-destructive">
+                                                {errors.latitude.message}
+                                            </p>
+                                        )}
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="loc-edit-longitude">Longitude (optional)</Label>
+                                        <Input
+                                            id="loc-edit-longitude"
+                                            type="text"
+                                            inputMode="decimal"
+                                            placeholder="Enter Longitude"
+                                            className="rounded-full"
+                                            {...register('longitude', {
+                                                setValueAs: coordSetValueAs,
+                                            })}
+                                        />
+                                        {errors.longitude && (
+                                            <p className="text-sm text-destructive">
+                                                {errors.longitude.message}
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
+                                {/* <p className="text-xs text-muted-foreground">
+                                    Use latitude for north–south (-90 to 90) and longitude for east–west
+                                    (-180 to 180).
+                                </p> */}
                             </div>
                         )}
 

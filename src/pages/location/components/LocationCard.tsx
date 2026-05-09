@@ -31,6 +31,22 @@ export function LocationCard({
 }: LocationCardProps) {
     const resolvedParentName =
         parentName ?? resolveParentDisplayName(location, parentNameById)
+
+    const parseCoord = (v: unknown): number | null => {
+        if (typeof v === 'number' && Number.isFinite(v)) return v
+        if (typeof v === 'string' && v.trim() !== '') {
+            const n = Number(v)
+            if (Number.isFinite(n)) return n
+        }
+        return null
+    }
+
+    const lat = parseCoord(location.latitude)
+    const lng = parseCoord(location.longitude)
+    const hasCoords = lat !== null || lng !== null
+
+    const formatCoord = (n: number) =>
+        n.toLocaleString(undefined, { maximumFractionDigits: 6 })
     // const typeLabel =
     //     LOCATION_TAB_LABELS[location.type as LocationType] ?? location.type
 
@@ -47,14 +63,11 @@ export function LocationCard({
                             <h3 className="font-semibold text-lg text-foreground truncate">
                                 {location.name}
                             </h3>
-                           
                         </div>
                         <Badge variant={location.isActive ? 'success' : 'secondary'}>
                             {location.isActive ? 'Active' : 'Inactive'}
                         </Badge>
                     </div>
-
-              
 
                     {resolvedParentName && (
                         <p className="text-sm text-muted-foreground">
@@ -65,6 +78,16 @@ export function LocationCard({
                         </p>
                     )}
 
+                    {hasCoords && (
+                        <p className="text-sm text-muted-foreground">
+                            <span className="font-medium text-foreground/80">Coordinates: </span>
+                            {lat !== null && <span className="tabular-nums">Lat {formatCoord(lat)}</span>}
+                            {lat !== null && lng !== null && (
+                                <span className="mx-1.5 text-border">·</span>
+                            )}
+                            {lng !== null && <span className="tabular-nums">Lng {formatCoord(lng)}</span>}
+                        </p>
+                    )}
 
                     <div className="flex   justify-end ">
                         {/* <Switch
