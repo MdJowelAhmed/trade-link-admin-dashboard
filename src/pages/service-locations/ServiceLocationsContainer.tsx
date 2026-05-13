@@ -30,7 +30,7 @@ function extractErrorMessage(error: unknown): string {
 
 export default function ServiceLocationsContainer() {
     const [page, setPage] = useUrlNumber('page', 1)
-    const [limit, setLimit] = useState(2000)
+    const [limit, setLimit] = useState(10)
     const [search, setSearch] = useState('')
 
     const [createOpen, setCreateOpen] = useState(false)
