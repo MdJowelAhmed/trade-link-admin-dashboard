@@ -62,6 +62,7 @@ export interface CreateLocationPayload {
 export interface UpdateLocationPayload {
     name?: string
     isActive?: boolean
+    isActiveWithChild?: boolean
     parentId?: string
     latitude?: number
     longitude?: number

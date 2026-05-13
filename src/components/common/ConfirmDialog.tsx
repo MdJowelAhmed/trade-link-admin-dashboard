@@ -75,7 +75,14 @@ export function ConfirmDialog({
   }
 
   return (
-    <AlertDialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()} >
+    <AlertDialog
+      open={open}
+      onOpenChange={(isOpen) => {
+        if (isOpen) return
+        if (isLoading) return
+        onClose()
+      }}
+    >
       <AlertDialogContent>
         <AlertDialogHeader>
           <div className="flex items-center gap-4">
@@ -93,7 +100,10 @@ export function ConfirmDialog({
         <AlertDialogFooter>
           <AlertDialogCancel disabled={isLoading}>{cancelText}</AlertDialogCancel>
           <AlertDialogAction
-            onClick={handleConfirm}
+            onClick={(e) => {
+              e.preventDefault()
+              handleConfirm()
+            }}
             className={cn(config.buttonClass)}
             disabled={isLoading}
           >

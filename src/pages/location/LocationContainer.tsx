@@ -61,6 +61,7 @@ function LocationTypePanel({
     onEdit,
     onDelete,
     onToggleStatus,
+    onActivateWithChildren,
     isTogglingId,
 }: {
     type: LocationType
@@ -74,6 +75,7 @@ function LocationTypePanel({
     onEdit: (loc: LocationEntity) => void
     onDelete: (loc: LocationEntity) => void
     onToggleStatus: (loc: LocationEntity) => void
+    onActivateWithChildren: (loc: LocationEntity) => void
     isTogglingId: string | null
 }) {
     const PARENT_LOOKUP_LIMIT = 10000
@@ -142,6 +144,7 @@ function LocationTypePanel({
                         onEdit={onEdit}
                         onDelete={onDelete}
                         onToggleStatus={onToggleStatus}
+                        onActivateWithChildren={onActivateWithChildren}
                     />
                 ))}
             </div>
@@ -183,6 +186,11 @@ export default function LocationContainer() {
     const [deleteOpen, setDeleteOpen] = useState(false)
     const [deleting, setDeleting] = useState<LocationEntity | null>(null)
 
+    const [activateChildrenOpen, setActivateChildrenOpen] = useState(false)
+    const [activateChildrenTarget, setActivateChildrenTarget] =
+        useState<LocationEntity | null>(null)
+    const [activatingChildren, setActivatingChildren] = useState(false)
+
     const [deleteLocation, { isLoading: deleteLoading }] = useDeleteLocationMutation()
     const [updateLocation] = useUpdateLocationMutation()
     const [togglingId, setTogglingId] = useState<string | null>(null)
@@ -200,6 +208,35 @@ export default function LocationContainer() {
     const openDelete = (loc: LocationEntity) => {
         setDeleting(loc)
         setDeleteOpen(true)
+    }
+
+    const openActivateChildren = (loc: LocationEntity) => {
+        setActivateChildrenTarget(loc)
+        setActivateChildrenOpen(true)
+    }
+
+    const handleActivateChildren = async () => {
+        if (!activateChildrenTarget || activatingChildren) return
+        setActivatingChildren(true)
+        try {
+            await updateLocation({
+                id: activateChildrenTarget._id,
+                body: { isActiveWithChild: true },
+            }).unwrap()
+            toast({
+                title: 'All children activated',
+                variant: 'success',
+            })
+            setActivateChildrenOpen(false)
+            setActivateChildrenTarget(null)
+        } catch (e) {
+            toast({
+                title: extractErrorMessage(e),
+                variant: 'destructive',
+            })
+        } finally {
+            setActivatingChildren(false)
+        }
     }
 
     const onToggleStatus = async (loc: LocationEntity) => {
@@ -354,6 +391,7 @@ export default function LocationContainer() {
                                     onEdit={openEdit}
                                     onDelete={openDelete}
                                     onToggleStatus={onToggleStatus}
+                                    onActivateWithChildren={openActivateChildren}
                                     isTogglingId={togglingId}
                                 />
                             </TabsContent>
@@ -395,6 +433,25 @@ export default function LocationContainer() {
                 confirmText="Delete"
                 variant="danger"
                 isLoading={deleteLoading}
+            />
+
+            <ConfirmDialog
+                open={activateChildrenOpen}
+                onClose={() => {
+                    if (activatingChildren) return
+                    setActivateChildrenOpen(false)
+                    setActivateChildrenTarget(null)
+                }}
+                onConfirm={handleActivateChildren}
+                title="Activate all children"
+                description={
+                    activateChildrenTarget
+                        ? `Do you want to activate all children of “${activateChildrenTarget.name}”?`
+                        : ''
+                }
+                confirmText="Yes, activate all"
+                variant="info"
+                isLoading={activatingChildren}
             />
         </motion.div>
     )
