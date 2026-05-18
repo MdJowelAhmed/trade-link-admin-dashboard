@@ -143,16 +143,16 @@ export default function GuidePagesContainer() {
                             onValueChange={handleGuideTabChange}
                             className="w-full"
                         >
-                            <TabsList className="flex h-auto min-h-12 w-full flex-wrap justify-start gap-1 rounded-2xl bg-muted/60 p-1.5 sm:w-auto">
+                            <TabsList className="flex h-auto min-h-12 max-w-[260px] flex-wrap justify-start gap-1 rounded-xl bg-gray-100 sm:w-auto">
                                 <TabsTrigger
                                     value="PROBLEM"
-                                    className="rounded-full px-4 py-2 text-xs sm:text-sm"
+                                    className="rounded-xl px-4 py-3 text-xs sm:text-sm"
                                 >
                                     {GUIDE_TAB_LABEL.PROBLEM}
                                 </TabsTrigger>
                                 <TabsTrigger
                                     value="COST"
-                                    className="rounded-full px-4 py-2 text-xs sm:text-sm"
+                                    className="rounded-xl px-4 py-3 text-xs sm:text-sm"
                                 >
                                     {GUIDE_TAB_LABEL.COST}
                                 </TabsTrigger>
