@@ -191,6 +191,7 @@ export function GuidePageDetailsModal({ open, onClose, row }: GuidePageDetailsMo
                         )}
                     </PageCard>
 
+                    {page.type === 'PROBLEM' ? (
                     <PageCard className="shadow-md shadow-slate-200/80">
                         <h2 className="text-lg font-bold text-slate-900 sm:text-xl">
                             Frequently asked questions
@@ -216,6 +217,7 @@ export function GuidePageDetailsModal({ open, onClose, row }: GuidePageDetailsMo
                             </Accordion>
                         )}
                     </PageCard>
+                    ) : null}
                 </div>
             )}
         </ModalWrapper>

@@ -93,10 +93,13 @@ function formValuesFromRow(row: GuidePage): FormValues {
         metaTitle: row.metaTitle ?? '',
         metaDescription: row.metaDescription ?? '',
         introduction: c.introduction ?? '',
-        faqs: (row.faqs ?? []).map((f) => ({
-            question: f.question ?? '',
-            answer: f.answer ?? '',
-        })),
+        faqs:
+            row.type === 'PROBLEM'
+                ? (row.faqs ?? []).map((f) => ({
+                      question: f.question ?? '',
+                      answer: f.answer ?? '',
+                  }))
+                : [],
     }
 
     if (row.type === 'COST') {
@@ -291,11 +294,6 @@ export function AddEditGuidePageModal({
         const pageType: GuidePageType =
             mode === 'create' ? lockedGuideType : row?.type ?? lockedGuideType
 
-        const faqs = values.faqs.map(({ question, answer }) => ({
-            question: (question ?? '').trim(),
-            answer: (answer ?? '').trim(),
-        }))
-
         const base = {
             title: values.title.trim(),
             serviceId: values.serviceId,
@@ -303,13 +301,19 @@ export function AddEditGuidePageModal({
             metaTitle: values.metaTitle?.trim() || undefined,
             metaDescription: values.metaDescription?.trim() || undefined,
             content: buildContentPayload(pageType, values),
-            faqs,
         }
 
         const payload: GuidePagePayload =
             pageType === 'COST'
                 ? { ...base, type: 'COST' }
-                : { ...base, type: 'PROBLEM' }
+                : {
+                      ...base,
+                      type: 'PROBLEM',
+                      faqs: values.faqs.map(({ question, answer }) => ({
+                          question: (question ?? '').trim(),
+                          answer: (answer ?? '').trim(),
+                      })),
+                  }
 
         try {
             if (mode === 'create') {
@@ -546,6 +550,7 @@ export function AddEditGuidePageModal({
                     )}
                 </div>
 
+                {!isCostGuide ? (
                 <div className="space-y-3 rounded-2xl border border-border p-4">
                     <div className="flex flex-wrap items-center justify-between gap-3">
                         <Label className="text-base font-medium">FAQs</Label>
@@ -599,6 +604,7 @@ export function AddEditGuidePageModal({
                         ))}
                     </div>
                 </div>
+                ) : null}
 
                 <div className="space-y-4">
                     <div className="space-y-2">

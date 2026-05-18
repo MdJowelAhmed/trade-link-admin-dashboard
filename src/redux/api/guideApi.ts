@@ -84,10 +84,8 @@ export interface GetGuidePagesParams {
     type?: GuidePageType
 }
 
-type GuidePagePayloadBase = {
+type GuidePagePayloadShared = {
     title: string
-    content: ProblemGuideContent | CostGuideContent
-    faqs?: GuideFaqItem[]
     metaTitle?: string
     metaDescription?: string
     serviceId: string
@@ -95,8 +93,12 @@ type GuidePagePayloadBase = {
 }
 
 export type GuidePagePayload =
-    | (GuidePagePayloadBase & { type: 'PROBLEM'; content: ProblemGuideContent })
-    | (GuidePagePayloadBase & { type: 'COST'; content: CostGuideContent })
+    | (GuidePagePayloadShared & {
+          type: 'PROBLEM'
+          content: ProblemGuideContent
+          faqs?: GuideFaqItem[]
+      })
+    | (GuidePagePayloadShared & { type: 'COST'; content: CostGuideContent })
 
 export function getGuideServiceName(ref: string | GuidePageServiceRef): string {
     if (typeof ref === 'object' && ref !== null) return ref.name
