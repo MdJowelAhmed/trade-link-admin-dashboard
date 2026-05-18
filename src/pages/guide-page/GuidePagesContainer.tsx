@@ -14,6 +14,7 @@ import {
 } from '@/redux/api/guideApi'
 import { GuidePagesTable } from './components/GuidePagesTable'
 import { AddEditGuidePageModal } from './AddEditGuidePageModal'
+import { GuidePageDetailsModal } from './GuidePageDetailsModal'
 import { toast } from '@/utils/toast'
 import { isFetchBaseQueryError } from '@/pages/location/errorUtils'
 
@@ -59,6 +60,9 @@ export default function GuidePagesContainer() {
     const [editOpen, setEditOpen] = useState(false)
     const [editing, setEditing] = useState<GuidePage | null>(null)
 
+    const [detailsOpen, setDetailsOpen] = useState(false)
+    const [detailsRow, setDetailsRow] = useState<GuidePage | null>(null)
+
     const [deleteOpen, setDeleteOpen] = useState(false)
     const [deleting, setDeleting] = useState<GuidePage | null>(null)
 
@@ -80,6 +84,11 @@ export default function GuidePagesContainer() {
         (itemsPerPage ? Math.max(1, Math.ceil(totalItems / itemsPerPage)) : 1)
     const currentPage = pagination?.page ?? page
     const hasBackendPagination = typeof pagination?.total === 'number'
+
+    const openDetails = (row: GuidePage) => {
+        setDetailsRow(row)
+        setDetailsOpen(true)
+    }
 
     const openEdit = (row: GuidePage) => {
         setEditing(row)
@@ -188,6 +197,7 @@ export default function GuidePagesContainer() {
                                     rows={rows}
                                     startIndex={(currentPage - 1) * itemsPerPage}
                                     hideTypeColumn
+                                    onDetails={openDetails}
                                     onEdit={openEdit}
                                     onDelete={openDelete}
                                 />
@@ -212,6 +222,15 @@ export default function GuidePagesContainer() {
                     </div>
                 </CardContent>
             </Card>
+
+            <GuidePageDetailsModal
+                open={detailsOpen}
+                onClose={() => {
+                    setDetailsOpen(false)
+                    setDetailsRow(null)
+                }}
+                row={detailsRow}
+            />
 
             <AddEditGuidePageModal
                 open={createOpen}

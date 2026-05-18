@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { Pencil, Trash2 } from 'lucide-react'
+import { Eye, Pencil, Trash2 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -11,6 +11,7 @@ import {
 interface GuidePagesTableProps {
     rows: GuidePage[]
     startIndex?: number
+    onDetails: (row: GuidePage) => void
     onEdit: (row: GuidePage) => void
     onDelete: (row: GuidePage) => void
     /** When true, hide the Type column (e.g. tab already implies type). */
@@ -26,6 +27,7 @@ function truncate(text: string | undefined, max = 100): string {
 export function GuidePagesTable({
     rows,
     startIndex = 0,
+    onDetails,
     onEdit,
     onDelete,
     hideTypeColumn = false,
@@ -33,7 +35,7 @@ export function GuidePagesTable({
     const colCount = hideTypeColumn ? 7 : 8
     return (
         <div className="w-full overflow-auto">
-            <table className="w-full min-w-[900px]">
+            <table className="w-full min-w-[960px]">
                 <thead>
                     <tr className="bg-card">
                         <th className="px-6 py-4 text-left text-sm font-bold">SL</th>
@@ -111,7 +113,18 @@ export function GuidePagesTable({
                                             variant="outline"
                                             size="sm"
                                             className="rounded-full h-8"
+                                            onClick={() => onDetails(row)}
+                                            aria-label="View details"
+                                        >
+                                            <Eye className="h-4 w-4" />
+                                        </Button>
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="sm"
+                                            className="rounded-full h-8"
                                             onClick={() => onEdit(row)}
+                                            aria-label="Edit"
                                         >
                                             <Pencil className="h-4 w-4" />
                                         </Button>
@@ -121,6 +134,7 @@ export function GuidePagesTable({
                                             size="sm"
                                             className="rounded-full h-8 text-destructive hover:text-destructive"
                                             onClick={() => onDelete(row)}
+                                            aria-label="Delete"
                                         >
                                             <Trash2 className="h-4 w-4" />
                                         </Button>

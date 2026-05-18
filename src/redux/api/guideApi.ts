@@ -131,6 +131,10 @@ const guideApi = baseApi.injectEndpoints({
             },
             providesTags: ['Guides'],
         }),
+        getGuidePageById: builder.query<GuidePageDetailResponse, string>({
+            query: (id) => ({ url: `/guidePages/${id}`, method: 'GET' }),
+            providesTags: (_result, _err, id) => [{ type: 'Guides', id }],
+        }),
         createGuidePage: builder.mutation<GuidePageDetailResponse, GuidePagePayload>({
             query: (body) => ({ url: '/guidePages', method: 'POST', body }),
             invalidatesTags: ['Guides'],
@@ -151,6 +155,7 @@ const guideApi = baseApi.injectEndpoints({
 
 export const {
     useGetGuidePagesQuery,
+    useGetGuidePageByIdQuery,
     useCreateGuidePageMutation,
     useUpdateGuidePageMutation,
     useDeleteGuidePageMutation,
