@@ -283,9 +283,9 @@ export function AddEditGuidePageModal({
 
                     <div className="space-y-2">
                         <Label>Type</Label>
-                        <div className="flex h-10 items-center">
+                        <div className="flex h-10 items-center border rounded-full h-11">
                             <Badge variant="secondary" className="text-sm font-normal">
-                                {typeForLabel} — {TYPE_LABEL[typeForLabel]}
+                                {typeForLabel} 
                             </Badge>
                         </div>
                     </div>
