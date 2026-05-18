@@ -38,6 +38,7 @@ export const baseApi = createApi({
         'Setting',
         'Location',
         'ServiceLocation',
+        'Guides',
     ],
     endpoints: () => ({}),
 })

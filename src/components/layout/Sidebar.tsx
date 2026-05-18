@@ -24,6 +24,7 @@ import {
   Code,
   MapPin,
   Layers,
+  BookOpen,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
@@ -105,6 +106,11 @@ const navItems: NavItem[] = [
     title: 'Service & locations',
     href: '/service-locations',
     icon: Layers,
+  },
+  {
+    title: 'Guides',
+    href: '/guide-pages',
+    icon: BookOpen,
   },
   // {
   //   title: 'Car List',

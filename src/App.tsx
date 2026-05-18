@@ -42,6 +42,7 @@ import BonusManagement from './pages/bonusManagement/BonusManagement'
 import { CompliancePolicySettings, CookiePolicySettings } from './pages'
 import LocationContainer from './pages/location/LocationContainer'
 import ServiceLocationsContainer from './pages/service-locations/ServiceLocationsContainer'
+import GuidePagesContainer from './pages/guide-page/GuidePagesContainer'
 
 function App() {
   const dispatch = useAppDispatch()
@@ -118,6 +119,7 @@ function App() {
           <Route path="categories" element={<CategoryList />} />
           <Route path="location" element={<LocationContainer />} />
           <Route path="service-locations" element={<ServiceLocationsContainer />} />
+          <Route path="guide-pages" element={<GuidePagesContainer />} />
           
           {/* Settings */}
           <Route path="settings">
