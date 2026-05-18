@@ -17,13 +17,23 @@ export interface GuidePageLocationRef {
     slug: string
 }
 
-export interface GuidePageContent {
+export interface ProblemGuideContent {
     introduction?: string
     commonCauses?: string
     warningSigns?: string
     possibleRepairSolutions?: string
     whenToCallProfessional?: string
 }
+
+export interface CostGuideContent {
+    introduction?: string
+    averageCost?: string
+    whatAffectsPrice?: string
+    typicalProjectExamples?: string
+    tipsBeforeHiring?: string
+}
+
+export type GuidePageContent = ProblemGuideContent | CostGuideContent
 
 export interface GuidePage {
     _id: string
@@ -66,15 +76,25 @@ export interface GetGuidePagesParams {
     type?: GuidePageType
 }
 
-export interface GuidePagePayload {
-    title: string
-    type: GuidePageType
-    content: GuidePageContent
-    metaTitle?: string
-    metaDescription?: string
-    serviceId: string
-    locationId?: string
-}
+export type GuidePagePayload =
+    | {
+          title: string
+          type: 'PROBLEM'
+          content: ProblemGuideContent
+          metaTitle?: string
+          metaDescription?: string
+          serviceId: string
+          locationId?: string
+      }
+    | {
+          title: string
+          type: 'COST'
+          content: CostGuideContent
+          metaTitle?: string
+          metaDescription?: string
+          serviceId: string
+          locationId?: string
+      }
 
 export function getGuideServiceName(ref: string | GuidePageServiceRef): string {
     if (typeof ref === 'object' && ref !== null) return ref.name

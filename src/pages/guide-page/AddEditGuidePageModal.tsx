@@ -21,6 +21,7 @@ import {
     resolveGuideServiceId,
     resolveGuideLocationId,
     type GuidePage,
+    type GuidePagePayload,
     type GuidePageType,
 } from '@/redux/api/guideApi'
 import { useGetServicesQuery } from '@/redux/api/serviceApi'
@@ -46,9 +47,87 @@ const formSchema = z.object({
     warningSigns: z.string().optional(),
     possibleRepairSolutions: z.string().optional(),
     whenToCallProfessional: z.string().optional(),
+    averageCost: z.string().optional(),
+    whatAffectsPrice: z.string().optional(),
+    typicalProjectExamples: z.string().optional(),
+    tipsBeforeHiring: z.string().optional(),
 })
 
 type FormValues = z.infer<typeof formSchema>
+
+const EMPTY_FORM: FormValues = {
+    title: '',
+    serviceId: '',
+    locationId: '',
+    metaTitle: '',
+    metaDescription: '',
+    introduction: '',
+    commonCauses: '',
+    warningSigns: '',
+    possibleRepairSolutions: '',
+    whenToCallProfessional: '',
+    averageCost: '',
+    whatAffectsPrice: '',
+    typicalProjectExamples: '',
+    tipsBeforeHiring: '',
+}
+
+function formValuesFromRow(row: GuidePage): FormValues {
+    const c = row.content ?? {}
+    const base: FormValues = {
+        ...EMPTY_FORM,
+        title: row.title,
+        serviceId: resolveGuideServiceId(row.serviceId),
+        locationId: resolveGuideLocationId(row.locationId) || '',
+        metaTitle: row.metaTitle ?? '',
+        metaDescription: row.metaDescription ?? '',
+        introduction: c.introduction ?? '',
+    }
+
+    if (row.type === 'COST') {
+        return {
+            ...base,
+            averageCost: (c as { averageCost?: string }).averageCost ?? '',
+            whatAffectsPrice: (c as { whatAffectsPrice?: string }).whatAffectsPrice ?? '',
+            typicalProjectExamples:
+                (c as { typicalProjectExamples?: string }).typicalProjectExamples ?? '',
+            tipsBeforeHiring: (c as { tipsBeforeHiring?: string }).tipsBeforeHiring ?? '',
+        }
+    }
+
+    return {
+        ...base,
+        commonCauses: (c as { commonCauses?: string }).commonCauses ?? '',
+        warningSigns: (c as { warningSigns?: string }).warningSigns ?? '',
+        possibleRepairSolutions:
+            (c as { possibleRepairSolutions?: string }).possibleRepairSolutions ?? '',
+        whenToCallProfessional:
+            (c as { whenToCallProfessional?: string }).whenToCallProfessional ?? '',
+    }
+}
+
+function buildContentPayload(
+    pageType: GuidePageType,
+    values: FormValues
+): GuidePagePayload['content'] {
+    const intro = values.introduction ?? ''
+    if (pageType === 'COST') {
+        return {
+            introduction: intro,
+            averageCost: values.averageCost ?? '',
+            whatAffectsPrice: values.whatAffectsPrice ?? '',
+            typicalProjectExamples: values.typicalProjectExamples ?? '',
+            tipsBeforeHiring: values.tipsBeforeHiring ?? '',
+        }
+    }
+    return {
+        introduction: intro,
+        commonCauses: values.commonCauses ?? '',
+        warningSigns: values.warningSigns ?? '',
+        possibleRepairSolutions: values.possibleRepairSolutions ?? '',
+        whenToCallProfessional: values.whenToCallProfessional ?? '',
+    }
+}
 
 function extractErrorMessage(error: unknown): string {
     if (!isFetchBaseQueryError(error)) return 'Request failed'
@@ -74,7 +153,6 @@ interface AddEditGuidePageModalProps {
     onClose: () => void
     mode: 'create' | 'edit'
     row?: GuidePage | null
-    /** Active tab: sets API `type` on create; shown as read-only. Edit uses row.type. */
     lockedGuideType: GuidePageType
 }
 
@@ -163,18 +241,7 @@ export function AddEditGuidePageModal({
         formState: { errors },
     } = useForm<FormValues>({
         resolver: zodResolver(formSchema),
-        defaultValues: {
-            title: '',
-            serviceId: '',
-            locationId: '',
-            metaTitle: '',
-            metaDescription: '',
-            introduction: '',
-            commonCauses: '',
-            warningSigns: '',
-            possibleRepairSolutions: '',
-            whenToCallProfessional: '',
-        },
+        defaultValues: EMPTY_FORM,
     })
 
     const selectedServiceId = watch('serviceId')
@@ -186,31 +253,9 @@ export function AddEditGuidePageModal({
         setLocationSearch('')
 
         if (mode === 'edit' && row) {
-            reset({
-                title: row.title,
-                serviceId: resolveGuideServiceId(row.serviceId),
-                locationId: resolveGuideLocationId(row.locationId) || '',
-                metaTitle: row.metaTitle ?? '',
-                metaDescription: row.metaDescription ?? '',
-                introduction: row.content?.introduction ?? '',
-                commonCauses: row.content?.commonCauses ?? '',
-                warningSigns: row.content?.warningSigns ?? '',
-                possibleRepairSolutions: row.content?.possibleRepairSolutions ?? '',
-                whenToCallProfessional: row.content?.whenToCallProfessional ?? '',
-            })
+            reset(formValuesFromRow(row))
         } else {
-            reset({
-                title: '',
-                serviceId: '',
-                locationId: '',
-                metaTitle: '',
-                metaDescription: '',
-                introduction: '',
-                commonCauses: '',
-                warningSigns: '',
-                possibleRepairSolutions: '',
-                whenToCallProfessional: '',
-            })
+            reset({ ...EMPTY_FORM })
         }
     }, [open, mode, row, reset, lockedGuideType])
 
@@ -218,21 +263,19 @@ export function AddEditGuidePageModal({
         const pageType: GuidePageType =
             mode === 'create' ? lockedGuideType : row?.type ?? lockedGuideType
 
-        const payload = {
+        const base = {
             title: values.title.trim(),
-            type: pageType,
             serviceId: values.serviceId,
             locationId: values.locationId?.trim() || undefined,
             metaTitle: values.metaTitle?.trim() || undefined,
             metaDescription: values.metaDescription?.trim() || undefined,
-            content: {
-                introduction: values.introduction ?? '',
-                commonCauses: values.commonCauses ?? '',
-                warningSigns: values.warningSigns ?? '',
-                possibleRepairSolutions: values.possibleRepairSolutions ?? '',
-                whenToCallProfessional: values.whenToCallProfessional ?? '',
-            },
+            content: buildContentPayload(pageType, values),
         }
+
+        const payload: GuidePagePayload =
+            pageType === 'COST'
+                ? { ...base, type: 'COST' }
+                : { ...base, type: 'PROBLEM' }
 
         try {
             if (mode === 'create') {
@@ -251,6 +294,7 @@ export function AddEditGuidePageModal({
     const loading = creating || updating
     const typeForLabel = mode === 'edit' && row ? row.type : lockedGuideType
     const kindLabel = TYPE_LABEL[typeForLabel]
+    const isCostGuide = typeForLabel === 'COST'
 
     return (
         <ModalWrapper
@@ -266,7 +310,6 @@ export function AddEditGuidePageModal({
             className="bg-white max-w-3xl"
         >
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 pt-2">
-                {/* Title + type (from tab / row) */}
                 <div className="grid gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
                         <Label htmlFor="gp-title">Title</Label>
@@ -283,15 +326,14 @@ export function AddEditGuidePageModal({
 
                     <div className="space-y-2">
                         <Label>Type</Label>
-                        <div className="flex h-10 items-center border rounded-full h-11">
+                        <div className="flex h-11 items-center rounded-full border px-3">
                             <Badge variant="secondary" className="text-sm font-normal">
-                                {typeForLabel} 
+                                {typeForLabel}
                             </Badge>
                         </div>
                     </div>
                 </div>
 
-                {/* Service + Location */}
                 <div className="grid gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
                         <Label>Service</Label>
@@ -367,7 +409,6 @@ export function AddEditGuidePageModal({
                     </div>
                 </div>
 
-                {/* Content fields */}
                 <div className="space-y-4 rounded-2xl border border-border p-4">
                     <p className="text-sm font-medium text-foreground">Content</p>
 
@@ -381,48 +422,87 @@ export function AddEditGuidePageModal({
                         />
                     </div>
 
-                    <div className="space-y-2">
-                        <Label htmlFor="gp-causes">Common causes</Label>
-                        <Textarea
-                            id="gp-causes"
-                            className="rounded-xl min-h-[88px]"
-                            placeholder="Common causes…"
-                            {...register('commonCauses')}
-                        />
-                    </div>
-
-                    <div className="space-y-2">
-                        <Label htmlFor="gp-signs">Warning signs</Label>
-                        <Textarea
-                            id="gp-signs"
-                            className="rounded-xl min-h-[88px]"
-                            placeholder="Warning signs…"
-                            {...register('warningSigns')}
-                        />
-                    </div>
-
-                    <div className="space-y-2">
-                        <Label htmlFor="gp-repair">Possible repair solutions</Label>
-                        <Textarea
-                            id="gp-repair"
-                            className="rounded-xl min-h-[88px]"
-                            placeholder="Repair solutions…"
-                            {...register('possibleRepairSolutions')}
-                        />
-                    </div>
-
-                    <div className="space-y-2">
-                        <Label htmlFor="gp-when">When to call a professional</Label>
-                        <Textarea
-                            id="gp-when"
-                            className="rounded-xl min-h-[88px]"
-                            placeholder="When to call a professional…"
-                            {...register('whenToCallProfessional')}
-                        />
-                    </div>
+                    {isCostGuide ? (
+                        <>
+                            <div className="space-y-2">
+                                <Label htmlFor="gp-avg-cost">Average cost</Label>
+                                <Textarea
+                                    id="gp-avg-cost"
+                                    className="rounded-xl min-h-[88px]"
+                                    placeholder="Average cost…"
+                                    {...register('averageCost')}
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="gp-affects-price">What affects price</Label>
+                                <Textarea
+                                    id="gp-affects-price"
+                                    className="rounded-xl min-h-[88px]"
+                                    placeholder="What affects price…"
+                                    {...register('whatAffectsPrice')}
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="gp-examples">Typical project examples</Label>
+                                <Textarea
+                                    id="gp-examples"
+                                    className="rounded-xl min-h-[88px]"
+                                    placeholder="Typical project examples…"
+                                    {...register('typicalProjectExamples')}
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="gp-tips">Tips before hiring</Label>
+                                <Textarea
+                                    id="gp-tips"
+                                    className="rounded-xl min-h-[88px]"
+                                    placeholder="Tips before hiring…"
+                                    {...register('tipsBeforeHiring')}
+                                />
+                            </div>
+                        </>
+                    ) : (
+                        <>
+                            <div className="space-y-2">
+                                <Label htmlFor="gp-causes">Common causes</Label>
+                                <Textarea
+                                    id="gp-causes"
+                                    className="rounded-xl min-h-[88px]"
+                                    placeholder="Common causes…"
+                                    {...register('commonCauses')}
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="gp-signs">Warning signs</Label>
+                                <Textarea
+                                    id="gp-signs"
+                                    className="rounded-xl min-h-[88px]"
+                                    placeholder="Warning signs…"
+                                    {...register('warningSigns')}
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="gp-repair">Possible repair solutions</Label>
+                                <Textarea
+                                    id="gp-repair"
+                                    className="rounded-xl min-h-[88px]"
+                                    placeholder="Repair solutions…"
+                                    {...register('possibleRepairSolutions')}
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="gp-when">When to call a professional</Label>
+                                <Textarea
+                                    id="gp-when"
+                                    className="rounded-xl min-h-[88px]"
+                                    placeholder="When to call a professional…"
+                                    {...register('whenToCallProfessional')}
+                                />
+                            </div>
+                        </>
+                    )}
                 </div>
 
-                {/* SEO */}
                 <div className="space-y-4">
                     <div className="space-y-2">
                         <Label htmlFor="gp-meta-title">Meta title</Label>
