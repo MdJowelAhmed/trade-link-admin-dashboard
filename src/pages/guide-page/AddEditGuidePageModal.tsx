@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { useFieldArray, useForm } from 'react-hook-form'
+import { Plus, Trash2 } from 'lucide-react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { ModalWrapper } from '@/components/common'
@@ -17,6 +18,7 @@ import {
 import { Badge } from '@/components/ui/badge'
 import {
     useCreateGuidePageMutation,
+    useGetGuidePageByIdQuery,
     useUpdateGuidePageMutation,
     resolveGuideServiceId,
     resolveGuideLocationId,
@@ -36,6 +38,11 @@ const TYPE_LABEL: Record<GuidePageType, string> = {
     COST: 'Cost',
 }
 
+const faqSchema = z.object({
+    question: z.string(),
+    answer: z.string(),
+})
+
 const formSchema = z.object({
     title: z.string().min(1, 'Title is required'),
     serviceId: z.string().min(1, 'Select a service'),
@@ -48,9 +55,11 @@ const formSchema = z.object({
     possibleRepairSolutions: z.string().optional(),
     whenToCallProfessional: z.string().optional(),
     averageCost: z.string().optional(),
+    typicalCostRange: z.string().optional(),
     whatAffectsPrice: z.string().optional(),
     typicalProjectExamples: z.string().optional(),
     tipsBeforeHiring: z.string().optional(),
+    faqs: z.array(faqSchema),
 })
 
 type FormValues = z.infer<typeof formSchema>
@@ -67,9 +76,11 @@ const EMPTY_FORM: FormValues = {
     possibleRepairSolutions: '',
     whenToCallProfessional: '',
     averageCost: '',
+    typicalCostRange: '',
     whatAffectsPrice: '',
     typicalProjectExamples: '',
     tipsBeforeHiring: '',
+    faqs: [],
 }
 
 function formValuesFromRow(row: GuidePage): FormValues {
@@ -82,12 +93,17 @@ function formValuesFromRow(row: GuidePage): FormValues {
         metaTitle: row.metaTitle ?? '',
         metaDescription: row.metaDescription ?? '',
         introduction: c.introduction ?? '',
+        faqs: (row.faqs ?? []).map((f) => ({
+            question: f.question ?? '',
+            answer: f.answer ?? '',
+        })),
     }
 
     if (row.type === 'COST') {
         return {
             ...base,
             averageCost: (c as { averageCost?: string }).averageCost ?? '',
+            typicalCostRange: (c as { typicalCostRange?: string }).typicalCostRange ?? '',
             whatAffectsPrice: (c as { whatAffectsPrice?: string }).whatAffectsPrice ?? '',
             typicalProjectExamples:
                 (c as { typicalProjectExamples?: string }).typicalProjectExamples ?? '',
@@ -115,6 +131,7 @@ function buildContentPayload(
         return {
             introduction: intro,
             averageCost: values.averageCost ?? '',
+            typicalCostRange: values.typicalCostRange ?? '',
             whatAffectsPrice: values.whatAffectsPrice ?? '',
             typicalProjectExamples: values.typicalProjectExamples ?? '',
             tipsBeforeHiring: values.tipsBeforeHiring ?? '',
@@ -232,16 +249,27 @@ export function AddEditGuidePageModal({
     const [createPage, { isLoading: creating }] = useCreateGuidePageMutation()
     const [updatePage, { isLoading: updating }] = useUpdateGuidePageMutation()
 
+    const editId = mode === 'edit' && row?._id ? row._id : ''
+    const { data: editDetailRes } = useGetGuidePageByIdQuery(editId, {
+        skip: !open || !editId,
+    })
+
     const {
         register,
         handleSubmit,
         reset,
         setValue,
         watch,
+        control,
         formState: { errors },
     } = useForm<FormValues>({
         resolver: zodResolver(formSchema),
         defaultValues: EMPTY_FORM,
+    })
+
+    const { fields: faqFields, append: appendFaq, remove: removeFaq } = useFieldArray({
+        control,
+        name: 'faqs',
     })
 
     const selectedServiceId = watch('serviceId')
@@ -253,15 +281,20 @@ export function AddEditGuidePageModal({
         setLocationSearch('')
 
         if (mode === 'edit' && row) {
-            reset(formValuesFromRow(row))
+            reset(formValuesFromRow(editDetailRes?.data ?? row))
         } else {
             reset({ ...EMPTY_FORM })
         }
-    }, [open, mode, row, reset, lockedGuideType])
+    }, [open, mode, row, reset, lockedGuideType, editDetailRes?.data])
 
     const onSubmit = async (values: FormValues) => {
         const pageType: GuidePageType =
             mode === 'create' ? lockedGuideType : row?.type ?? lockedGuideType
+
+        const faqs = values.faqs.map(({ question, answer }) => ({
+            question: (question ?? '').trim(),
+            answer: (answer ?? '').trim(),
+        }))
 
         const base = {
             title: values.title.trim(),
@@ -270,6 +303,7 @@ export function AddEditGuidePageModal({
             metaTitle: values.metaTitle?.trim() || undefined,
             metaDescription: values.metaDescription?.trim() || undefined,
             content: buildContentPayload(pageType, values),
+            faqs,
         }
 
         const payload: GuidePagePayload =
@@ -434,6 +468,15 @@ export function AddEditGuidePageModal({
                                 />
                             </div>
                             <div className="space-y-2">
+                                <Label htmlFor="gp-typical-range">Typical cost range</Label>
+                                <Textarea
+                                    id="gp-typical-range"
+                                    className="rounded-xl min-h-[88px]"
+                                    placeholder="Typical cost range…"
+                                    {...register('typicalCostRange')}
+                                />
+                            </div>
+                            <div className="space-y-2">
                                 <Label htmlFor="gp-affects-price">What affects price</Label>
                                 <Textarea
                                     id="gp-affects-price"
@@ -501,6 +544,60 @@ export function AddEditGuidePageModal({
                             </div>
                         </>
                     )}
+                </div>
+
+                <div className="space-y-3 rounded-2xl border border-border p-4">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                        <Label className="text-base font-medium">FAQs</Label>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="rounded-full"
+                            onClick={() => appendFaq({ question: '', answer: '' })}
+                        >
+                            <Plus className="h-4 w-4 mr-1" />
+                            Add FAQ
+                        </Button>
+                    </div>
+                    {faqFields.length === 0 && (
+                        <p className="text-sm text-muted-foreground">No FAQ rows. Optional.</p>
+                    )}
+                    <div className="flex flex-col gap-4">
+                        {faqFields.map((field, index) => (
+                            <div
+                                key={field.id}
+                                className="flex flex-col gap-3 rounded-xl border border-border/80 bg-muted/20 p-4"
+                            >
+                                <div className="flex flex-col gap-2">
+                                    <Label className="text-xs">Question</Label>
+                                    <Input
+                                        className="rounded-full"
+                                        {...register(`faqs.${index}.question` as const)}
+                                    />
+                                </div>
+                                <div className="flex flex-col gap-2">
+                                    <Label className="text-xs">Answer</Label>
+                                    <Textarea
+                                        className="rounded-xl min-h-[100px]"
+                                        {...register(`faqs.${index}.answer` as const)}
+                                    />
+                                </div>
+                                <div className="flex justify-end">
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        className="text-destructive hover:text-destructive rounded-full"
+                                        onClick={() => removeFaq(index)}
+                                    >
+                                        <Trash2 className="h-4 w-4 mr-1" />
+                                        Remove
+                                    </Button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
                 </div>
 
                 <div className="space-y-4">

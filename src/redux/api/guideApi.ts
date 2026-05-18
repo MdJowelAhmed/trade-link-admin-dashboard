@@ -28,9 +28,16 @@ export interface ProblemGuideContent {
 export interface CostGuideContent {
     introduction?: string
     averageCost?: string
+    typicalCostRange?: string
     whatAffectsPrice?: string
     typicalProjectExamples?: string
     tipsBeforeHiring?: string
+}
+
+export interface GuideFaqItem {
+    _id?: string
+    question: string
+    answer: string
 }
 
 export type GuidePageContent = ProblemGuideContent | CostGuideContent
@@ -42,6 +49,7 @@ export interface GuidePage {
     serviceId: string | GuidePageServiceRef
     locationId: string | GuidePageLocationRef | null
     content?: GuidePageContent
+    faqs?: GuideFaqItem[]
     metaTitle?: string
     metaDescription?: string
     isPublished: boolean
@@ -76,25 +84,19 @@ export interface GetGuidePagesParams {
     type?: GuidePageType
 }
 
+type GuidePagePayloadBase = {
+    title: string
+    content: ProblemGuideContent | CostGuideContent
+    faqs?: GuideFaqItem[]
+    metaTitle?: string
+    metaDescription?: string
+    serviceId: string
+    locationId?: string
+}
+
 export type GuidePagePayload =
-    | {
-          title: string
-          type: 'PROBLEM'
-          content: ProblemGuideContent
-          metaTitle?: string
-          metaDescription?: string
-          serviceId: string
-          locationId?: string
-      }
-    | {
-          title: string
-          type: 'COST'
-          content: CostGuideContent
-          metaTitle?: string
-          metaDescription?: string
-          serviceId: string
-          locationId?: string
-      }
+    | (GuidePagePayloadBase & { type: 'PROBLEM'; content: ProblemGuideContent })
+    | (GuidePagePayloadBase & { type: 'COST'; content: CostGuideContent })
 
 export function getGuideServiceName(ref: string | GuidePageServiceRef): string {
     if (typeof ref === 'object' && ref !== null) return ref.name

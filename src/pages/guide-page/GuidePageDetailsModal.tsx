@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react'
 import { ModalWrapper } from '@/components/common'
-import { Badge } from '@/components/ui/badge'
 import {
     Accordion,
     AccordionContent,
@@ -61,18 +60,6 @@ function ContentBlock({ label, value }: { label: string; value?: string }) {
     )
 }
 
-function formatDate(iso?: string): string {
-    if (!iso) return '—'
-    try {
-        return new Date(iso).toLocaleString(undefined, {
-            dateStyle: 'medium',
-            timeStyle: 'short',
-        })
-    } catch {
-        return iso
-    }
-}
-
 const PROBLEM_SECTIONS: { key: keyof ProblemGuideContent; label: string }[] = [
     { key: 'introduction', label: 'Introduction' },
     { key: 'commonCauses', label: 'Common causes' },
@@ -84,6 +71,7 @@ const PROBLEM_SECTIONS: { key: keyof ProblemGuideContent; label: string }[] = [
 const COST_SECTIONS: { key: keyof CostGuideContent; label: string }[] = [
     { key: 'introduction', label: 'Introduction' },
     { key: 'averageCost', label: 'Average cost' },
+    { key: 'typicalCostRange', label: 'Typical cost range' },
     { key: 'whatAffectsPrice', label: 'What affects price' },
     { key: 'typicalProjectExamples', label: 'Typical project examples' },
     { key: 'tipsBeforeHiring', label: 'Tips before hiring' },
@@ -99,6 +87,7 @@ export function GuidePageDetailsModal({ open, onClose, row }: GuidePageDetailsMo
     const serviceName = page ? getGuideServiceName(page.serviceId) : '—'
     const locationName = page ? getGuideLocationName(page.locationId) : '—'
     const content = page?.content ?? {}
+    const faqs = page?.faqs ?? []
     const sections = page?.type === 'COST' ? COST_SECTIONS : PROBLEM_SECTIONS
     const filledSections = sections.filter(({ key }) => {
         const v = (content as Record<string, string | undefined>)[key]
@@ -116,18 +105,6 @@ export function GuidePageDetailsModal({ open, onClose, row }: GuidePageDetailsMo
         >
             {!page ? null : (
                 <div className="space-y-6 pt-1">
-                    {/* <PageCard className="flex flex-wrap items-center gap-3">
-                        <Badge variant={page.type === 'COST' ? 'secondary' : 'outline'}>
-                            {page.type === 'COST' ? 'Cost guide' : 'Problem guide'}
-                        </Badge>
-                        <Badge variant={page.isPublished ? 'success' : 'secondary'}>
-                            {page.isPublished ? 'Published' : 'Draft'}
-                        </Badge>
-                        <span className="text-sm text-muted-foreground">
-                            Updated {formatDate(page.updatedAt)}
-                        </span>
-                    </PageCard> */}
-
                     <PageCard className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
                         <span>
                             <span className="font-medium text-foreground">Service:</span>{' '}
@@ -159,10 +136,6 @@ export function GuidePageDetailsModal({ open, onClose, row }: GuidePageDetailsMo
                                     {page.metaDescription}
                                 </li>
                             ) : null}
-                            {/* <li>
-                                <span className="font-medium text-slate-800">Created:</span>{' '}
-                                {formatDate(page.createdAt)}
-                            </li> */}
                         </ul>
                     </PageCard>
 
@@ -214,6 +187,32 @@ export function GuidePageDetailsModal({ open, onClose, row }: GuidePageDetailsMo
                                         </AccordionItem>
                                     )
                                 })}
+                            </Accordion>
+                        )}
+                    </PageCard>
+
+                    <PageCard className="shadow-md shadow-slate-200/80">
+                        <h2 className="text-lg font-bold text-slate-900 sm:text-xl">
+                            Frequently asked questions
+                        </h2>
+                        {faqs.length === 0 ? (
+                            <p className="mt-4 text-sm text-slate-500">No FAQs for this guide page.</p>
+                        ) : (
+                            <Accordion type="single" collapsible className="mt-4 w-full">
+                                {faqs.map((f, i) => (
+                                    <AccordionItem
+                                        key={f._id ?? `${i}-${f.question}`}
+                                        value={f._id ?? `faq-${i}`}
+                                        className="border-slate-200"
+                                    >
+                                        <AccordionTrigger className="py-4 text-left text-[15px] font-medium text-slate-900 hover:no-underline">
+                                            {f.question || 'Question'}
+                                        </AccordionTrigger>
+                                        <AccordionContent className="text-[15px] leading-relaxed text-slate-600">
+                                            {f.answer}
+                                        </AccordionContent>
+                                    </AccordionItem>
+                                ))}
                             </Accordion>
                         )}
                     </PageCard>
