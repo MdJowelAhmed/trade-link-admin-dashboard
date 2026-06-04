@@ -35,7 +35,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { cn } from '@/utils/cn'
-import { useCallback } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 interface TiptapEditorProps {
   content: string
@@ -52,6 +52,8 @@ export function TiptapEditor({
   className,
   editable = true,
 }: TiptapEditorProps) {
+  const [, setEditorRevision] = useState(0)
+
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -82,6 +84,27 @@ export function TiptapEditor({
       onChange(editor.getHTML())
     },
   })
+
+  useEffect(() => {
+    if (!editor) return
+
+    const refreshToolbar = () => setEditorRevision((n) => n + 1)
+    editor.on('selectionUpdate', refreshToolbar)
+    editor.on('transaction', refreshToolbar)
+
+    return () => {
+      editor.off('selectionUpdate', refreshToolbar)
+      editor.off('transaction', refreshToolbar)
+    }
+  }, [editor])
+
+  useEffect(() => {
+    if (!editor) return
+    const current = editor.getHTML()
+    if (content !== current) {
+      editor.commands.setContent(content || '', { emitUpdate: false })
+    }
+  }, [content, editor])
 
   const setLink = useCallback(() => {
     if (!editor) return
@@ -127,14 +150,14 @@ export function TiptapEditor({
         <Separator orientation="vertical" className="h-6 mx-1" />
 
         {/* Headings */}
-        <ToolbarButton
+        {/* <ToolbarButton
           onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
           active={editor.isActive('heading', { level: 1 })}
           tooltip="Heading 1"
         >
           <Heading1 className="h-4 w-4" />
-        </ToolbarButton>
-        <ToolbarButton
+        </ToolbarButton> */}
+        {/* <ToolbarButton
           onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
           active={editor.isActive('heading', { level: 2 })}
           tooltip="Heading 2"
@@ -149,7 +172,7 @@ export function TiptapEditor({
           <Heading3 className="h-4 w-4" />
         </ToolbarButton>
 
-        <Separator orientation="vertical" className="h-6 mx-1" />
+        <Separator orientation="vertical" className="h-6 mx-1" /> */}
 
         {/* Text Formatting */}
         <ToolbarButton
@@ -173,7 +196,7 @@ export function TiptapEditor({
         >
           <UnderlineIcon className="h-4 w-4" />
         </ToolbarButton>
-        <ToolbarButton
+        {/* <ToolbarButton
           onClick={() => editor.chain().focus().toggleStrike().run()}
           active={editor.isActive('strike')}
           tooltip="Strikethrough"
@@ -193,12 +216,12 @@ export function TiptapEditor({
           tooltip="Code"
         >
           <Code className="h-4 w-4" />
-        </ToolbarButton>
+        </ToolbarButton> */}
 
         <Separator orientation="vertical" className="h-6 mx-1" />
 
         {/* Alignment */}
-        <ToolbarButton
+        {/* <ToolbarButton
           onClick={() => editor.chain().focus().setTextAlign('left').run()}
           active={editor.isActive({ textAlign: 'left' })}
           tooltip="Align Left"
@@ -227,7 +250,7 @@ export function TiptapEditor({
           <AlignJustify className="h-4 w-4" />
         </ToolbarButton>
 
-        <Separator orientation="vertical" className="h-6 mx-1" />
+        <Separator orientation="vertical" className="h-6 mx-1" /> */}
 
         {/* Lists */}
         <ToolbarButton
@@ -248,7 +271,7 @@ export function TiptapEditor({
         <Separator orientation="vertical" className="h-6 mx-1" />
 
         {/* Block Elements */}
-        <ToolbarButton
+        {/* <ToolbarButton
           onClick={() => editor.chain().focus().toggleBlockquote().run()}
           active={editor.isActive('blockquote')}
           tooltip="Quote"
@@ -260,7 +283,7 @@ export function TiptapEditor({
           tooltip="Horizontal Rule"
         >
           <Minus className="h-4 w-4" />
-        </ToolbarButton>
+        </ToolbarButton> */}
         <ToolbarButton
           onClick={setLink}
           active={editor.isActive('link')}
@@ -274,7 +297,7 @@ export function TiptapEditor({
       {/* Editor Content */}
       <EditorContent
         editor={editor}
-        className="prose prose-sm dark:prose-invert max-w-none p-4 min-h-[400px] focus:outline-none [&_.ProseMirror]:min-h-[380px] [&_.ProseMirror]:focus:outline-none [&_.ProseMirror_p.is-editor-empty:first-child::before]:text-muted-foreground [&_.ProseMirror_p.is-editor-empty:first-child::before]:content-[attr(data-placeholder)] [&_.ProseMirror_p.is-editor-empty:first-child::before]:float-left [&_.ProseMirror_p.is-editor-empty:first-child::before]:h-0 [&_.ProseMirror_p.is-editor-empty:first-child::before]:pointer-events-none"
+        className="prose prose-sm dark:prose-invert max-w-none p-4 min-h-[200px] focus:outline-none [&_.ProseMirror]:min-h-[180px] [&_.ProseMirror]:focus:outline-none [&_.ProseMirror_ul]:list-disc [&_.ProseMirror_ul]:pl-6 [&_.ProseMirror_ol]:list-decimal [&_.ProseMirror_ol]:pl-6 [&_.ProseMirror_blockquote]:border-l-4 [&_.ProseMirror_blockquote]:border-muted [&_.ProseMirror_blockquote]:pl-4 [&_.ProseMirror_blockquote]:italic [&_.ProseMirror_p.is-editor-empty:first-child::before]:text-muted-foreground [&_.ProseMirror_p.is-editor-empty:first-child::before]:content-[attr(data-placeholder)] [&_.ProseMirror_p.is-editor-empty:first-child::before]:float-left [&_.ProseMirror_p.is-editor-empty:first-child::before]:h-0 [&_.ProseMirror_p.is-editor-empty:first-child::before]:pointer-events-none"
       />
 
       {/* Footer with word count */}

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { ModalWrapper, FormInput, ImageUploader, FormTextarea } from '@/components/common'
+import { ModalWrapper, FormInput, ImageUploader, FormTextarea, TiptapEditor } from '@/components/common'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
@@ -48,6 +48,7 @@ export function AddEditCategoryModal({ open, onClose, mode, category }: AddEditC
   const [image, setImage] = useState<File | string | null>(null)
   const [originalImage, setOriginalImage] = useState<string | null>(null)
   const [faqFields, setFaqFields] = useState<FAQField[]>([])
+  const [detailsDescription2Content, setDetailsDescription2Content] = useState('')
 
   // RTK Query mutations - auto-refetch via invalidatesTags
   const [addCategory, { isLoading: isAdding }] = useAddCategoryMutation()
@@ -84,6 +85,7 @@ export function AddEditCategoryModal({ open, onClose, mode, category }: AddEditC
           servicesDetailsDescription2: category.servicesDetailsDescription2 || '',
           status: category.status,
         })
+        setDetailsDescription2Content(category.servicesDetailsDescription2 || '')
         // Set image from category if it exists
         const categoryImage = category.image || null
         setImage(categoryImage)
@@ -109,6 +111,7 @@ export function AddEditCategoryModal({ open, onClose, mode, category }: AddEditC
           servicesDetailsDescription2: '',
           status: 'active',
         })
+        setDetailsDescription2Content('')
         setImage(null)
         setOriginalImage(null)
         setFaqFields([])
@@ -266,8 +269,14 @@ export function AddEditCategoryModal({ open, onClose, mode, category }: AddEditC
 
           {category.servicesDetailsDescription2 && (
             <div>
-              <Label className="text-sm font-medium mb-1 block">Services Details Description 2</Label>
-              <p className="text-sm text-muted-foreground">{category.servicesDetailsDescription2}</p>
+              <Label className="text-sm font-medium mb-2 block">Services Details Description 2</Label>
+              <TiptapEditor
+                key={`details-${category.id}`}
+                content={category.servicesDetailsDescription2}
+                onChange={() => {}}
+                editable={false}
+                className="min-h-[100px]"
+              />
             </div>
           )}
 
@@ -356,12 +365,22 @@ export function AddEditCategoryModal({ open, onClose, mode, category }: AddEditC
               error={errors.servicesDetailsDescription1?.message}
               {...register('servicesDetailsDescription1')}
             />
-            <FormTextarea 
-              label='Details Page Description 2'
-              placeholder='Enter details page description 2'
-              error={errors.servicesDetailsDescription2?.message}
-              {...register('servicesDetailsDescription2')}
-            />
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">Details Page Description 2</Label>
+              <TiptapEditor
+                key={mode === 'edit' && category ? `edit-${category.id}` : 'add-category-desc2'}
+                content={detailsDescription2Content}
+                onChange={(content) => {
+                  setDetailsDescription2Content(content)
+                  setValue('servicesDetailsDescription2', content, { shouldDirty: true })
+                }}
+                placeholder="Enter details page description 2…"
+                className="min-h-[280px]"
+              />
+              {errors.servicesDetailsDescription2?.message && (
+                <p className="text-sm text-destructive">{errors.servicesDetailsDescription2.message}</p>
+              )}
+            </div>
 
             <div className="flex items-center justify-between">
               <Label htmlFor="category-status" className="text-sm font-medium">
