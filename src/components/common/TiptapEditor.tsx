@@ -126,8 +126,24 @@ export function TiptapEditor({
     return null
   }
 
+  const editorContentClass = cn(
+    'prose prose-sm dark:prose-invert max-w-none p-4 focus:outline-none',
+    '[&_.ProseMirror_ul]:list-disc [&_.ProseMirror_ul]:pl-6 [&_.ProseMirror_ol]:list-decimal [&_.ProseMirror_ol]:pl-6',
+    '[&_.ProseMirror_blockquote]:border-l-4 [&_.ProseMirror_blockquote]:border-muted [&_.ProseMirror_blockquote]:pl-4 [&_.ProseMirror_blockquote]:italic',
+    editable
+      ? 'min-h-[180px] [&_.ProseMirror]:min-h-[180px] [&_.ProseMirror]:focus:outline-none [&_.ProseMirror_p.is-editor-empty:first-child::before]:text-muted-foreground [&_.ProseMirror_p.is-editor-empty:first-child::before]:content-[attr(data-placeholder)] [&_.ProseMirror_p.is-editor-empty:first-child::before]:float-left [&_.ProseMirror_p.is-editor-empty:first-child::before]:h-0 [&_.ProseMirror_p.is-editor-empty:first-child::before]:pointer-events-none'
+      : 'min-h-0 [&_.ProseMirror]:min-h-0 [&_.ProseMirror]:h-auto',
+  )
+
   return (
-    <div className={cn('border rounded-xl overflow-hidden bg-background', className)}>
+    <div
+      className={cn(
+        'overflow-hidden bg-background',
+        editable ? 'border rounded-xl' : 'border-0 h-auto',
+        editable && !className?.includes('min-h') && !className?.includes('h-[') && 'min-h-[200px]',
+        className,
+      )}
+    >
       {/* Toolbar */}
       {editable && (
       <div className="flex flex-wrap items-center gap-1 p-2 border-b bg-muted/30">
@@ -157,7 +173,7 @@ export function TiptapEditor({
         >
           <Heading1 className="h-4 w-4" />
         </ToolbarButton> */}
-        {/* <ToolbarButton
+        <ToolbarButton
           onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
           active={editor.isActive('heading', { level: 2 })}
           tooltip="Heading 2"
@@ -172,7 +188,7 @@ export function TiptapEditor({
           <Heading3 className="h-4 w-4" />
         </ToolbarButton>
 
-        <Separator orientation="vertical" className="h-6 mx-1" /> */}
+        <Separator orientation="vertical" className="h-6 mx-1" />
 
         {/* Text Formatting */}
         <ToolbarButton
@@ -196,7 +212,7 @@ export function TiptapEditor({
         >
           <UnderlineIcon className="h-4 w-4" />
         </ToolbarButton>
-        {/* <ToolbarButton
+        <ToolbarButton
           onClick={() => editor.chain().focus().toggleStrike().run()}
           active={editor.isActive('strike')}
           tooltip="Strikethrough"
@@ -210,7 +226,7 @@ export function TiptapEditor({
         >
           <Highlighter className="h-4 w-4" />
         </ToolbarButton>
-        <ToolbarButton
+        {/* <ToolbarButton
           onClick={() => editor.chain().focus().toggleCode().run()}
           active={editor.isActive('code')}
           tooltip="Code"
@@ -295,20 +311,17 @@ export function TiptapEditor({
       )}
 
       {/* Editor Content */}
-      <EditorContent
-        editor={editor}
-        className="prose prose-sm dark:prose-invert max-w-none p-4 min-h-[200px] focus:outline-none [&_.ProseMirror]:min-h-[180px] [&_.ProseMirror]:focus:outline-none [&_.ProseMirror_ul]:list-disc [&_.ProseMirror_ul]:pl-6 [&_.ProseMirror_ol]:list-decimal [&_.ProseMirror_ol]:pl-6 [&_.ProseMirror_blockquote]:border-l-4 [&_.ProseMirror_blockquote]:border-muted [&_.ProseMirror_blockquote]:pl-4 [&_.ProseMirror_blockquote]:italic [&_.ProseMirror_p.is-editor-empty:first-child::before]:text-muted-foreground [&_.ProseMirror_p.is-editor-empty:first-child::before]:content-[attr(data-placeholder)] [&_.ProseMirror_p.is-editor-empty:first-child::before]:float-left [&_.ProseMirror_p.is-editor-empty:first-child::before]:h-0 [&_.ProseMirror_p.is-editor-empty:first-child::before]:pointer-events-none"
-      />
+      <EditorContent editor={editor} className={editorContentClass} />
 
       {/* Footer with word count */}
-      <div className="flex items-center justify-between px-4 py-2 border-t bg-muted/30 text-xs text-muted-foreground">
+      {/* <div className="flex items-center justify-between px-4 py-2 border-t bg-muted/30 text-xs text-muted-foreground">
         <span>
           {editor.storage.characterCount?.characters?.() || content.replace(/<[^>]*>/g, '').length} characters
         </span>
         <span>
           {editor.storage.characterCount?.words?.() || content.replace(/<[^>]*>/g, '').split(/\s+/).filter(Boolean).length} words
         </span>
-      </div>
+      </div> */}
     </div>
   )
 }

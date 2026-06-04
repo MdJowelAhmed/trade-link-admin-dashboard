@@ -3,7 +3,7 @@ import { useFieldArray, useForm } from 'react-hook-form'
 import { Plus, Trash2 } from 'lucide-react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { ModalWrapper } from '@/components/common'
+import { ModalWrapper, TiptapEditor } from '@/components/common'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -149,6 +149,46 @@ function buildContentPayload(
     }
 }
 
+type GuideContentFieldName =
+    | 'introduction'
+    | 'commonCauses'
+    | 'warningSigns'
+    | 'possibleRepairSolutions'
+    | 'whenToCallProfessional'
+    | 'averageCost'
+    | 'typicalCostRange'
+    | 'whatAffectsPrice'
+    | 'typicalProjectExamples'
+    | 'tipsBeforeHiring'
+
+function GuideContentEditorField({
+    label,
+    placeholder,
+    fieldName,
+    value,
+    onChange,
+    editorKey,
+}: {
+    label: string
+    placeholder: string
+    fieldName: GuideContentFieldName
+    value: string | undefined
+    onChange: (html: string) => void
+    editorKey: string
+}) {
+    return (
+        <div className="space-y-2">
+            <Label htmlFor={`gp-${fieldName}`}>{label}</Label>
+            <TiptapEditor
+                key={`${editorKey}-${fieldName}`}
+                content={value ?? ''}
+                onChange={onChange}
+                placeholder={placeholder}
+            />
+        </div>
+    )
+}
+
 function extractErrorMessage(error: unknown): string {
     if (!isFetchBaseQueryError(error)) return 'Request failed'
     const d = error.data as Record<string, unknown> | undefined
@@ -278,6 +318,20 @@ export function AddEditGuidePageModal({
     const selectedServiceId = watch('serviceId')
     const selectedLocationId = watch('locationId')
 
+    const introduction = watch('introduction')
+    const commonCauses = watch('commonCauses')
+    const warningSigns = watch('warningSigns')
+    const possibleRepairSolutions = watch('possibleRepairSolutions')
+    const whenToCallProfessional = watch('whenToCallProfessional')
+    const averageCost = watch('averageCost')
+    const typicalCostRange = watch('typicalCostRange')
+    const whatAffectsPrice = watch('whatAffectsPrice')
+    const typicalProjectExamples = watch('typicalProjectExamples')
+    const tipsBeforeHiring = watch('tipsBeforeHiring')
+
+    const editorBaseKey =
+        mode === 'edit' && row ? row._id : `add-${lockedGuideType}-${open ? 'open' : 'closed'}`
+
     useEffect(() => {
         if (!open) return
         setServiceSearch('')
@@ -345,7 +399,7 @@ export function AddEditGuidePageModal({
             }
             description={`${kindLabel} guides are linked to a service and optional region, with SEO and body content.`}
             size="xl"
-            className="bg-white max-w-3xl"
+            className="bg-white max-w-4xl"
         >
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 pt-2">
                 <div className="grid gap-4 sm:grid-cols-2">
@@ -450,102 +504,112 @@ export function AddEditGuidePageModal({
                 <div className="space-y-4 rounded-2xl border border-border p-4">
                     <p className="text-sm font-medium text-foreground">Content</p>
 
-                    <div className="space-y-2">
-                        <Label htmlFor="gp-intro">Introduction</Label>
-                        <Textarea
-                            id="gp-intro"
-                            className="rounded-xl min-h-[88px]"
-                            placeholder="Introduction text…"
-                            {...register('introduction')}
-                        />
-                    </div>
+                    <GuideContentEditorField
+                        label="Introduction"
+                        placeholder="Introduction text…"
+                        fieldName="introduction"
+                        value={introduction ?? ''}
+                        editorKey={editorBaseKey}
+                        onChange={(html) =>
+                            setValue('introduction', html, { shouldDirty: true })
+                        }
+                    />
 
                     {isCostGuide ? (
                         <>
-                            <div className="space-y-2">
-                                <Label htmlFor="gp-avg-cost">Average cost</Label>
-                                <Textarea
-                                    id="gp-avg-cost"
-                                    className="rounded-xl min-h-[88px]"
-                                    placeholder="Average cost…"
-                                    {...register('averageCost')}
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="gp-typical-range">Typical cost range</Label>
-                                <Textarea
-                                    id="gp-typical-range"
-                                    className="rounded-xl min-h-[88px]"
-                                    placeholder="Typical cost range…"
-                                    {...register('typicalCostRange')}
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="gp-affects-price">What affects price</Label>
-                                <Textarea
-                                    id="gp-affects-price"
-                                    className="rounded-xl min-h-[88px]"
-                                    placeholder="What affects price…"
-                                    {...register('whatAffectsPrice')}
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="gp-examples">Typical project examples</Label>
-                                <Textarea
-                                    id="gp-examples"
-                                    className="rounded-xl min-h-[88px]"
-                                    placeholder="Typical project examples…"
-                                    {...register('typicalProjectExamples')}
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="gp-tips">Tips before hiring</Label>
-                                <Textarea
-                                    id="gp-tips"
-                                    className="rounded-xl min-h-[88px]"
-                                    placeholder="Tips before hiring…"
-                                    {...register('tipsBeforeHiring')}
-                                />
-                            </div>
+                            <GuideContentEditorField
+                                label="Average cost"
+                                placeholder="Average cost…"
+                                fieldName="averageCost"
+                                value={averageCost}
+                                editorKey={editorBaseKey}
+                                onChange={(html) =>
+                                    setValue('averageCost', html, { shouldDirty: true })
+                                }
+                            />
+                            <GuideContentEditorField
+                                label="Typical cost range"
+                                placeholder="Typical cost range…"
+                                fieldName="typicalCostRange"
+                                value={typicalCostRange}
+                                editorKey={editorBaseKey}
+                                onChange={(html) =>
+                                    setValue('typicalCostRange', html, { shouldDirty: true })
+                                }
+                            />
+                            <GuideContentEditorField
+                                label="What affects price"
+                                placeholder="What affects price…"
+                                fieldName="whatAffectsPrice"
+                                value={whatAffectsPrice}
+                                editorKey={editorBaseKey}
+                                onChange={(html) =>
+                                    setValue('whatAffectsPrice', html, { shouldDirty: true })
+                                }
+                            />
+                            <GuideContentEditorField
+                                label="Typical project examples"
+                                placeholder="Typical project examples…"
+                                fieldName="typicalProjectExamples"
+                                value={typicalProjectExamples}
+                                editorKey={editorBaseKey}
+                                onChange={(html) =>
+                                    setValue('typicalProjectExamples', html, { shouldDirty: true })
+                                }
+                            />
+                            <GuideContentEditorField
+                                label="Tips before hiring"
+                                placeholder="Tips before hiring…"
+                                fieldName="tipsBeforeHiring"
+                                value={tipsBeforeHiring}
+                                editorKey={editorBaseKey}
+                                onChange={(html) =>
+                                    setValue('tipsBeforeHiring', html, { shouldDirty: true })
+                                }
+                            />
                         </>
                     ) : (
                         <>
-                            <div className="space-y-2">
-                                <Label htmlFor="gp-causes">Common causes</Label>
-                                <Textarea
-                                    id="gp-causes"
-                                    className="rounded-xl min-h-[88px]"
-                                    placeholder="Common causes…"
-                                    {...register('commonCauses')}
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="gp-signs">Warning signs</Label>
-                                <Textarea
-                                    id="gp-signs"
-                                    className="rounded-xl min-h-[88px]"
-                                    placeholder="Warning signs…"
-                                    {...register('warningSigns')}
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="gp-repair">Possible repair solutions</Label>
-                                <Textarea
-                                    id="gp-repair"
-                                    className="rounded-xl min-h-[88px]"
-                                    placeholder="Repair solutions…"
-                                    {...register('possibleRepairSolutions')}
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="gp-when">When to call a professional</Label>
-                                <Textarea
-                                    id="gp-when"
-                                    className="rounded-xl min-h-[88px]"
-                                    placeholder="When to call a professional…"
-                                    {...register('whenToCallProfessional')}
-                                />
-                            </div>
+                            <GuideContentEditorField
+                                label="Common causes"
+                                placeholder="Common causes…"
+                                fieldName="commonCauses"
+                                value={commonCauses}
+                                editorKey={editorBaseKey}
+                                onChange={(html) =>
+                                    setValue('commonCauses', html, { shouldDirty: true })
+                                }
+                            />
+                            <GuideContentEditorField
+                                label="Warning signs"
+                                placeholder="Warning signs…"
+                                fieldName="warningSigns"
+                                value={warningSigns}
+                                editorKey={editorBaseKey}
+                                onChange={(html) =>
+                                    setValue('warningSigns', html, { shouldDirty: true })
+                                }
+                            />
+                            <GuideContentEditorField
+                                label="Possible repair solutions"
+                                placeholder="Repair solutions…"
+                                fieldName="possibleRepairSolutions"
+                                value={possibleRepairSolutions}
+                                editorKey={editorBaseKey}
+                                onChange={(html) =>
+                                    setValue('possibleRepairSolutions', html, { shouldDirty: true })
+                                }
+                            />
+                            <GuideContentEditorField
+                                label="When to call a professional"
+                                placeholder="When to call a professional…"
+                                fieldName="whenToCallProfessional"
+                                value={whenToCallProfessional}
+                                editorKey={editorBaseKey}
+                                onChange={(html) =>
+                                    setValue('whenToCallProfessional', html, { shouldDirty: true })
+                                }
+                            />
                         </>
                     )}
                 </div>

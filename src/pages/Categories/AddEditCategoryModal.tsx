@@ -275,7 +275,7 @@ export function AddEditCategoryModal({ open, onClose, mode, category }: AddEditC
                 content={category.servicesDetailsDescription2}
                 onChange={() => {}}
                 editable={false}
-                className="min-h-[100px]"
+                className="border-0 shadow-none"
               />
             </div>
           )}
@@ -375,7 +375,6 @@ export function AddEditCategoryModal({ open, onClose, mode, category }: AddEditC
                   setValue('servicesDetailsDescription2', content, { shouldDirty: true })
                 }}
                 placeholder="Enter details page description 2…"
-                className="min-h-[280px]"
               />
               {errors.servicesDetailsDescription2?.message && (
                 <p className="text-sm text-destructive">{errors.servicesDetailsDescription2.message}</p>

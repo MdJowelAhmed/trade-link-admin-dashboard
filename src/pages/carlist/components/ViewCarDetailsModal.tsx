@@ -326,7 +326,7 @@ export function ViewCarDetailsModal({ open, onClose, car }: ViewCarDetailsModalP
                     content={car.insuranceCoverage}
                     onChange={() => {}}
                     editable={false}
-                    className="h-[280px]"
+                    className="border-0 shadow-none"
                   />
                 {/* </div> */}
               {/* </div> */}
@@ -346,7 +346,7 @@ export function ViewCarDetailsModal({ open, onClose, car }: ViewCarDetailsModalP
                     content={car.termsConditions}
                     onChange={() => {}}
                     editable={false}
-                    className="h-[280px]"
+                    className="border-0 shadow-none"
                   />
                 {/* </div> */}
               {/* </div> */}

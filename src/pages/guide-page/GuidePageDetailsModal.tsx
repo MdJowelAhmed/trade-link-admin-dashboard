@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { ModalWrapper } from '@/components/common'
+import { ModalWrapper, TiptapEditor } from '@/components/common'
 import {
     Accordion,
     AccordionContent,
@@ -45,17 +45,25 @@ function PageCard({
     )
 }
 
+function hasRichTextContent(html?: string): boolean {
+    if (!html?.trim()) return false
+    return html.replace(/<[^>]*>/g, '').trim().length > 0
+}
+
+const richTextProseClass =
+    'prose prose-sm max-w-none text-[15px] leading-relaxed text-slate-700 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6'
+
 function ContentBlock({ label, value }: { label: string; value?: string }) {
-    const text = value?.trim()
-    if (!text) return null
+    if (!hasRichTextContent(value)) return null
     return (
         <div className="rounded-lg border border-slate-100 bg-slate-50/60 p-4">
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
                 {label}
             </p>
-            <p className="mt-2 whitespace-pre-wrap text-[15px] leading-relaxed text-slate-700">
-                {text}
-            </p>
+            <div
+                className={cn('mt-2', richTextProseClass)}
+                dangerouslySetInnerHTML={{ __html: value ?? '' }}
+            />
         </div>
     )
 }
@@ -91,7 +99,7 @@ export function GuidePageDetailsModal({ open, onClose, row }: GuidePageDetailsMo
     const sections = page?.type === 'COST' ? COST_SECTIONS : PROBLEM_SECTIONS
     const filledSections = sections.filter(({ key }) => {
         const v = (content as Record<string, string | undefined>)[key]
-        return Boolean(v?.trim())
+        return hasRichTextContent(v)
     })
 
     return (
@@ -181,8 +189,14 @@ export function GuidePageDetailsModal({ open, onClose, row }: GuidePageDetailsMo
                                             <AccordionTrigger className="py-4 text-left text-[15px] font-medium text-slate-900 hover:no-underline">
                                                 {label}
                                             </AccordionTrigger>
-                                            <AccordionContent className="whitespace-pre-wrap text-[15px] leading-relaxed text-slate-600">
-                                                {value}
+                                            <AccordionContent>
+                                                <TiptapEditor
+                                                    key={`${page._id}-${key}`}
+                                                    content={value ?? ''}
+                                                    onChange={() => {}}
+                                                    editable={false}
+                                                    className="border-0 shadow-none"
+                                                />
                                             </AccordionContent>
                                         </AccordionItem>
                                     )

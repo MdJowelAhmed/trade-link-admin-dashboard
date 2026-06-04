@@ -28,10 +28,11 @@ const getStatusStyles = (status: JobPostStatus) => {
 function formatLeadFullAddress(lead: Lead): string {
   const parts = [
     lead.customerAddress?.trim(),
-    lead.area?.trim(),
-    lead.region?.trim(),
-    lead.postCode?.trim(),
-    lead.country?.trim(),
+    lead?.postCode?.trim(),
+    lead?.town?.trim(),
+    lead?.area?.trim(),
+    lead?.region?.trim(),
+    lead?.country?.trim(),
   ].filter((p): p is string => Boolean(p && p.length > 0))
   if (parts.length > 0) return parts.join(', ')
   const fallback = lead.location?.trim()
