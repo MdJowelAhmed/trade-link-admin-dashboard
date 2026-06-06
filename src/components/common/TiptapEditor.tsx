@@ -10,22 +10,14 @@ import {
   Italic,
   Underline as UnderlineIcon,
   Strikethrough,
-  Code,
-  Heading1,
   Heading2,
   Heading3,
   List,
   ListOrdered,
-  Quote,
   Undo,
   Redo,
-  AlignLeft,
-  AlignCenter,
-  AlignRight,
-  AlignJustify,
   Link as LinkIcon,
   Highlighter,
-  Minus,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'

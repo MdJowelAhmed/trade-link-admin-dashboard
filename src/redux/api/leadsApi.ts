@@ -28,6 +28,7 @@ interface BackendLead {
     postcode?: string
     postCode?: string
     region?: string
+    town?: string
     area?: string
     status: string
     answeredQuestions?: Array<{

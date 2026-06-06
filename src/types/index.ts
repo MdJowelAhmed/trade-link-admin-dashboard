@@ -598,6 +598,8 @@ export interface Lead {
   postCode?: string
   /** Region / county-level area (e.g. South East) */
   region?: string
+  /** Town name from backend (e.g. Winchester) */
+  town?: string
   /** Town or locality (e.g. Winchester) */
   area?: string
   /** Creator customer street address when provided */

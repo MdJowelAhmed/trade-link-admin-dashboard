@@ -158,6 +158,7 @@ export default function Leads() {
             '',
           postCode: item.postcode ?? item.postCode ?? '',
           region: item.region,
+          town: item.town,
           area: item.area,
           customerAddress:
             item.creator?.customer?.address?.trim() || undefined,
