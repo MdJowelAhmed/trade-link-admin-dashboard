@@ -126,7 +126,7 @@ export default function TransactionsHistory() {
       <Card className="bg-white border-0 shadow-sm">
 
         <CardHeader>
-          <div className="flex flex-row items-center justify-between ">
+          <div className="flex md:flex-row flex-col md:gap-3 gap-2 items-center justify-between ">
             {/* Tabs */}
             <div className="flex gap-2">
               <button
@@ -180,7 +180,7 @@ export default function TransactionsHistory() {
                   setCurrentPage(1);
                 }}
                 placeholder="Search here"
-                className="w-[250px]"
+                className="md:w-[300px] w-full  "
               />
             </div>
           </div>

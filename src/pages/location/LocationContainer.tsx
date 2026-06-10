@@ -330,7 +330,7 @@ export default function LocationContainer() {
 
                                 
                             </TabsList>
-                            <div className="flex  items-center justify-end gap-x-2">
+                            <div className="flex flex-col md:flex-row items-center justify-end gap-y-2 md:gap-x-2">
                                     <SearchInput
                                         value={search}
                                         onChange={(val) => {
