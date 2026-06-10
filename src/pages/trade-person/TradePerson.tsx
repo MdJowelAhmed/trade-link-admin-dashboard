@@ -404,7 +404,7 @@ export default function TradePersonManagement() {
     >
       <Card className="bg-white border-0 shadow-sm rounded-2xl overflow-hidden">
         <CardHeader className="flex flex-row items-center justify-between pb-6">
-          <CardTitle className="text-xl font-bold text-slate-800">
+          <CardTitle className="text-xl font-bold text-slate-800 hidden md:block">
             Trade Person
           </CardTitle>
           <div className="flex items-center gap-3">
@@ -419,7 +419,7 @@ export default function TradePersonManagement() {
               value={searchQuery}
               onChange={setSearchQuery}
               placeholder="Search here"
-              className="w-[200px]"
+              className="md:w-[300px] w-full  "
             />
           </div>
         </CardHeader>

@@ -373,7 +373,7 @@ export default function Leads() {
     >
       <Card className="bg-white border-0 shadow-sm">
         <CardHeader className="flex flex-row items-center justify-between pb-6">
-          <CardTitle className="text-xl font-bold text-slate-800">
+          <CardTitle className="text-xl font-bold text-slate-800 hidden md:block">
             Leads
           </CardTitle>
           <div className="flex items-center gap-3">
@@ -385,7 +385,7 @@ export default function Leads() {
               value={searchQuery}
               onChange={setSearchQuery}
               placeholder="Search by Job ID, Service Name"
-              className="w-[300px]"
+              className="md:w-[300px] w-full  "
             />
 
             {/* Filter Dropdown */}

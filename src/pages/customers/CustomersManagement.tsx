@@ -201,7 +201,7 @@ export default function CustomersManagement() {
     >
       <Card className="bg-white border-0 shadow-sm">
         <CardHeader className="flex flex-row items-center justify-between pb-6">
-          <CardTitle className="text-xl font-bold text-slate-800">
+          <CardTitle className="text-xl font-bold text-slate-800 hidden md:block">
             Customers
           </CardTitle>
           <div className="flex items-center gap-3">
@@ -210,7 +210,7 @@ export default function CustomersManagement() {
               value={searchQuery}
               onChange={setSearchQuery}
               placeholder="Search here"
-              className="w-[300px]  "
+              className="md:w-[300px] w-full  "
             />
 
             {/* Filter Dropdown */}

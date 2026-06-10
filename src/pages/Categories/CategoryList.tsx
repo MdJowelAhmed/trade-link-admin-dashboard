@@ -353,56 +353,46 @@ export default function CategoryList() {
 
         <CardContent className='p-6'>
           <Tabs value={activeTab} onValueChange={handleTabChange}>
-            {/* Filters */}
-            <div className="flex justify-between items-center">
+            <div className="mb-6 flex flex-col gap-4">
+              <TabsList className="h-auto w-full justify-start bg-gray-100 sm:w-fit">
+                <TabsTrigger value="categories" className="flex-1 sm:flex-none">
+                  Categories
+                </TabsTrigger>
+                <TabsTrigger value="services" className="flex-1 sm:flex-none">
+                  Services
+                </TabsTrigger>
+              </TabsList>
 
+              <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
+                {activeTab === 'services' && (
+                  <SearchInput
+                    value={search}
+                    onChange={handleSearch}
+                    placeholder="Search here"
+                    className="w-full sm:min-w-[200px] sm:max-w-xs sm:flex-1"
+                  />
+                )}
 
-
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
-                <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                    <TabsList className="bg-gray-100">
-                      <TabsTrigger value="categories">Categories</TabsTrigger>
-                      <TabsTrigger value="services">Services</TabsTrigger>
-                    </TabsList>
-
-                  </div>
-                </Tabs>
-              </div>
-
-              <div className='flex flex-col sm:flex-row gap-4 mb-6 justify-end'>
-
-                {
-                  activeTab === 'services' && (
-                    <SearchInput
-                      value={search}
-                      onChange={handleSearch}
-                      placeholder="Search here"
-                      className="sm:w-80"
-                    />
-                  )
-                }
-
-                {
-                  activeTab === 'services' && (
-                    <FilterDropdown
-                      value={categoryId}
-                      options={categoryFilterOptions}
-                      onChange={handleCategoryFilter}
-                      placeholder="All Categories"
-                    />
-                  )
-                }
+                {activeTab === 'services' && (
+                  <FilterDropdown
+                    value={categoryId}
+                    options={categoryFilterOptions}
+                    onChange={handleCategoryFilter}
+                    placeholder="All Categories"
+                    className="w-full sm:w-auto"
+                  />
+                )}
 
                 <FilterDropdown
                   value={status}
                   options={CATEGORY_STATUSES}
                   onChange={handleStatusFilter}
                   placeholder="All Status"
+                  className="w-full sm:w-auto"
                 />
-              
 
                 <Button
+                  className="w-full shrink-0 whitespace-nowrap sm:w-auto"
                   onClick={() => {
                     if (activeTab === 'categories') {
                       setShowAddCategoryModal(true)
