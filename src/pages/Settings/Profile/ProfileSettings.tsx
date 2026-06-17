@@ -16,14 +16,25 @@ const profileSchema = z.object({
   firstName: z.string().min(2, 'First name must be at least 2 characters'),
   lastName: z.string().min(2, 'Last name must be at least 2 characters'),
   email: z.string().email('Please enter a valid email'),
-  phone: z.string().min(10, 'Please enter a valid phone number'),
-  address: z.string().optional(),
-  city: z.string().optional(),
-  country: z.string().optional(),
-  bio: z.string().max(500, 'Bio must be less than 500 characters').optional(),
 })
 
 type ProfileFormData = z.infer<typeof profileSchema>
+
+function getErrorMessage(error: unknown): string {
+  if (error && typeof error === 'object' && 'data' in error) {
+    const data = (error as { data?: { message?: string; errorMessages?: { message?: string }[] } }).data
+    if (data?.errorMessages?.length) {
+      return data.errorMessages.map((item) => item.message).filter(Boolean).join(', ')
+    }
+    if (typeof data?.message === 'string') {
+      return data.message
+    }
+  }
+  if (error instanceof Error) {
+    return error.message
+  }
+  return 'Failed to update profile. Please try again.'
+}
 
 export default function ProfileSettings() {
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -44,11 +55,6 @@ export default function ProfileSettings() {
       firstName: '',
       lastName: '',
       email: '',
-      // phone: '',
-      // address: '',
-      // city: '',
-      // country: '',
-      // bio: 'Dashboard administrator with full access to all features.',
     },
   })
 
@@ -62,10 +68,6 @@ export default function ProfileSettings() {
         firstName: firstName || '',
         lastName: lastName || '',
         email: email || '',
-        phone: '',
-        address: '',
-        city: '',
-        country: '',
       })
 
       if (profileImage) {
@@ -97,19 +99,30 @@ export default function ProfileSettings() {
         profileImage: avatarFile,
       }).unwrap()
 
-      if (response?.data?.profileImage) {
-        const baseUrl = import.meta.env.VITE_API_BASE_URL
-        setAvatar(`${baseUrl}${response.data.profileImage}`)
-      }
+      if (response?.success) {
+        if (response.data?.profileImage) {
+          const baseUrl = import.meta.env.VITE_API_BASE_URL
+          setAvatar(`${baseUrl}${response.data.profileImage}`)
+        }
 
-      toast({
-        title: 'Profile Updated',
-        description: 'Your profile has been updated successfully.',
-      })
-    } catch (error: any) {
+        setAvatarFile(null)
+
+        toast({
+          title: 'Profile Updated',
+          description: response.message || 'Your profile has been updated successfully.',
+          variant: 'success',
+        })
+      } else {
+        toast({
+          title: 'Update Failed',
+          description: response?.message || 'Failed to update profile. Please try again.',
+          variant: 'destructive',
+        })
+      }
+    } catch (error: unknown) {
       toast({
         title: 'Update Failed',
-        description: error?.data?.message || 'Failed to update profile. Please try again.',
+        description: getErrorMessage(error),
         variant: 'destructive',
       })
     } finally {
