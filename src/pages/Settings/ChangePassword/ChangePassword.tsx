@@ -25,36 +25,35 @@ const passwordSchema = z.object({
 }).refine((data) => data.newPassword === data.confirmPassword, {
   message: "Passwords don't match",
   path: ['confirmPassword'],
+}).refine((data) => data.currentPassword !== data.newPassword, {
+  message: 'New password must be different from current password',
+  path: ['newPassword'],
 })
 
 type PasswordFormData = z.infer<typeof passwordSchema>
 
-interface PasswordInputProps {
+interface PasswordInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label: string
   error?: string
   helperText?: string
-  required?: boolean
 }
 
-function PasswordInput({
-  label,
-  error,
-  helperText,
-  required,
-  ...props
-}: PasswordInputProps & React.InputHTMLAttributes<HTMLInputElement>) {
+const PasswordInput = React.forwardRef<HTMLInputElement, PasswordInputProps>(
+  ({ label, error, helperText, required, className, ...props }, ref) => {
   const [showPassword, setShowPassword] = useState(false)
 
   return (
     <div className="space-y-1.5">
-      <Label className={cn(error && 'text-destructive')}>
+      <Label htmlFor={props.id ?? props.name} className={cn(error && 'text-destructive')}>
         {label}
         {required && <span className="text-destructive ml-1">*</span>}
       </Label>
       <div className="relative">
         <Input
+          ref={ref}
           type={showPassword ? 'text' : 'password'}
-          className={cn('pr-10', error && 'border-destructive')}
+          className={cn('pr-10', error && 'border-destructive', className)}
+          error={!!error}
           {...props}
         />
         <button
@@ -75,6 +74,24 @@ function PasswordInput({
       )}
     </div>
   )
+})
+
+PasswordInput.displayName = 'PasswordInput'
+
+function getErrorMessage(error: unknown): string {
+  if (error && typeof error === 'object' && 'data' in error) {
+    const data = (error as { data?: { message?: string; errorMessages?: { message?: string }[] } }).data
+    if (data?.errorMessages?.length) {
+      return data.errorMessages.map((item) => item.message).filter(Boolean).join(', ')
+    }
+    if (typeof data?.message === 'string') {
+      return data.message
+    }
+  }
+  if (error instanceof Error) {
+    return error.message
+  }
+  return 'Something went wrong. Please try again.'
 }
 
 export default function ChangePassword() {
@@ -123,22 +140,9 @@ export default function ChangePassword() {
         })
       }
     } catch (error: unknown) {
-      let message = 'Something went wrong. Please try again.'
-
-      if (error && typeof error === 'object') {
-        const errWithData = error as { data?: { message?: string } }
-        if (errWithData.data && typeof errWithData.data === 'object' && typeof errWithData.data.message === 'string') {
-          message = errWithData.data.message
-        } else if ('message' in error && typeof (error as { message?: string }).message === 'string') {
-          message = (error as { message?: string }).message as string
-        }
-      } else if (error instanceof Error) {
-        message = error.message
-      }
-
       toast({
         title: 'Failed to change password',
-        description: message,
+        description: getErrorMessage(error),
         variant: 'destructive',
       })
     }
