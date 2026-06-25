@@ -72,7 +72,7 @@ export function ViewTradePersonDetailsModal({
               </div>
             </div>
             <div className="flex flex-wrap gap-2">
-              {verifyPill(tradePerson.isVerified, 'KYC Verified')}
+              {verifyPill(profile?.approveStatus === 'APPROVED', 'KYC Verified')}
               {verifyPill(tradePerson.isEmailVerified, 'Email')}
               {verifyPill(tradePerson.isPhoneVerified, 'Phone')}
             </div>
