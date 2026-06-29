@@ -158,7 +158,7 @@ export function ViewTradePersonDetailsModal({
               {tradePerson.verificationDocuments.map((doc) => {
                 const documentUrl = doc.documentPath.startsWith('http')
                   ? doc.documentPath
-                  : `${import.meta.env.VITE_API_BASE_URL}${doc.documentPath.startsWith('/') ? doc.documentPath : `/${doc.documentPath}`}`
+                  : `${import.meta.env.VITE_API_BASE_URL}/documents${doc.documentPath.startsWith('/') ? doc.documentPath : `/${doc.documentPath}`}`
 
                 const getDocumentTypeLabel = (type: ProfessionalDocumentType) => {
                   switch (type) {
